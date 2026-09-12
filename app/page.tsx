@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -33,7 +33,8 @@ const CATEGORIES = [
   { label: "행사", value: "events" },
 ];
 
-export default function HomePage() {
+// 1. 기존 메인 로직을 처리하는 내부 컴포넌트
+function HomeContent() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category") || "all";
 
@@ -352,5 +353,14 @@ export default function HomePage() {
         )}
       </div>
     </main>
+  );
+}
+
+// 2. 메인 페이지 컴포넌트 (Suspense 적용)
+export default function HomePage() {
+  return (
+    <Suspense fallback={<div style={{ textAlign: "center", padding: "100px", color: "#64748b" }}>로딩 중...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
