@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🇩🇪 German-Hanguk
 
-## Getting Started
+> A helpful and informative community-driven platform created for Koreans living in Germany to share valuable tips, local insights, and daily life experiences.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 💡 About the Project
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This project is built as a hands-on practice ground to master **Next.js** and **Database (Supabase)** integration, exploring full-stack features, data handling, and backend communication.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛠️ Tech Stack
 
-## Learn More
+- **Framework**: Next.js (React)
+- **Database & Backend**: Supabase (PostgreSQL)
+- **Languages**: TypeScript, HTML5, CSS3
+- **Deployment**: Vercel
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## ✨ Key Features
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Community Info Sharing**: Designed to help Koreans navigate life in Germany by sharing useful resources and local information.
+- **Database Operations**: Handles data storage, retrieval, and management through practical integration with Supabase.
+- **Responsive UI**: Optimized for a seamless experience across mobile and desktop devices.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🚀 Live Demo
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+👉 [View Live Site](https://germanhanguk.vercel.app)
+
+---
+
+## 📂 Project Structure
+
+```text
+germanhanguk/
+├── src/            # Source files
+├── public/         # Static assets
+└── README.md
