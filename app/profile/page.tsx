@@ -65,11 +65,11 @@ export default function ProfilePage() {
         setDisplayName(user.email?.split("@")[0] || "");
       }
 
-      // 2. 내가 쓴 글 가져오기
+      // 2. 내가 쓴 글 가져오기 (author_id 기준으로 조회)
       const { data: posts } = await supabase
         .from("posts")
         .select("id, title, category, region, created_at")
-        .eq("user_id", user.id)
+        .eq("author_id", user.id)
         .order("created_at", { ascending: false });
 
       if (posts) {
@@ -93,12 +93,12 @@ export default function ProfilePage() {
     } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { error } = await supabase.from("profiles").upsert({
-      id: user.id,
-      email: user.email,
-      display_name: displayName,
-      avatar_url: avatarUrl,
-    });
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        display_name: displayName,
+      })
+      .eq("id", user.id);
 
     setSaving(false);
 
@@ -124,33 +124,38 @@ export default function ProfilePage() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      // Supabase Storage 'avatars' 버킷에 업로드
+      // 1. Supabase Storage 'avatars' 버킷에 업로드
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: true,
+        });
 
       if (uploadError) throw uploadError;
 
-      // 공개 URL 가져오기
+      // 2. 공개 URL 가져오기
       const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
       const publicUrl = data.publicUrl;
 
+      // 3. DB profiles 테이블에 avatar_url 확실하게 update 및 에러 확인
+      const { error: dbError } = await supabase
+        .from("profiles")
+        .update({
+          avatar_url: publicUrl,
+        })
+        .eq("id", user.id);
+
+      if (dbError) throw dbError;
+
       setAvatarUrl(publicUrl);
-
-      // DB profiles에도 즉시 반영
-      await supabase.from("profiles").upsert({
-        id: user.id,
-        email: user.email,
-        display_name: displayName,
-        avatar_url: publicUrl,
-      });
-
       alert("프로필 이미지가 변경되었습니다!");
+      router.refresh();
     } catch (error: any) {
-      alert("이미지 업로드 중 에러가 발생했습니다: " + error.message);
+      alert("이미지 저장 중 오류가 발생했습니다: " + error.message);
     } finally {
       setUploading(false);
     }
