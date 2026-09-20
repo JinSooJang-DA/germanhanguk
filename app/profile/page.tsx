@@ -122,12 +122,16 @@ export default function ProfilePage() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) return;
+
+      if (!user) {
+        alert("로그인 세션이 유효하지 않습니다.");
+        return;
+      }
 
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      // 1. Supabase Storage 'avatars' 버킷에 업로드
+      // 1. Supabase Storage 버킷 업로드
       const { error: uploadError } = await supabase.storage
         .from("avatars")
         .upload(filePath, file, {
@@ -137,22 +141,25 @@ export default function ProfilePage() {
 
       if (uploadError) throw uploadError;
 
-      // 2. 공개 URL 가져오기
+      // 2. 공개 URL 생성
       const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
       const publicUrl = data.publicUrl;
 
-      // 3. DB profiles 테이블에 avatar_url 확실하게 update 및 에러 확인
+      // 3. profiles 행 존재 여부 확인 후 안전하게 upsert
       const { error: dbError } = await supabase
         .from("profiles")
-        .update({
-          avatar_url: publicUrl,
-        })
-        .eq("id", user.id);
+        .upsert(
+          {
+            id: user.id,
+            avatar_url: publicUrl,
+          },
+          { onConflict: "id" }
+        );
 
       if (dbError) throw dbError;
 
       setAvatarUrl(publicUrl);
-      alert("프로필 이미지가 변경되었습니다!");
+      alert("프로필 이미지가 정상적으로 등록되었습니다!");
       router.refresh();
     } catch (error: any) {
       alert("이미지 저장 중 오류가 발생했습니다: " + error.message);
