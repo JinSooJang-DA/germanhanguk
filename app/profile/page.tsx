@@ -22,6 +22,65 @@ const CATEGORIES: Record<string, string> = {
   events: "행사",
 };
 
+// 이미지를 최대 256px 규격으로 리사이즈 및 WebP 압축하는 함수
+function compressImage(
+  file: File,
+  maxWidth = 256,
+  maxHeight = 256,
+  quality = 0.8
+): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(img.src);
+
+      let width = img.width;
+      let height = img.height;
+
+      // 가로/세로 비율 유지 리사이징
+      if (width > height) {
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("Canvas context를 불러올 수 없습니다."));
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error("이미지 압축에 실패했습니다."));
+          }
+        },
+        "image/webp",
+        quality
+      );
+    };
+
+    img.onerror = (err) => reject(err);
+  });
+}
+
 export default function ProfilePage() {
   const router = useRouter();
 
@@ -111,14 +170,34 @@ export default function ProfilePage() {
     router.refresh();
   }
 
-  // 아바타 이미지 업로드 핸들러
+ // 아바타 이미지 업로드 핸들러 (자동 리사이즈 & 압축 적용)
   async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
     try {
-      setUploading(true);
       if (!e.target.files || e.target.files.length === 0) return;
 
       const file = e.target.files[0];
-      const fileExt = file.name.split(".").pop();
+
+      // 1. 기본 확장자 체크
+      const allowedExtensions = ["jpg", "jpeg", "png", "webp", "gif"];
+      const fileExt = file.name.split(".").pop()?.toLowerCase();
+      if (!fileExt || !allowedExtensions.includes(fileExt)) {
+        alert("jpg, jpeg, png, webp, gif 형식의 이미지만 등록 가능합니다.");
+        e.target.value = "";
+        return;
+      }
+
+      // 2. 극단적인 고용량(예: 15MB 초과) 원본 차단
+      if (file.size > 15 * 1024 * 1024) {
+        alert("15MB 이하의 원본 이미지를 선택해 주세요.");
+        e.target.value = "";
+        return;
+      }
+
+      setUploading(true);
+
+      // 3. 브라우저에서 256x256, 30~50KB 수준으로 즉시 압축 변환
+      const compressedBlob = await compressImage(file, 256, 256, 0.8);
+
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -128,26 +207,27 @@ export default function ProfilePage() {
         return;
       }
 
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      // 항상 webp 확장자로 통일하여 저장
+      const fileName = `${user.id}-${Date.now()}.webp`;
       const filePath = `${fileName}`;
 
-      // 1. Supabase Storage 버킷 업로드
+      // 4. Supabase Storage 버킷에 압축본 업로드 (용량이 작아 수십 밀리초 만에 완료됨)
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(filePath, file, {
-          cacheControl: "3600",
+        .upload(filePath, compressedBlob, {
+          contentType: "image/webp",
+          cacheControl: "31536000", // 1년 캐싱
           upsert: true,
         });
 
       if (uploadError) throw uploadError;
 
-      // 2. 공개 URL 생성
       const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
       const publicUrl = data.publicUrl;
 
-      // 3. display_name 기본값을 확보하여 함께 저장
       const currentName = displayName.trim() || user.email?.split("@")[0] || "회원";
 
+      // 5. DB profiles 테이블 반영
       const { error: dbError } = await supabase
         .from("profiles")
         .upsert(
@@ -162,7 +242,7 @@ export default function ProfilePage() {
       if (dbError) throw dbError;
 
       setAvatarUrl(publicUrl);
-      alert("프로필 이미지가 정상적으로 등록되었습니다!");
+      alert("프로필 이미지가 가볍고 선명하게 최적화되어 등록되었습니다!");
       router.refresh();
     } catch (error: any) {
       alert("이미지 저장 중 오류가 발생했습니다: " + error.message);
