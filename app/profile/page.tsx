@@ -145,12 +145,15 @@ export default function ProfilePage() {
       const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
       const publicUrl = data.publicUrl;
 
-      // 3. profiles 행 존재 여부 확인 후 안전하게 upsert
+      // 3. display_name 기본값을 확보하여 함께 저장
+      const currentName = displayName.trim() || user.email?.split("@")[0] || "회원";
+
       const { error: dbError } = await supabase
         .from("profiles")
         .upsert(
           {
             id: user.id,
+            display_name: currentName,
             avatar_url: publicUrl,
           },
           { onConflict: "id" }
