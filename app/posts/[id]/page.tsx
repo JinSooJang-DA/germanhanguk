@@ -13,6 +13,7 @@ interface Post {
   region: string;
   author_id: string;
   author_name: string;
+  author_avatar?: string;
   created_at: string;
   views: number;
 }
@@ -22,6 +23,7 @@ interface Comment {
   post_id: string;
   author_id: string;
   author_name: string;
+  author_avatar?: string;
   content: string;
   created_at: string;
 }
@@ -46,7 +48,6 @@ export default function PostDetailPage({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // 게시글 & 댓글 상태
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
@@ -54,7 +55,11 @@ export default function PostDetailPage({
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // 하단 게시글 목록 & 페이지네이션 상태
+  // 댓글 수정 관련 상태
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingCommentContent, setEditingCommentContent] = useState("");
+  const [updatingComment, setUpdatingComment] = useState(false);
+
   const [bottomPosts, setBottomPosts] = useState<Post[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -66,7 +71,6 @@ export default function PostDetailPage({
 
   useEffect(() => {
     async function fetchData() {
-      // 1. 현재 사용자 정보
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -74,7 +78,6 @@ export default function PostDetailPage({
         setCurrentUserId(user.id);
       }
 
-      // 2. 게시글 상세 정보 먼저 조회
       const { data: postData } = await supabase
         .from("posts")
         .select("*")
@@ -84,22 +87,34 @@ export default function PostDetailPage({
       if (postData) {
         const nextViews = (postData.views || 0) + 1;
 
-        // 3. DB에 조회수 1 증가 업데이트
         await supabase
           .from("posts")
           .update({ views: nextViews })
           .eq("id", id);
 
-        // 화면 상태 반영
-        setPost({ ...postData, views: nextViews });
+        let authorAvatar = "";
+        if (postData.author_id) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("avatar_url, display_name")
+            .eq("id", postData.author_id)
+            .single();
 
-        // 하단 동일 카테고리 목록 불러오기
+          if (profile?.avatar_url) {
+            authorAvatar = profile.avatar_url;
+          }
+        }
+
+        setPost({
+          ...postData,
+          views: nextViews,
+          author_avatar: authorAvatar,
+        });
+
         fetchBottomPosts(currentPage, postData.category);
       }
 
-      // 4. 댓글 목록 조회
       fetchComments();
-
       setLoading(false);
     }
 
@@ -138,10 +153,32 @@ export default function PostDetailPage({
       .eq("post_id", id)
       .order("created_at", { ascending: true });
 
-    if (data) setComments(data);
+    if (data) {
+      const authorIds = Array.from(new Set(data.map((c) => c.author_id).filter(Boolean)));
+      let avatarMap: Record<string, string> = {};
+
+      if (authorIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, avatar_url")
+          .in("id", authorIds);
+
+        if (profiles) {
+          profiles.forEach((p) => {
+            if (p.avatar_url) avatarMap[p.id] = p.avatar_url;
+          });
+        }
+      }
+
+      const commentsWithAvatar = data.map((c) => ({
+        ...c,
+        author_avatar: avatarMap[c.author_id] || "",
+      }));
+
+      setComments(commentsWithAvatar);
+    }
   }
 
-  // 게시글 삭제
   async function handleDeletePost() {
     if (!confirm("정말로 이 게시글을 삭제하시겠습니까?")) return;
 
@@ -155,7 +192,6 @@ export default function PostDetailPage({
     router.refresh();
   }
 
-  // 댓글 등록
   async function handleCommentSubmit(e: FormEvent) {
     e.preventDefault();
     if (!newComment.trim()) return;
@@ -198,7 +234,41 @@ export default function PostDetailPage({
     fetchComments();
   }
 
-  // 댓글 삭제
+  function handleStartEditComment(comment: Comment) {
+    setEditingCommentId(comment.id);
+    setEditingCommentContent(comment.content);
+  }
+
+  function handleCancelEditComment() {
+    setEditingCommentId(null);
+    setEditingCommentContent("");
+  }
+
+  async function handleSaveEditComment(commentId: string) {
+    if (!editingCommentContent.trim()) {
+      alert("댓글 내용을 입력해 주세요.");
+      return;
+    }
+
+    setUpdatingComment(true);
+
+    const { error } = await supabase
+      .from("comments")
+      .update({ content: editingCommentContent.trim() })
+      .eq("id", commentId);
+
+    setUpdatingComment(false);
+
+    if (error) {
+      alert("댓글 수정 실패: " + error.message);
+      return;
+    }
+
+    setEditingCommentId(null);
+    setEditingCommentContent("");
+    fetchComments();
+  }
+
   async function handleDeleteComment(commentId: string) {
     if (!confirm("댓글을 삭제하시겠습니까?")) return;
 
@@ -265,11 +335,38 @@ export default function PostDetailPage({
             color: "#666",
           }}
         >
-          <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-            <span style={{ fontWeight: "bold", color: "#222" }}>
-              작성자: {post.author_name}
-            </span>
-            <span>👁️ 조회 {post.views || 0}회</span>
+          <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+            <div
+              style={{
+                width: "36px",
+                height: "36px",
+                borderRadius: "50%",
+                background: "#e2e8f0",
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              {post.author_avatar ? (
+                <img
+                  src={post.author_avatar}
+                  alt={post.author_name}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                <span style={{ fontSize: "16px" }}>👤</span>
+              )}
+            </div>
+            <div>
+              <span style={{ fontWeight: "bold", color: "#222" }}>
+                {post.author_name}
+              </span>
+              <span style={{ marginLeft: "12px", color: "#94a3b8" }}>
+                👁️ 조회 {post.views || 0}회
+              </span>
+            </div>
           </div>
 
           {isAuthor && (
@@ -350,47 +447,148 @@ export default function PostDetailPage({
             {comments.length === 0 ? (
               <p style={{ color: "#888", fontSize: "14px" }}>첫 번째 댓글을 달아보세요!</p>
             ) : (
-              comments.map((comment) => (
-                <div
-                  key={comment.id}
-                  style={{
-                    padding: "16px",
-                    background: "#f9f9f9",
-                    borderRadius: "6px",
-                  }}
-                >
+              comments.map((comment) => {
+                const isCommentAuthor = currentUserId === comment.author_id;
+                const isEditing = editingCommentId === comment.id;
+
+                return (
                   <div
+                    key={comment.id}
                     style={{
+                      padding: "16px",
+                      background: "#f9f9f9",
+                      borderRadius: "6px",
                       display: "flex",
-                      justifyContent: "space-between",
-                      marginBottom: "8px",
-                      fontSize: "13px",
-                      color: "#666",
+                      gap: "12px",
                     }}
                   >
-                    <span style={{ fontWeight: "bold", color: "#222" }}>{comment.author_name}</span>
-                    <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                      <span>{new Date(comment.created_at).toLocaleString()}</span>
-                      {currentUserId === comment.author_id && (
-                        <button
-                          onClick={() => handleDeleteComment(comment.id)}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            color: "#e53e3e",
-                            fontSize: "12px",
-                            cursor: "pointer",
-                            padding: 0,
-                          }}
-                        >
-                          삭제
-                        </button>
+                    <div
+                      style={{
+                        width: "32px",
+                        height: "32px",
+                        borderRadius: "50%",
+                        background: "#e2e8f0",
+                        overflow: "hidden",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {comment.author_avatar ? (
+                        <img
+                          src={comment.author_avatar}
+                          alt={comment.author_name}
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        />
+                      ) : (
+                        <span style={{ fontSize: "14px" }}>👤</span>
+                      )}
+                    </div>
+
+                    <div style={{ flex: 1 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          marginBottom: "8px",
+                          fontSize: "13px",
+                          color: "#666",
+                        }}
+                      >
+                        <span style={{ fontWeight: "bold", color: "#222" }}>{comment.author_name}</span>
+                        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                          <span>{new Date(comment.created_at).toLocaleString()}</span>
+                          {isCommentAuthor && !isEditing && (
+                            <>
+                              <button
+                                onClick={() => handleStartEditComment(comment)}
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  color: "#2563eb",
+                                  fontSize: "12px",
+                                  cursor: "pointer",
+                                  padding: 0,
+                                }}
+                              >
+                                수정
+                              </button>
+                              <button
+                                onClick={() => handleDeleteComment(comment.id)}
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  color: "#e53e3e",
+                                  fontSize: "12px",
+                                  cursor: "pointer",
+                                  padding: 0,
+                                }}
+                              >
+                                삭제
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* 댓글 본문 및 인라인 수정 모드 */}
+                      {isEditing ? (
+                        <div style={{ marginTop: "8px" }}>
+                          <textarea
+                            value={editingCommentContent}
+                            onChange={(e) => setEditingCommentContent(e.target.value)}
+                            rows={3}
+                            style={{
+                              width: "100%",
+                              padding: "10px",
+                              border: "1px solid #cbd5e1",
+                              borderRadius: "4px",
+                              fontSize: "14px",
+                              resize: "vertical",
+                              boxSizing: "border-box",
+                            }}
+                          />
+                          <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "6px" }}>
+                            <button
+                              onClick={handleCancelEditComment}
+                              disabled={updatingComment}
+                              style={{
+                                padding: "4px 10px",
+                                background: "#94a3b8",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "12px",
+                              }}
+                            >
+                              취소
+                            </button>
+                            <button
+                              onClick={() => handleSaveEditComment(comment.id)}
+                              disabled={updatingComment}
+                              style={{
+                                padding: "4px 10px",
+                                background: "#2563eb",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "12px",
+                              }}
+                            >
+                              {updatingComment ? "저장 중..." : "저장"}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p style={{ margin: 0, fontSize: "15px", whiteSpace: "pre-wrap" }}>{comment.content}</p>
                       )}
                     </div>
                   </div>
-                  <p style={{ margin: 0, fontSize: "15px", whiteSpace: "pre-wrap" }}>{comment.content}</p>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
@@ -453,7 +651,6 @@ export default function PostDetailPage({
             </tbody>
           </table>
 
-          {/* 하단 페이지네이션 */}
           {totalPages > 1 && (
             <div
               style={{
