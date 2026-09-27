@@ -336,37 +336,77 @@ export default function PostDetailPage({
           }}
         >
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-            <div
-              style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "50%",
-                background: "#e2e8f0",
-                overflow: "hidden",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              {post.author_avatar ? (
-                <img
-                  src={post.author_avatar}
-                  alt={post.author_name}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              ) : (
-                <span style={{ fontSize: "16px" }}>👤</span>
-              )}
-            </div>
-            <div>
-              <span style={{ fontWeight: "bold", color: "#222" }}>
-                {post.author_name}
-              </span>
-              <span style={{ marginLeft: "12px", color: "#94a3b8" }}>
-                👁️ 조회 {post.views || 0}회
-              </span>
-            </div>
+            {post.author_id ? (
+              <Link
+                href={`/profile/${post.author_id}`}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  textDecoration: "none",
+                  color: "#222",
+                }}
+              >
+                <div
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "50%",
+                    background: "#e2e8f0",
+                    overflow: "hidden",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  {post.author_avatar ? (
+                    <img
+                      src={post.author_avatar}
+                      alt={post.author_name}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: "16px" }}>👤</span>
+                  )}
+                </div>
+                <span style={{ fontWeight: "bold" }}>
+                  {post.author_name}
+                </span>
+              </Link>
+            ) : (
+              <div style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}>
+                <div
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "50%",
+                    background: "#e2e8f0",
+                    overflow: "hidden",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  {post.author_avatar ? (
+                    <img
+                      src={post.author_avatar}
+                      alt={post.author_name}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: "16px" }}>👤</span>
+                  )}
+                </div>
+                <span style={{ fontWeight: "bold", color: "#222" }}>
+                  {post.author_name}
+                </span>
+              </div>
+            )}
+            <span style={{ marginLeft: "8px", color: "#94a3b8" }}>
+              👁️ 조회 {post.views || 0}회
+            </span>
           </div>
 
           {isAuthor && (
@@ -462,29 +502,57 @@ export default function PostDetailPage({
                       gap: "12px",
                     }}
                   >
-                    <div
-                      style={{
-                        width: "32px",
-                        height: "32px",
-                        borderRadius: "50%",
-                        background: "#e2e8f0",
-                        overflow: "hidden",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                      }}
-                    >
-                      {comment.author_avatar ? (
-                        <img
-                          src={comment.author_avatar}
-                          alt={comment.author_name}
-                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                        />
-                      ) : (
-                        <span style={{ fontSize: "14px" }}>👤</span>
-                      )}
-                    </div>
+                    {comment.author_id ? (
+                      <Link
+                        href={`/profile/${comment.author_id}`}
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          borderRadius: "50%",
+                          background: "#e2e8f0",
+                          overflow: "hidden",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                          textDecoration: "none",
+                        }}
+                      >
+                        {comment.author_avatar ? (
+                          <img
+                            src={comment.author_avatar}
+                            alt={comment.author_name}
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          />
+                        ) : (
+                          <span style={{ fontSize: "14px" }}>👤</span>
+                        )}
+                      </Link>
+                    ) : (
+                      <div
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          borderRadius: "50%",
+                          background: "#e2e8f0",
+                          overflow: "hidden",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {comment.author_avatar ? (
+                          <img
+                            src={comment.author_avatar}
+                            alt={comment.author_name}
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          />
+                        ) : (
+                          <span style={{ fontSize: "14px" }}>👤</span>
+                        )}
+                      </div>
+                    )}
 
                     <div style={{ flex: 1 }}>
                       <div
@@ -496,7 +564,16 @@ export default function PostDetailPage({
                           color: "#666",
                         }}
                       >
-                        <span style={{ fontWeight: "bold", color: "#222" }}>{comment.author_name}</span>
+                        {comment.author_id ? (
+                          <Link
+                            href={`/profile/${comment.author_id}`}
+                            style={{ fontWeight: "bold", color: "#222", textDecoration: "none" }}
+                          >
+                            {comment.author_name}
+                          </Link>
+                        ) : (
+                          <span style={{ fontWeight: "bold", color: "#222" }}>{comment.author_name}</span>
+                        )}
                         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                           <span>{new Date(comment.created_at).toLocaleString()}</span>
                           {isCommentAuthor && !isEditing && (
@@ -638,7 +715,22 @@ export default function PostDetailPage({
                       </Link>
                     </td>
                     <td style={{ padding: "10px 12px", fontSize: "13px", color: "#666" }}>{p.region || "-"}</td>
-                    <td style={{ padding: "10px 12px", fontSize: "13px", color: "#666" }}>{p.author_name}</td>
+                    <td style={{ padding: "10px 12px", fontSize: "13px", color: "#666" }}>
+                      {p.author_id ? (
+                        <Link
+                          href={`/profile/${p.author_id}`}
+                          style={{
+                            textDecoration: "none",
+                            color: "#475569",
+                            fontWeight: 500,
+                          }}
+                        >
+                          {p.author_name}
+                        </Link>
+                      ) : (
+                        p.author_name
+                      )}
+                    </td>
                     <td style={{ padding: "10px 12px", fontSize: "13px", color: "#888" }}>
                       {new Date(p.created_at).toLocaleDateString()}
                     </td>

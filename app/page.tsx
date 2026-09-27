@@ -381,32 +381,70 @@ function HomeContent() {
                     </td>
                     <td style={{ padding: "14px", fontSize: "14px", color: "#64748b" }}>{post.region || "-"}</td>
                     <td style={{ padding: "14px", fontSize: "14px", color: "#64748b" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <div
+                      {post.author_id ? (
+                        <Link
+                          href={`/profile/${post.author_id}`}
                           style={{
-                            width: "24px",
-                            height: "24px",
-                            borderRadius: "50%",
-                            background: "#e2e8f0",
-                            overflow: "hidden",
-                            display: "flex",
+                            display: "inline-flex",
                             alignItems: "center",
-                            justifyContent: "center",
-                            flexShrink: 0,
+                            gap: "8px",
+                            textDecoration: "none",
+                            color: "#334155",
                           }}
                         >
-                          {post.author_avatar ? (
-                            <img
-                              src={post.author_avatar}
-                              alt={post.author_name}
-                              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                            />
-                          ) : (
-                            <span style={{ fontSize: "12px" }}>👤</span>
-                          )}
+                          <div
+                            style={{
+                              width: "24px",
+                              height: "24px",
+                              borderRadius: "50%",
+                              background: "#e2e8f0",
+                              overflow: "hidden",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                            }}
+                          >
+                            {post.author_avatar ? (
+                              <img
+                                src={post.author_avatar}
+                                alt={post.author_name}
+                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                              />
+                            ) : (
+                              <span style={{ fontSize: "12px" }}>👤</span>
+                            )}
+                          </div>
+                          <span style={{ fontWeight: 500 }}>{post.author_name}</span>
+                        </Link>
+                      ) : (
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <div
+                            style={{
+                              width: "24px",
+                              height: "24px",
+                              borderRadius: "50%",
+                              background: "#e2e8f0",
+                              overflow: "hidden",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                            }}
+                          >
+                            {post.author_avatar ? (
+                              <img
+                                src={post.author_avatar}
+                                alt={post.author_name}
+                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                              />
+                            ) : (
+                              <span style={{ fontSize: "12px" }}>👤</span>
+                            )}
+                          </div>
+                          <span>{post.author_name}</span>
                         </div>
-                        <span>{post.author_name}</span>
-                      </div>
+                      )}
                     </td>
                     <td style={{ padding: "14px", fontSize: "14px", color: "#94a3b8" }}>
                       {new Date(post.created_at).toLocaleDateString()}
