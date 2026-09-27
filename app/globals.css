@@ -377,3 +377,19 @@ header button {
   font-size: 14px;
   margin: 0;
 }
+/* Leaflet K-Spot Custom Styling */
+.custom-kspot-pin {
+  background: transparent !important;
+  border: none !important;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+}
+
+.leaflet-popup-content {
+  margin: 12px 14px !important;
+  line-height: 1.5 !important;
+}
+

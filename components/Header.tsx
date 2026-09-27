@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [displayName, setDisplayName] = useState<string>("");
 
@@ -66,13 +67,23 @@ export default function Header() {
           <h1 style={{ fontSize: "20px", fontWeight: "bold", margin: 0 }}>German Hanguk</h1>
         </Link>
 
-        <nav style={{ display: "flex", gap: "24px" }}>
+        <nav style={{ display: "flex", gap: "24px", alignItems: "center", flexWrap: "wrap" }}>
           <Link href="/?category=community" style={{ textDecoration: "none", color: "#475569", fontWeight: "500" }}>커뮤니티</Link>
-          <Link href="/?category=education" style={{ textDecoration: "none", color: "#475569", fontWeight: "500" }}>유학·교육</Link> {/* 👈 유학·교육 메뉴 추가 */}
+          <Link href="/?category=education" style={{ textDecoration: "none", color: "#475569", fontWeight: "500" }}>유학·교육</Link>
           <Link href="/?category=life" style={{ textDecoration: "none", color: "#475569", fontWeight: "500" }}>생활정보</Link>
           <Link href="/?category=market" style={{ textDecoration: "none", color: "#475569", fontWeight: "500" }}>중고장터</Link>
           <Link href="/?category=jobs" style={{ textDecoration: "none", color: "#475569", fontWeight: "500" }}>구인구직</Link>
           <Link href="/?category=events" style={{ textDecoration: "none", color: "#475569", fontWeight: "500" }}>행사</Link>
+          <Link
+            href="/map"
+            style={{
+              textDecoration: "none",
+              color: pathname === "/map" ? "#0f172a" : "#475569",
+              fontWeight: pathname === "/map" ? "700" : "500",
+            }}
+          >
+            K-Spot 지도
+          </Link>
         </nav>
 
         {user ? (
