@@ -13,6 +13,22 @@ interface Post {
   created_at: string;
 }
 
+const GERMAN_REGIONS = [
+  "Berlin (베를린)",
+  "Frankfurt am Main (프랑크푸르트)",
+  "München (뮌헨)",
+  "Düsseldorf (뒤셀도르프)",
+  "Hamburg (함부르크)",
+  "Köln (쾰른)",
+  "Stuttgart (슈투트가르트)",
+  "Münster (뮌스터)",
+  "Nürnberg (뉘른베르크)",
+  "Leipzig (라이프치히)",
+  "Dresden (드레스덴)",
+  "Bonn (본)",
+  "기타 독일 지역",
+];
+
 const CATEGORIES: Record<string, string> = {
   community: "커뮤니티",
   education: "유학·교육",
@@ -87,6 +103,8 @@ export default function ProfilePage() {
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [region, setRegion] = useState("");
+  const [bio, setBio] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [myPosts, setMyPosts] = useState<Post[]>([]);
   
@@ -113,13 +131,15 @@ export default function ProfilePage() {
       // 1. profiles 테이블에서 정보 가져오기
       const { data: profile } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url")
+        .select("display_name, avatar_url, region, bio")
         .eq("id", user.id)
         .single();
 
       if (profile) {
         setDisplayName(profile.display_name || user.email?.split("@")[0] || "");
         setAvatarUrl(profile.avatar_url || "");
+        setRegion(profile.region || "");
+        setBio(profile.bio || "");
       } else {
         setDisplayName(user.email?.split("@")[0] || "");
       }
@@ -141,7 +161,7 @@ export default function ProfilePage() {
     loadUserData();
   }, [router]);
 
-  // 프로필 정보(닉네임) 저장
+  // 프로필 정보(닉네임, 거주지역, 자기소개) 저장
   async function handleProfileSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setMessage("");
@@ -155,7 +175,10 @@ export default function ProfilePage() {
     const { error } = await supabase
       .from("profiles")
       .update({
-        display_name: displayName,
+        display_name: displayName.trim(),
+        region: region.trim(),
+        bio: bio.trim(),
+        updated_at: new Date().toISOString(),
       })
       .eq("id", user.id);
 
@@ -227,7 +250,7 @@ export default function ProfilePage() {
 
       const currentName = displayName.trim() || user.email?.split("@")[0] || "회원";
 
-      // 5. DB profiles 테이블 반영
+      // 5. DB profiles 테이블 반영 (기존 region, bio 보존)
       const { error: dbError } = await supabase
         .from("profiles")
         .upsert(
@@ -235,6 +258,9 @@ export default function ProfilePage() {
             id: user.id,
             display_name: currentName,
             avatar_url: publicUrl,
+            region: region.trim() || null,
+            bio: bio.trim() || null,
+            updated_at: new Date().toISOString(),
           },
           { onConflict: "id" }
         );
@@ -325,13 +351,17 @@ export default function ProfilePage() {
           </div>
 
           <div style={{ flex: 1 }}>
-            <p style={{ margin: "0 0 5px 0", fontSize: "14px", color: "#64748b" }}>로그인 계정</p>
+            <p style={{ margin: "0 0 5px 0", fontSize: "14px", color: "#64748b" }}>
+              로그인 계정 <span style={{ fontSize: "12px", color: "#94a3b8" }}>(이메일 변경 불가)</span>
+            </p>
             <p style={{ margin: "0 0 15px 0", fontSize: "16px", fontWeight: "bold" }}>{email}</p>
-            <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>독일 거주 한인 커뮤니티 German Hanguk에서 활동 중이신 회원님입니다.</p>
+            <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>
+              독일 거주 한인 커뮤니티 German Hanguk에서 활동 중이신 회원님입니다.
+            </p>
           </div>
         </div>
 
-        {/* 2. 닉네임 수정 폼 */}
+        {/* 2. 기본 정보 (닉네임, 거주지역, 자기소개) 수정 폼 */}
         <form className="post-form" onSubmit={handleProfileSubmit} style={{ marginBottom: "40px" }}>
           <h2>기본 정보 수정</h2>
           <div className="form-group">
@@ -343,6 +373,53 @@ export default function ProfilePage() {
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="커뮤니티에서 사용할 닉네임을 입력하세요"
               required
+              minLength={2}
+              maxLength={30}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="region">거주지역</label>
+            <select
+              id="region"
+              value={region}
+              onChange={(e) => setRegion(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "10px",
+                border: "1px solid #cbd5e1",
+                borderRadius: "4px",
+                fontSize: "15px",
+                background: "#fff",
+              }}
+            >
+              <option value="">거주지역을 선택하세요</option>
+              {GERMAN_REGIONS.map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="bio">자기소개</label>
+            <textarea
+              id="bio"
+              rows={3}
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder="간단한 자기소개를 작성해 보세요 (예: 프랑크푸르트 거주 3년차 직장인입니다.)"
+              maxLength={200}
+              style={{
+                width: "100%",
+                padding: "10px",
+                border: "1px solid #cbd5e1",
+                borderRadius: "4px",
+                fontSize: "14px",
+                resize: "vertical",
+                boxSizing: "border-box",
+              }}
             />
           </div>
 
