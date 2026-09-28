@@ -34,6 +34,13 @@ export default function PublicProfilePage({
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // 쪽지 보내기 모달 관련 상태
+  const [showModal, setShowModal] = useState(false);
+  const [messageBody, setMessageBody] = useState("");
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const [sendErrorMessage, setSendErrorMessage] = useState("");
 
   useEffect(() => {
     async function loadPublicProfile() {
@@ -45,9 +52,11 @@ export default function PublicProfilePage({
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (user && user.id === id) {
-        setIsOwnProfile(true);
+      if (user) {
+        setCurrentUserId(user.id);
+        setIsOwnProfile(user.id === id);
       } else {
+        setCurrentUserId(null);
         setIsOwnProfile(false);
       }
 
@@ -83,6 +92,62 @@ export default function PublicProfilePage({
 
     loadPublicProfile();
   }, [id]);
+
+  async function handleSendMessage(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmed = messageBody.trim();
+    if (!trimmed) {
+      alert("메시지 내용을 입력해 주세요.");
+      return;
+    }
+    if (trimmed.length > 2000) {
+      alert("메시지는 최대 2000자까지 작성할 수 있습니다.");
+      return;
+    }
+
+    setSendingMessage(true);
+    setSendErrorMessage("");
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        alert("로그인이 필요합니다.");
+        setSendingMessage(false);
+        return;
+      }
+
+      if (user.id === id) {
+        alert("자기 자신에게는 쪽지를 보낼 수 없습니다.");
+        setSendingMessage(false);
+        return;
+      }
+
+      const { error } = await supabase.from("messages").insert({
+        sender_id: user.id,
+        receiver_id: id,
+        body: trimmed,
+      });
+
+      if (error) {
+        console.error("Message send error:", error);
+        setSendErrorMessage("쪽지 전송에 실패했습니다. 다시 시도해 주세요.");
+        setSendingMessage(false);
+        return;
+      }
+
+      setSendingMessage(false);
+      setMessageBody("");
+      setShowModal(false);
+      alert("쪽지를 보냈습니다.");
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      setSendErrorMessage("쪽지 전송 중 오류가 발생했습니다.");
+      setSendingMessage(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -195,28 +260,57 @@ export default function PublicProfilePage({
                   {profile.display_name || "회원"}
                 </h1>
 
-                {/* 본인 프로필일 때 노출되는 수정 버튼 */}
-                {isOwnProfile && (
-                  <Link
-                    href="/profile"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      padding: "6px 14px",
-                      background: "#f1f5f9",
-                      color: "#334155",
-                      border: "1px solid #cbd5e1",
-                      borderRadius: "6px",
-                      fontSize: "13px",
-                      fontWeight: 500,
-                      textDecoration: "none",
-                      transition: "background 0.2s ease",
-                    }}
-                  >
-                    ✏️ 내 프로필 수정
-                  </Link>
-                )}
+                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                  {/* 본인 프로필일 때 노출되는 수정 버튼 */}
+                  {isOwnProfile && (
+                    <Link
+                      href="/profile"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        padding: "6px 14px",
+                        background: "#f1f5f9",
+                        color: "#334155",
+                        border: "1px solid #cbd5e1",
+                        borderRadius: "6px",
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        textDecoration: "none",
+                        transition: "background 0.2s ease",
+                      }}
+                    >
+                      ✏️ 내 프로필 수정
+                    </Link>
+                  )}
+
+                  {/* 타인 프로필이면서 로그인한 사용자일 때 노출되는 쪽지 보내기 버튼 */}
+                  {currentUserId && !isOwnProfile && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMessageBody("");
+                        setSendErrorMessage("");
+                        setShowModal(true);
+                      }}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        padding: "6px 14px",
+                        background: "#0f172a",
+                        color: "#ffffff",
+                        border: "none",
+                        borderRadius: "6px",
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        cursor: "pointer",
+                      }}
+                    >
+                      ✉️ 쪽지 보내기
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* 거주지역 및 가입일 */}
@@ -355,6 +449,183 @@ export default function PublicProfilePage({
             </div>
           )}
         </section>
+
+        {/* 쪽지 보내기 모달 */}
+        {showModal && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(15, 23, 42, 0.6)",
+              backdropFilter: "blur(2px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 1000,
+              padding: "20px",
+            }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget && !sendingMessage) {
+                setShowModal(false);
+              }
+            }}
+          >
+            <div
+              style={{
+                background: "#ffffff",
+                borderRadius: "12px",
+                width: "100%",
+                maxWidth: "500px",
+                padding: "28px",
+                boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "20px",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <div
+                    style={{
+                      width: "36px",
+                      height: "36px",
+                      borderRadius: "50%",
+                      background: "#e2e8f0",
+                      overflow: "hidden",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {profile.avatar_url ? (
+                      <img
+                        src={profile.avatar_url}
+                        alt={profile.display_name || "회원"}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                    ) : (
+                      <span style={{ fontSize: "16px" }}>👤</span>
+                    )}
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: "16px", color: "#0f172a" }}>
+                      {profile.display_name || "회원"}님에게 쪽지 보내기
+                    </h3>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => !sendingMessage && setShowModal(false)}
+                  disabled={sendingMessage}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    fontSize: "20px",
+                    cursor: sendingMessage ? "not-allowed" : "pointer",
+                    color: "#94a3b8",
+                    padding: "4px",
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleSendMessage}>
+                <div style={{ marginBottom: "16px" }}>
+                  <textarea
+                    value={messageBody}
+                    onChange={(e) => setMessageBody(e.target.value)}
+                    placeholder="상대방에게 전할 내용을 입력하세요... (최대 2000자)"
+                    maxLength={2000}
+                    rows={6}
+                    disabled={sendingMessage}
+                    required
+                    style={{
+                      width: "100%",
+                      padding: "14px",
+                      borderRadius: "8px",
+                      border: "1px solid #cbd5e1",
+                      fontSize: "14px",
+                      resize: "vertical",
+                      boxSizing: "border-box",
+                      lineHeight: "1.6",
+                      fontFamily: "inherit",
+                    }}
+                  />
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      marginTop: "6px",
+                      fontSize: "12px",
+                      color: "#94a3b8",
+                    }}
+                  >
+                    <span>최대 2,000자</span>
+                    <span>{messageBody.length} / 2,000자</span>
+                  </div>
+                </div>
+
+                {sendErrorMessage && (
+                  <div
+                    style={{
+                      padding: "10px 14px",
+                      background: "#fef2f2",
+                      border: "1px solid #fecaca",
+                      borderRadius: "6px",
+                      color: "#b91c1c",
+                      fontSize: "13px",
+                      marginBottom: "16px",
+                    }}
+                  >
+                    {sendErrorMessage}
+                  </div>
+                )}
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                    disabled={sendingMessage}
+                    style={{
+                      padding: "8px 16px",
+                      background: "#f1f5f9",
+                      color: "#475569",
+                      border: "1px solid #cbd5e1",
+                      borderRadius: "6px",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      cursor: sendingMessage ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    취소
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={sendingMessage || !messageBody.trim()}
+                    style={{
+                      padding: "8px 20px",
+                      background: sendingMessage || !messageBody.trim() ? "#94a3b8" : "#0f172a",
+                      color: "#ffffff",
+                      border: "none",
+                      borderRadius: "6px",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      cursor: sendingMessage || !messageBody.trim() ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {sendingMessage ? "전송 중..." : "보내기"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );

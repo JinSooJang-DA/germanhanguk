@@ -87,7 +87,21 @@ export default function Header() {
         </nav>
 
         {user ? (
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+            <Link
+              href="/messages"
+              style={{
+                textDecoration: "none",
+                color: pathname.startsWith("/messages") ? "#0f172a" : "#475569",
+                fontWeight: pathname.startsWith("/messages") ? "700" : "500",
+                fontSize: "14px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "4px",
+              }}
+            >
+              ✉️ 쪽지
+            </Link>
             <Link
               href="/profile"
               style={{
