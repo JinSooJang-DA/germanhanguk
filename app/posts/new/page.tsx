@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { CATEGORIES } from "@/lib/constants";
 
 export default function NewPostPage() {
   const router = useRouter();
@@ -112,12 +113,11 @@ export default function NewPostPage() {
               value={category}
               onChange={(e) => setCategory(e.target.value)}
             >
-              <option value="community">커뮤니티</option>
-              <option value="education">유학·교육</option>
-              <option value="life">생활정보</option>
-              <option value="market">중고장터</option>
-              <option value="jobs">구인구직</option>
-              <option value="events">행사</option>
+              {CATEGORIES.map((cat) => (
+                <option key={cat.value} value={cat.value}>
+                  {cat.label.ko}
+                </option>
+              ))}
             </select>
           </div>
 

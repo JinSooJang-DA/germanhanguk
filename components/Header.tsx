@@ -12,6 +12,7 @@ export default function Header() {
   const [user, setUser] = useState<User | null>(null);
   const [displayName, setDisplayName] = useState<string>("");
   const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState<number>(0);
 
   async function loadUserProfile(userId: string, defaultEmail?: string) {
     const { data: profile } = await supabase
@@ -43,45 +44,72 @@ export default function Header() {
     }
   }
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+  async function loadUnreadNotificationsCount(userId: string) {
+    try {
+      const { count, error } = await supabase
+        .from("notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("recipient_id", userId)
+        .eq("is_read", false);
+
+      if (!error && count !== null) {
+        setUnreadNotificationsCount(count);
+      }
+    } catch (err) {
+      console.error("Unread notifications count fetch error:", err);
+    }
+  }
+
+  useEffect(function() {
+    supabase.auth.getSession().then(function(res) {
+      const session = res.data.session;
       const currentUser = session?.user ?? null;
       setUser(currentUser);
       if (currentUser) {
         loadUserProfile(currentUser.id, currentUser.email);
         loadUnreadCount(currentUser.id);
+        loadUnreadNotificationsCount(currentUser.id);
       }
     });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const resChange = supabase.auth.onAuthStateChange(function(_event, session) {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
       if (currentUser) {
         loadUserProfile(currentUser.id, currentUser.email);
         loadUnreadCount(currentUser.id);
+        loadUnreadNotificationsCount(currentUser.id);
       } else {
         setDisplayName("");
         setUnreadCount(0);
+        setUnreadNotificationsCount(0);
       }
     });
+    const subscription = resChange.data.subscription;
 
-    const handleUpdateCount = () => {
-      const fetchCurrentCount = async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          loadUnreadCount(session.user.id);
+    const handleUpdateCount = function() {
+      supabase.auth.getSession().then(function(res) {
+        if (res.data.session?.user) {
+          loadUnreadCount(res.data.session.user.id);
         }
-      };
-      fetchCurrentCount();
+      });
+    };
+
+    const handleUpdateNotifCount = function() {
+      supabase.auth.getSession().then(function(res) {
+        if (res.data.session?.user) {
+          loadUnreadNotificationsCount(res.data.session.user.id);
+        }
+      });
     };
 
     window.addEventListener("messages-updated", handleUpdateCount);
+    window.addEventListener("notifications-updated", handleUpdateNotifCount);
 
-    return () => {
+    return function() {
       subscription.unsubscribe();
       window.removeEventListener("messages-updated", handleUpdateCount);
+      window.removeEventListener("notifications-updated", handleUpdateNotifCount);
     };
   }, []);
 
@@ -90,6 +118,7 @@ export default function Header() {
     setUser(null);
     setDisplayName("");
     setUnreadCount(0);
+    setUnreadNotificationsCount(0);
     router.push("/");
     router.refresh();
   }
@@ -107,7 +136,6 @@ export default function Header() {
           <Link href="/?category=life" style={{ textDecoration: "none", color: "#475569", fontWeight: "500" }}>생활정보</Link>
           <Link href="/?category=market" style={{ textDecoration: "none", color: "#475569", fontWeight: "500" }}>중고장터</Link>
           <Link href="/?category=jobs" style={{ textDecoration: "none", color: "#475569", fontWeight: "500" }}>구인구직</Link>
-          <Link href="/?category=events" style={{ textDecoration: "none", color: "#475569", fontWeight: "500" }}>행사</Link>
           <Link
             href="/map"
             style={{
@@ -122,6 +150,43 @@ export default function Header() {
 
         {user ? (
           <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+            {/* 알림 배지 */}
+            <Link
+              href="/notifications"
+              style={{
+                textDecoration: "none",
+                color: pathname === "/notifications" ? "#0f172a" : "#475569",
+                fontWeight: pathname === "/notifications" ? "700" : "500",
+                fontSize: "14px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "4px",
+              }}
+            >
+              🔔 알림
+              {unreadNotificationsCount > 0 && (
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "#ef4444",
+                    color: "#ffffff",
+                    fontSize: "10px",
+                    fontWeight: "bold",
+                    borderRadius: "9999px",
+                    height: "18px",
+                    minWidth: "18px",
+                    padding: "0 5px",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  {unreadNotificationsCount}
+                </span>
+              )}
+            </Link>
+
+            {/* 쪽지 배지 */}
             <Link
               href="/messages"
               style={{
@@ -156,6 +221,7 @@ export default function Header() {
                 </span>
               )}
             </Link>
+
             <Link
               href="/profile"
               style={{

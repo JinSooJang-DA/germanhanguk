@@ -4,14 +4,7 @@ import { FormEvent, useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-
-const CATEGORIES = [
-  { label: "커뮤니티", value: "community" },
-  { label: "생활정보", value: "life" },
-  { label: "중고장터", value: "market" },
-  { label: "구인구직", value: "jobs" },
-  { label: "행사", value: "events" },
-];
+import { CATEGORIES } from "@/lib/constants";
 
 export default function EditPostPage({
   params,
@@ -121,7 +114,7 @@ export default function EditPostPage({
             >
               {CATEGORIES.map((cat) => (
                 <option key={cat.value} value={cat.value}>
-                  {cat.label}
+                  {cat.label.ko}
                 </option>
               ))}
             </select>

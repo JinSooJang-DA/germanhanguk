@@ -61,16 +61,20 @@ export default function MessageDetailPage({
       // 3. 수신자가 최초 열람 시 자동 읽음 처리
       if (currentUser.id === msgData.receiver_id && msgData.read_at === null) {
         const nowIso = new Date().toISOString();
-        // DB 트리거가 authoritative source로 now()를 저장합니다.
-        const { error: updateError } = await supabase
+        msgData.read_at = nowIso;
+
+        // DB 업데이트를 수행한 후, 성공 시점에 이벤트를 전송하여 헤더를 동기화합니다.
+        supabase
           .from("messages")
           .update({ read_at: nowIso })
-          .eq("id", id);
-
-        if (!updateError) {
-          msgData.read_at = nowIso;
-          window.dispatchEvent(new Event("messages-updated"));
-        }
+          .eq("id", id)
+          .then(function({ error: updateError }) {
+            if (updateError) {
+              console.warn("Message read_at background update warning:", updateError.message);
+            } else {
+              window.dispatchEvent(new Event("messages-updated"));
+            }
+          });
       }
 
       setMessage(msgData);

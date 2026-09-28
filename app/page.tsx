@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { CATEGORIES, getCategoryLabel } from "@/lib/constants";
 
 interface Post {
   id: number;
@@ -15,6 +16,9 @@ interface Post {
   author_name: string;
   author_avatar?: string;
   created_at: string;
+  views: number;
+  comments?: { count: number }[];
+  post_likes?: { count: number }[];
 }
 
 interface NewsArticle {
@@ -25,21 +29,12 @@ interface NewsArticle {
   link_url: string;
 }
 
-const CATEGORIES = [
-  { label: "전체", value: "all" },
-  { label: "커뮤니티", value: "community" },
-  { label: "유학·교육", value: "education" },
-  { label: "생활정보", value: "life" },
-  { label: "중고장터", value: "market" },
-  { label: "구인구직", value: "jobs" },
-  { label: "행사", value: "events" },
-];
-
 function HomeContent() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category") || "all";
 
   const [posts, setPosts] = useState<Post[]>([]);
+  const [trendingPosts, setTrendingPosts] = useState<Post[]>([]);
   const [newsList, setNewsList] = useState<NewsArticle[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -47,13 +42,14 @@ function HomeContent() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  useEffect(function() {
     setSelectedCategory(categoryParam);
   }, [categoryParam]);
 
-  useEffect(() => {
+  useEffect(function() {
     fetchPosts();
     fetchNews();
+    fetchTrendingPosts();
   }, [selectedCategory]);
 
   async function fetchNews() {
@@ -113,9 +109,26 @@ function HomeContent() {
     }
   }
 
+  async function fetchTrendingPosts() {
+    // 조회수(views)가 높은 인기 글 5개 조회 (N+1 방지를 위해 댓글/좋아요 카운트 조인)
+    const { data, error } = await supabase
+      .from("posts")
+      .select("*, comments(count), post_likes(count)")
+      .order("views", { ascending: false })
+      .limit(5);
+
+    if (!error && data) {
+      setTrendingPosts(data as any);
+    }
+  }
+
   async function fetchPosts() {
     setLoading(true);
-    let query = supabase.from("posts").select("*").order("created_at", { ascending: false });
+    // N+1 방지를 위해 댓글 수(comments) 및 좋아요 수(post_likes) 조인하여 한 번에 페칭
+    let query = supabase
+      .from("posts")
+      .select("*, comments(count), post_likes(count)")
+      .order("created_at", { ascending: false });
 
     if (selectedCategory !== "all") {
       query = query.eq("category", selectedCategory);
@@ -123,13 +136,12 @@ function HomeContent() {
 
     if (searchKeyword.trim()) {
       const keyword = searchKeyword.trim();
-      query = query.or(`title.ilike.%${keyword}%,content.ilike.%${keyword}%`);
+      query = query.or("title.ilike.%" + keyword + "%,content.ilike.%" + keyword + "%");
     }
 
     const { data, error } = await query;
     if (!error && data) {
-      // 작성자들의 아바타 매핑 가져오기
-      const authorIds = Array.from(new Set(data.map((p) => p.author_id).filter(Boolean)));
+      const authorIds = Array.from(new Set(data.map(function(p) { return p.author_id; }).filter(Boolean)));
       let avatarMap: Record<string, string> = {};
 
       if (authorIds.length > 0) {
@@ -139,28 +151,34 @@ function HomeContent() {
           .in("id", authorIds);
 
         if (profiles) {
-          profiles.forEach((p) => {
+          profiles.forEach(function(p) {
             if (p.avatar_url) avatarMap[p.id] = p.avatar_url;
           });
         }
       }
 
-      const postsWithAvatar = data.map((p) => ({
-        ...p,
-        author_avatar: p.author_id ? avatarMap[p.author_id] || "" : "",
-      }));
+      const postsWithAvatar = data.map(function(p) {
+        return {
+          ...p,
+          author_avatar: p.author_id ? avatarMap[p.author_id] || "" : "",
+        };
+      });
 
-      setPosts(postsWithAvatar);
+      setPosts(postsWithAvatar as any);
     }
     setLoading(false);
   }
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev === newsList.length - 1 ? 0 : prev + 1));
+  const nextSlide = function() {
+    setCurrentSlide(function(prev) {
+      return prev === newsList.length - 1 ? 0 : prev + 1;
+    });
   };
 
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev === 0 ? newsList.length - 1 : prev - 1));
+  const prevSlide = function() {
+    setCurrentSlide(function(prev) {
+      return prev === 0 ? newsList.length - 1 : prev - 1;
+    });
   };
 
   return (
@@ -180,59 +198,52 @@ function HomeContent() {
             <div
               style={{
                 display: "flex",
-                width: `${newsList.length * 100}%`,
-                transform: `translateX(-${(currentSlide * 100) / newsList.length}%)`,
-                transition: "transform 0.5s ease-in-out",
+                width: "100%",
                 height: "100%",
+                transform: "translateX(-" + (currentSlide * 100) + "%)",
+                transition: "transform 0.5s ease-in-out",
               }}
             >
-              {newsList.map((news) => (
-                <div
-                  key={news.id}
-                  style={{
-                    width: `${100 / newsList.length}%`,
-                    height: "100%",
-                    position: "relative",
-                    display: "flex",
-                    alignItems: "flex-end",
-                  }}
-                >
-                  <img
-                    src={news.image_url}
-                    alt={news.title}
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      filter: "brightness(0.65)",
-                    }}
-                  />
+              {newsList.map(function(news) {
+                return (
                   <div
+                    key={news.id}
                     style={{
+                      minWidth: "100%",
+                      height: "100%",
                       position: "relative",
-                      padding: "40px",
-                      background: "linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.4) 60%, transparent 100%)",
-                      width: "100%",
-                      color: "#fff",
                     }}
                   >
-                    <span style={{ background: "#2563eb", padding: "4px 10px", borderRadius: "4px", fontSize: "12px", fontWeight: "bold" }}>
-                      Editor's Pick
-                    </span>
-                    <h2 style={{ fontSize: "26px", fontWeight: "bold", margin: "12px 0 8px 0" }}>
-                      <a href={news.link_url} style={{ color: "#fff", textDecoration: "none" }}>
+                    <img
+                      src={news.image_url}
+                      alt={news.title}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        opacity: 0.4,
+                      }}
+                    />
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: "50px",
+                        left: "40px",
+                        right: "40px",
+                        color: "#fff",
+                        textAlign: "left",
+                      }}
+                    >
+                      <h2 style={{ fontSize: "32px", fontWeight: "bold", margin: "0 0 12px 0", lineHeight: "1.2" }}>
                         {news.title}
-                      </a>
-                    </h2>
-                    <p style={{ fontSize: "15px", color: "#cbd5e1", margin: 0, maxWidth: "800px" }}>
-                      {news.summary}
-                    </p>
+                      </h2>
+                      <p style={{ fontSize: "15px", color: "#cbd5e1", margin: 0, maxWidth: "800px" }}>
+                        {news.summary}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <button
@@ -290,49 +301,124 @@ function HomeContent() {
                 gap: "8px",
               }}
             >
-              {newsList.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentSlide(index)}
-                  style={{
-                    width: currentSlide === index ? "24px" : "10px",
-                    height: "10px",
-                    borderRadius: "5px",
-                    border: "none",
-                    background: currentSlide === index ? "#2563eb" : "rgba(255, 255, 255, 0.5)",
-                    cursor: "pointer",
-                    transition: "width 0.3s ease",
-                  }}
-                />
-              ))}
+              {newsList.map(function(_, index) {
+                return (
+                  <button
+                    key={index}
+                    onClick={setCurrentSlide.bind(null, index)}
+                    style={{
+                      width: currentSlide === index ? "24px" : "10px",
+                      height: "10px",
+                      borderRadius: "5px",
+                      border: "none",
+                      background: currentSlide === index ? "#2563eb" : "rgba(255, 255, 255, 0.5)",
+                      cursor: "pointer",
+                      transition: "width 0.3s ease",
+                    }}
+                  />
+                );
+              })}
             </div>
           </div>
         </section>
       )}
 
       <div className="wrapper" style={{ padding: "0 20px 60px 20px", maxWidth: "1200px", margin: "0 auto" }}>
+        
+        {/* 실시간 인기 게시글 목록 */}
+        {trendingPosts.length > 0 && (
+          <div style={{ marginBottom: "40px", background: "#f8fafc", borderRadius: "12px", padding: "24px", border: "1px solid #e2e8f0" }}>
+            <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "#0f172a", margin: "0 0 16px 0", display: "flex", alignItems: "center", gap: "6px" }}>
+              🔥 지금 가장 많이 읽은 인기 글
+            </h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
+              {trendingPosts.map(function(tp) {
+                const commentCount = tp.comments?.[0]?.count || 0;
+                const likeCount = tp.post_likes?.[0]?.count || 0;
+                return (
+                  <Link
+                    key={tp.id}
+                    href={"/posts/" + tp.id}
+                    style={{
+                      background: "#fff",
+                      borderRadius: "8px",
+                      padding: "16px",
+                      border: "1px solid #e2e8f0",
+                      textDecoration: "none",
+                      color: "#0f172a",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                      minHeight: "100px",
+                      transition: "all 0.2s",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.02)"
+                    }}
+                  >
+                    <div>
+                      <span style={{ fontSize: "11px", color: "#2563eb", fontWeight: "bold", textTransform: "uppercase" }}>
+                        {getCategoryLabel(tp.category, "ko")}
+                      </span>
+                      <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: "4px 0 8px 0", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", lineHeight: "1.4" }}>
+                        {tp.title}
+                      </h4>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#94a3b8" }}>
+                      <span>👁️ {tp.views || 0}</span>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        {commentCount > 0 && <span>💬 {commentCount}</span>}
+                        {likeCount > 0 && <span>❤️ {likeCount}</span>}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* 메인 카테고리 필터 및 정렬 */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-            {CATEGORIES.map((cat) => (
-              <Link
-                key={cat.value}
-                href={`/?category=${cat.value}`}
-                style={{
-                  padding: "8px 18px",
-                  border: "none",
-                  background: selectedCategory === cat.value ? "#0f172a" : "#f1f5f9",
-                  color: selectedCategory === cat.value ? "#fff" : "#475569",
-                  borderRadius: "20px",
-                  cursor: "pointer",
-                  fontWeight: selectedCategory === cat.value ? "bold" : "normal",
-                  fontSize: "14px",
-                  textDecoration: "none",
-                  display: "inline-block",
-                }}
-              >
-                {cat.label}
-              </Link>
-            ))}
+            <Link
+              href="/"
+              style={{
+                padding: "8px 18px",
+                border: "none",
+                background: selectedCategory === "all" ? "#0f172a" : "#f1f5f9",
+                color: selectedCategory === "all" ? "#fff" : "#475569",
+                borderRadius: "20px",
+                cursor: "pointer",
+                fontWeight: selectedCategory === "all" ? "bold" : "normal",
+                fontSize: "14px",
+                textDecoration: "none",
+                display: "inline-block",
+              }}
+            >
+              전체
+            </Link>
+
+            {CATEGORIES.map(function(cat) {
+              return (
+                <Link
+                  key={cat.value}
+                  href={"/?.category=" + cat.value}
+                  style={{
+                    padding: "8px 18px",
+                    border: "none",
+                    background: selectedCategory === cat.value ? "#0f172a" : "#f1f5f9",
+                    color: selectedCategory === cat.value ? "#fff" : "#475569",
+                    borderRadius: "20px",
+                    cursor: "pointer",
+                    fontWeight: selectedCategory === cat.value ? "bold" : "normal",
+                    fontSize: "14px",
+                    textDecoration: "none",
+                    display: "inline-block",
+                  }}
+                >
+                  {cat.label.ko}
+                </Link>
+              );
+            })}
           </div>
 
           <Link href="/posts/new">
@@ -366,91 +452,104 @@ function HomeContent() {
                   <th style={{ padding: "14px" }}>지역</th>
                   <th style={{ padding: "14px" }}>작성자</th>
                   <th style={{ padding: "14px" }}>작성일</th>
+                  <th style={{ padding: "14px", textAlign: "center" }}>조회/추천</th>
                 </tr>
               </thead>
               <tbody>
-                {posts.map((post) => (
-                  <tr key={post.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                    <td style={{ padding: "14px", fontSize: "14px", color: "#64748b" }}>
-                      {CATEGORIES.find((c) => c.value === post.category)?.label || post.category}
-                    </td>
-                    <td style={{ padding: "14px" }}>
-                      <Link href={`/posts/${post.id}`} style={{ textDecoration: "none", color: "#0f172a", fontWeight: "500" }}>
-                        {post.title}
-                      </Link>
-                    </td>
-                    <td style={{ padding: "14px", fontSize: "14px", color: "#64748b" }}>{post.region || "-"}</td>
-                    <td style={{ padding: "14px", fontSize: "14px", color: "#64748b" }}>
-                      {post.author_id ? (
-                        <Link
-                          href={`/profile/${post.author_id}`}
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "8px",
-                            textDecoration: "none",
-                            color: "#334155",
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: "24px",
-                              height: "24px",
-                              borderRadius: "50%",
-                              background: "#e2e8f0",
-                              overflow: "hidden",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              flexShrink: 0,
-                            }}
-                          >
-                            {post.author_avatar ? (
-                              <img
-                                src={post.author_avatar}
-                                alt={post.author_name}
-                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                              />
-                            ) : (
-                              <span style={{ fontSize: "12px" }}>👤</span>
-                            )}
-                          </div>
-                          <span style={{ fontWeight: 500 }}>{post.author_name}</span>
+                {posts.map(function(post) {
+                  const commentsCount = post.comments?.[0]?.count || 0;
+                  const likesCount = post.post_likes?.[0]?.count || 0;
+                  return (
+                    <tr key={post.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                      <td style={{ padding: "14px", fontSize: "14px", color: "#64748b" }}>
+                        {getCategoryLabel(post.category, "ko")}
+                      </td>
+                      <td style={{ padding: "14px" }}>
+                        <Link href={"/posts/" + post.id} style={{ textDecoration: "none", color: "#0f172a", fontWeight: "500" }}>
+                          {post.title}
                         </Link>
-                      ) : (
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                          <div
+                        {commentsCount > 0 && (
+                          <span style={{ fontSize: "13px", color: "#ef4444", fontWeight: "bold", marginLeft: "6px" }}>
+                            [{commentsCount}]
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ padding: "14px", fontSize: "14px", color: "#64748b" }}>{post.region || "-"}</td>
+                      <td style={{ padding: "14px", fontSize: "14px", color: "#64748b" }}>
+                        {post.author_id ? (
+                          <Link
+                            href={"/profile/" + post.author_id}
                             style={{
-                              width: "24px",
-                              height: "24px",
-                              borderRadius: "50%",
-                              background: "#e2e8f0",
-                              overflow: "hidden",
-                              display: "flex",
+                              display: "inline-flex",
                               alignItems: "center",
-                              justifyContent: "center",
-                              flexShrink: 0,
+                              gap: "8px",
+                              textDecoration: "none",
+                              color: "#334155",
                             }}
                           >
-                            {post.author_avatar ? (
-                              <img
-                                src={post.author_avatar}
-                                alt={post.author_name}
-                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                              />
-                            ) : (
-                              <span style={{ fontSize: "12px" }}>👤</span>
-                            )}
+                            <div
+                              style={{
+                                width: "24px",
+                                height: "24px",
+                                borderRadius: "50%",
+                                background: "#e2e8f0",
+                                overflow: "hidden",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexShrink: 0,
+                              }}
+                            >
+                              {post.author_avatar ? (
+                                <img
+                                  src={post.author_avatar}
+                                  alt={post.author_name}
+                                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                />
+                              ) : (
+                                <span style={{ fontSize: "12px" }}>👤</span>
+                              )}
+                            </div>
+                            <span style={{ fontWeight: 500 }}>{post.author_name}</span>
+                          </Link>
+                        ) : (
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <div
+                              style={{
+                                width: "24px",
+                                height: "24px",
+                                borderRadius: "50%",
+                                background: "#e2e8f0",
+                                overflow: "hidden",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexShrink: 0,
+                              }}
+                            >
+                              {post.author_avatar ? (
+                                <img
+                                  src={post.author_avatar}
+                                  alt={post.author_name}
+                                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                />
+                              ) : (
+                                <span style={{ fontSize: "12px" }}>👤</span>
+                              )}
+                            </div>
+                            <span>{post.author_name}</span>
                           </div>
-                          <span>{post.author_name}</span>
-                        </div>
-                      )}
-                    </td>
-                    <td style={{ padding: "14px", fontSize: "14px", color: "#94a3b8" }}>
-                      {new Date(post.created_at).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))}
+                        )}
+                      </td>
+                      <td style={{ padding: "14px", fontSize: "14px", color: "#94a3b8" }}>
+                        {new Date(post.created_at).toLocaleDateString()}
+                      </td>
+                      <td style={{ padding: "14px", fontSize: "14px", color: "#64748b", textAlign: "center" }}>
+                        👁️ {post.views || 0} &nbsp;&nbsp; ❤️ {likesCount}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
