@@ -13,20 +13,31 @@ export default function MessagesPage() {
   const [activeTab, setActiveTab] = useState<"inbox" | "sent">("inbox");
   const [messages, setMessages] = useState<MessageWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function initUserAndLoad() {
-      const {
-        data: { user: currentUser },
-      } = await supabase.auth.getUser();
+      setIsAuthChecking(true);
+      setError(null);
+      try {
+        const {
+          data: { user: currentUser },
+        } = await supabase.auth.getUser();
 
-      if (!currentUser) {
-        router.push("/auth");
-        return;
+        if (!currentUser) {
+          router.push("/auth");
+          return;
+        }
+
+        setUser(currentUser);
+        setIsAuthChecking(false);
+        fetchMessages(currentUser.id, activeTab);
+      } catch (err) {
+        console.error("Auth init error:", err);
+        setError("로그인 정보를 확인하는데 실패했습니다.");
+        setIsAuthChecking(false);
       }
-
-      setUser(currentUser);
-      fetchMessages(currentUser.id, activeTab);
     }
 
     initUserAndLoad();
@@ -34,6 +45,7 @@ export default function MessagesPage() {
 
   async function fetchMessages(userId: string, tab: "inbox" | "sent") {
     setLoading(true);
+    setError(null);
 
     const query = supabase
       .from("messages")
@@ -52,6 +64,7 @@ export default function MessagesPage() {
 
     if (msgError || !messagesData) {
       console.error("Messages fetch error:", msgError);
+      setError("쪽지 목록을 불러오지 못했습니다. 다시 시도해 주세요.");
       setMessages([]);
       setLoading(false);
       return;
@@ -90,6 +103,43 @@ export default function MessagesPage() {
 
     setMessages(combined);
     setLoading(false);
+  }
+
+  function formatConciseDate(dateStr: string) {
+    try {
+      const date = new Date(dateStr);
+      const now = new Date();
+      if (
+        date.getDate() === now.getDate() &&
+        date.getMonth() === now.getMonth() &&
+        date.getFullYear() === now.getFullYear()
+      ) {
+        return date.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false });
+      }
+      if (date.getFullYear() === now.getFullYear()) {
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+        return `${month}.${day} ${hours}:${minutes}`;
+      }
+      const year = String(date.getFullYear()).slice(-2);
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}.${month}.${day}`;
+    } catch (e) {
+      return dateStr;
+    }
+  }
+
+  if (isAuthChecking) {
+    return (
+      <main style={{ minHeight: "75vh", padding: "80px 0", background: "#f8fafc", textAlign: "center" }}>
+        <p style={{ color: "#64748b", fontSize: "15px", fontWeight: "500" }}>
+          로그인 상태를 확인하고 있습니다. 잠시만 기다려 주세요...
+        </p>
+      </main>
+    );
   }
 
   return (
@@ -168,9 +218,35 @@ export default function MessagesPage() {
             <div style={{ padding: "60px 20px", textAlign: "center", color: "#64748b", fontSize: "14px" }}>
               쪽지를 불러오는 중입니다...
             </div>
+          ) : error ? (
+            <div style={{ padding: "60px 20px", textAlign: "center", color: "#ef4444" }}>
+              <div style={{ fontSize: "36px", marginBottom: "12px" }}>⚠️</div>
+              <div style={{ fontSize: "14px", fontWeight: 500, color: "#b91c1c", marginBottom: "6px" }}>{error}</div>
+              <button
+                type="button"
+                onClick={() => user && fetchMessages(user.id, activeTab)}
+                style={{
+                  padding: "6px 14px",
+                  background: "#f1f5f9",
+                  color: "#475569",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: "6px",
+                  fontSize: "13px",
+                  cursor: "pointer",
+                }}
+              >
+                다시 시도
+              </button>
+            </div>
           ) : messages.length === 0 ? (
-            <div style={{ padding: "60px 20px", textAlign: "center", color: "#64748b", fontSize: "14px" }}>
-              {activeTab === "inbox" ? "받은 쪽지가 없습니다." : "보낸 쪽지가 없습니다."}
+            <div style={{ padding: "60px 20px", textAlign: "center", color: "#94a3b8" }}>
+              <div style={{ fontSize: "36px", marginBottom: "12px" }}>{activeTab === "inbox" ? "📥" : "📤"}</div>
+              <div style={{ fontSize: "14px", fontWeight: 500, color: "#64748b", marginBottom: "4px" }}>
+                {activeTab === "inbox" ? "받은 쪽지가 없습니다." : "보낸 쪽지가 없습니다."}
+              </div>
+              <p style={{ margin: 0, fontSize: "12px", color: "#94a3b8" }}>
+                {activeTab === "inbox" ? "새로운 쪽지가 도착하면 여기에 표시됩니다." : "다른 회원에게 쪽지를 보내보세요!"}
+              </p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column" }}>
@@ -259,7 +335,7 @@ export default function MessagesPage() {
                         </div>
 
                         <span style={{ fontSize: "12px", color: "#94a3b8", flexShrink: 0 }}>
-                          {new Date(msg.created_at).toLocaleString()}
+                          {formatConciseDate(msg.created_at)}
                         </span>
                       </div>
 

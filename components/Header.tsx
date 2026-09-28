@@ -11,6 +11,7 @@ export default function Header() {
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [displayName, setDisplayName] = useState<string>("");
+  const [unreadCount, setUnreadCount] = useState<number>(0);
 
   async function loadUserProfile(userId: string, defaultEmail?: string) {
     const { data: profile } = await supabase
@@ -26,12 +27,29 @@ export default function Header() {
     }
   }
 
+  async function loadUnreadCount(userId: string) {
+    try {
+      const { count, error } = await supabase
+        .from("messages")
+        .select("*", { count: "exact", head: true })
+        .eq("receiver_id", userId)
+        .is("read_at", null);
+
+      if (!error && count !== null) {
+        setUnreadCount(count);
+      }
+    } catch (err) {
+      console.error("Unread count fetch error:", err);
+    }
+  }
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
       if (currentUser) {
         loadUserProfile(currentUser.id, currentUser.email);
+        loadUnreadCount(currentUser.id);
       }
     });
 
@@ -42,13 +60,28 @@ export default function Header() {
       setUser(currentUser);
       if (currentUser) {
         loadUserProfile(currentUser.id, currentUser.email);
+        loadUnreadCount(currentUser.id);
       } else {
         setDisplayName("");
+        setUnreadCount(0);
       }
     });
 
+    const handleUpdateCount = () => {
+      const fetchCurrentCount = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          loadUnreadCount(session.user.id);
+        }
+      };
+      fetchCurrentCount();
+    };
+
+    window.addEventListener("messages-updated", handleUpdateCount);
+
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener("messages-updated", handleUpdateCount);
     };
   }, []);
 
@@ -56,6 +89,7 @@ export default function Header() {
     await supabase.auth.signOut();
     setUser(null);
     setDisplayName("");
+    setUnreadCount(0);
     router.push("/");
     router.refresh();
   }
@@ -101,6 +135,26 @@ export default function Header() {
               }}
             >
               ✉️ 쪽지
+              {unreadCount > 0 && (
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "#ef4444",
+                    color: "#ffffff",
+                    fontSize: "10px",
+                    fontWeight: "bold",
+                    borderRadius: "9999px",
+                    height: "18px",
+                    minWidth: "18px",
+                    padding: "0 5px",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  {unreadCount}
+                </span>
+              )}
             </Link>
             <Link
               href="/profile"

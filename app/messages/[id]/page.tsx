@@ -69,6 +69,7 @@ export default function MessageDetailPage({
 
         if (!updateError) {
           msgData.read_at = nowIso;
+          window.dispatchEvent(new Event("messages-updated"));
         }
       }
 
@@ -94,8 +95,21 @@ export default function MessageDetailPage({
     loadMessage();
   }, [id, router]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && showReplyModal && !sendingReply) {
+        setShowReplyModal(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showReplyModal, sendingReply]);
+
   async function handleSendReply(e: React.FormEvent) {
     e.preventDefault();
+    if (sendingReply) return;
     if (!user || !message || !senderProfile) return;
 
     const trimmed = replyBody.trim();
@@ -128,6 +142,7 @@ export default function MessageDetailPage({
       setSendingReply(false);
       setReplyBody("");
       setShowReplyModal(false);
+      window.dispatchEvent(new Event("messages-updated"));
       alert("답장을 보냈습니다.");
     } catch (err) {
       console.error("Unexpected error:", err);
@@ -385,6 +400,7 @@ export default function MessageDetailPage({
               <form onSubmit={handleSendReply}>
                 <div style={{ marginBottom: "16px" }}>
                   <textarea
+                    autoFocus
                     value={replyBody}
                     onChange={(e) => setReplyBody(e.target.value)}
                     placeholder="답장 내용을 입력하세요... (최대 2000자)"
@@ -414,7 +430,7 @@ export default function MessageDetailPage({
                     }}
                   >
                     <span>최대 2,000자</span>
-                    <span>{replyBody.length} / 2,000자</span>
+                    <span style={{ color: replyBody.length >= 1900 ? "#ef4444" : "#94a3b8", fontWeight: replyBody.length >= 1900 ? "600" : "normal" }}>{replyBody.length} / 2,000자</span>
                   </div>
                 </div>
 

@@ -93,8 +93,21 @@ export default function PublicProfilePage({
     loadPublicProfile();
   }, [id]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && showModal && !sendingMessage) {
+        setShowModal(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showModal, sendingMessage]);
+
   async function handleSendMessage(e: React.FormEvent) {
     e.preventDefault();
+    if (sendingMessage) return;
     const trimmed = messageBody.trim();
     if (!trimmed) {
       alert("메시지 내용을 입력해 주세요.");
@@ -141,6 +154,7 @@ export default function PublicProfilePage({
       setSendingMessage(false);
       setMessageBody("");
       setShowModal(false);
+      window.dispatchEvent(new Event("messages-updated"));
       alert("쪽지를 보냈습니다.");
     } catch (err) {
       console.error("Unexpected error:", err);
@@ -538,6 +552,7 @@ export default function PublicProfilePage({
               <form onSubmit={handleSendMessage}>
                 <div style={{ marginBottom: "16px" }}>
                   <textarea
+                    autoFocus
                     value={messageBody}
                     onChange={(e) => setMessageBody(e.target.value)}
                     placeholder="상대방에게 전할 내용을 입력하세요... (최대 2000자)"
@@ -567,7 +582,7 @@ export default function PublicProfilePage({
                     }}
                   >
                     <span>최대 2,000자</span>
-                    <span>{messageBody.length} / 2,000자</span>
+                    <span style={{ color: messageBody.length >= 1900 ? "#ef4444" : "#94a3b8", fontWeight: messageBody.length >= 1900 ? "600" : "normal" }}>{messageBody.length} / 2,000자</span>
                   </div>
                 </div>
 
