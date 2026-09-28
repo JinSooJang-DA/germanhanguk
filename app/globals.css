@@ -10,8 +10,8 @@ body {
 }
 
 .wrapper {
-  width: 1200px;
-  max-width: 90%;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -20,6 +20,9 @@ body {
 header {
   height: 80px;
   border-bottom: 1px solid #eee;
+  position: relative;
+  z-index: 50;
+  background: #fff;
 }
 
 header .wrapper {
@@ -27,6 +30,33 @@ header .wrapper {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.desktop-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mobile-header {
+  display: none !important;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+
+@media (max-width: 768px) {
+  header {
+    height: 60px; /* 모바일 전용 컴팩트 높이 지정 */
+  }
+  .desktop-header {
+    display: none !important;
+  }
+  .mobile-header {
+    display: flex !important;
+  }
 }
 
 header h1 {
@@ -393,3 +423,20 @@ header button {
   line-height: 1.5 !important;
 }
 
+
+
+/* 독일어 가이드 서브타이틀 서식화 */
+.german-sub-title {
+  display: inline;
+  font-size: 15px;
+  margin-left: 6px;
+}
+
+@media (max-width: 768px) {
+  .german-sub-title {
+    display: block !important;
+    font-size: 13px !important;
+    margin-top: 4px;
+    padding-left: 28px; /* 이모지 및 한글 타이틀 넓이에 정렬 맞춤 */
+  }
+}
