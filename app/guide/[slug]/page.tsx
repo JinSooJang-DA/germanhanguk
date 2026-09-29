@@ -6,10 +6,16 @@ import { supabase } from "@/lib/supabase";
 import { getGuideCategoryLabel } from "@/lib/constants";
 import AdSlot from "@/components/AdSlot";
 import GuideCommunityCTA from "@/components/GuideCommunityCTA";
+import GuideAudienceCards from "@/components/GuideAudienceCards";
+import GuideQuickSummary from "@/components/GuideQuickSummary";
+import GuideEmployeeSteps from "@/components/GuideEmployeeSteps";
+import GuideStudentSituations from "@/components/GuideStudentSituations";
+import GuideInsuranceComparison from "@/components/GuideInsuranceComparison";
+import { GUIDE_CONTENT } from "@/lib/guide-content";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  
+
   const { data: guide } = await supabase
     .from("guides")
     .select("title, seo_title, seo_description, status")
@@ -37,61 +43,134 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 // 울트라 보안형 경량 마크다운-라이크 본문 파서 (XSS 원천 방지 및 컴파일 최적화)
+interface ParsedBlock {
+  type: "h2" | "h3" | "hr" | "ul" | "p";
+  content: string;
+  items?: string[];
+}
+
+// 1. 모든 개행 문자(이스케이프 및 생코드)를 표준 단일 개행으로 통일한 후, 인라인 토큰을 감지해 분할합니다.
+function getBlocks(content: string): string[] {
+  const normalized = content
+    .replace(/\\r\\n|\\n/g, "\n")
+    .replace(/\r\n/g, "\n");
+
+  const lines = normalized.split("\n");
+  const blocks: string[] = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    // 만약 한 줄(line) 안에 공백으로 구분된 여러 인라인 마크다운 토큰(##, --- 등)이 합쳐져 있다면,
+    // 정규식을 사용해 해당 토큰들의 경계선에서 강제로 추가 분할해줍니다. (SQL 압축 오류 및 한줄 입력 완벽 대응)
+    if (!trimmed.startsWith("## ") && !trimmed.startsWith("### ") && !trimmed.startsWith("- ") && !trimmed.startsWith("---") &&
+        (trimmed.includes(" ## ") || trimmed.includes(" ### ") || trimmed.includes(" ---") || trimmed.includes(" - "))) {
+      
+      const subBlocks = trimmed.split(/(?=\s(?:##|###|---|\-)\s)/g);
+      for (const sub of subBlocks) {
+        const subTrimmed = sub.trim();
+        if (subTrimmed) {
+          blocks.push(subTrimmed);
+        }
+      }
+    } else {
+      blocks.push(trimmed);
+    }
+  }
+
+  return blocks;
+}
+
+// 2. 단일 블록 배열들을 파싱 트리로 재가공합니다. 연속된 리스트(- )는 단일 <ul> 그룹으로 묶습니다.
+function parseBlocks(blocks: string[]): ParsedBlock[] {
+  const parsed: ParsedBlock[] = [];
+  let currentUl: string[] | null = null;
+
+  for (const block of blocks) {
+    if (block.startsWith("- ")) {
+      const itemText = block.replace("- ", "").trim();
+      if (!currentUl) {
+        currentUl = [itemText];
+      } else {
+        currentUl.push(itemText);
+      }
+    } else {
+      if (currentUl) {
+        parsed.push({ type: "ul", content: "", items: currentUl });
+        currentUl = null;
+      }
+
+      if (block.startsWith("## ")) {
+        parsed.push({ type: "h2", content: block.replace("## ", "").trim() });
+      } else if (block.startsWith("### ")) {
+        parsed.push({ type: "h3", content: block.replace("### ", "").trim() });
+      } else if (block.startsWith("---")) {
+        parsed.push({ type: "hr", content: "" });
+      } else {
+        parsed.push({ type: "p", content: block });
+      }
+    }
+  }
+
+  if (currentUl) {
+    parsed.push({ type: "ul", content: "", items: currentUl });
+  }
+
+  return parsed;
+}
+
+// 3. 문장 내의 볼드체(**) 마크다운 요소를 React element로 안전하게 파싱합니다.
+function renderTextWithBold(text: string) {
+  const parts = text.split("**");
+  return parts.map(function(part, index) {
+    return index % 2 === 1 ? <strong key={index} style={{ color: "#0f172a" }}>{part}</strong> : part;
+  });
+}
+
+// 4. 최종 에디토리얼 가이드 렌더러
 function renderStructuredContent(content: string) {
   if (!content) return null;
-  const blocks = content.split("\\n\\n");
-  
-  return blocks.map(function(block, i) {
-    const trimmed = block.trim();
-    if (!trimmed) return null;
+  const blocks = getBlocks(content);
+  const parsed = parseBlocks(blocks);
 
-    if (trimmed.startsWith("## ")) {
-      return (
-        <h2 key={i} style={{ fontSize: "22px", fontWeight: "bold", marginTop: "34px", marginBottom: "16px", color: "#0f172a", borderLeft: "4px solid #2563eb", paddingLeft: "12px" }}>
-          {trimmed.replace("## ", "")}
-        </h2>
-      );
+  return parsed.map(function(block, i) {
+    switch (block.type) {
+      case "h2":
+        return (
+          <h2 key={i} style={{ fontSize: "22px", fontWeight: "bold", marginTop: "34px", marginBottom: "16px", color: "#0f172a", borderLeft: "4px solid #2563eb", paddingLeft: "12px" }}>
+            {renderTextWithBold(block.content)}
+          </h2>
+        );
+      case "h3":
+        return (
+          <h3 key={i} style={{ fontSize: "18px", fontWeight: "bold", marginTop: "26px", marginBottom: "12px", color: "#1e293b" }}>
+            {renderTextWithBold(block.content)}
+          </h3>
+        );
+      case "hr":
+        return <hr key={i} style={{ border: "none", borderTop: "1px solid #e2e8f0", margin: "32px 0" }} />;
+      case "ul":
+        return (
+          <ul key={i} style={{ paddingLeft: "20px", margin: "16px 0", lineHeight: "1.7", color: "#334155" }}>
+            {block.items?.map(function(item, idx) {
+              return (
+                <li key={idx} style={{ marginBottom: "8px" }}>
+                  {renderTextWithBold(item)}
+                </li>
+              );
+            })}
+          </ul>
+        );
+      case "p":
+        return (
+          <p key={i} style={{ fontSize: "15px", lineHeight: "1.8", color: "#334155", margin: "14px 0", textAlign: "left" }}>
+            {renderTextWithBold(block.content)}
+          </p>
+        );
+      default:
+        return null;
     }
-    
-    if (trimmed.startsWith("### ")) {
-      return (
-        <h3 key={i} style={{ fontSize: "18px", fontWeight: "bold", marginTop: "26px", marginBottom: "12px", color: "#1e293b" }}>
-          {trimmed.replace("### ", "")}
-        </h3>
-      );
-    }
-    
-    if (trimmed.startsWith("- ")) {
-      const items = trimmed.split("\\n").map(function(line) { return line.replace("- ", "").trim(); });
-      return (
-        <ul key={i} style={{ paddingLeft: "20px", margin: "16px 0", lineHeight: "1.7", color: "#334155" }}>
-          {items.map(function(item, idx) {
-            const parts = item.split("**");
-            return (
-              <li key={idx} style={{ marginBottom: "8px" }}>
-                {parts.map(function(part, pidx) {
-                  return pidx % 2 === 1 ? <strong key={pidx} style={{ color: "#0f172a" }}>{part}</strong> : part;
-                })}
-              </li>
-            );
-          })}
-        </ul>
-      );
-    }
-    
-    if (trimmed.startsWith("---")) {
-      return <hr key={i} style={{ border: "none", borderTop: "1px solid #e2e8f0", margin: "32px 0" }} />;
-    }
-
-    // 일반 문단 렌더러 (볼드체 ** 파싱 탑재)
-    const parts = trimmed.split("**");
-    return (
-      <p key={i} style={{ fontSize: "15px", lineHeight: "1.8", color: "#334155", margin: "14px 0", textAlign: "justify" }}>
-        {parts.map(function(part, pidx) {
-          return pidx % 2 === 1 ? <strong key={pidx} style={{ color: "#0f172a" }}>{part}</strong> : part;
-        })}
-      </p>
-    );
   });
 }
 
@@ -122,7 +201,7 @@ export default async function GuideDetailPage({ params }: { params: Promise<{ sl
   return (
     <main style={{ minHeight: "80vh", padding: "40px 0 80px", background: "#f8fafc" }}>
       <article style={{ maxWidth: "720px", margin: "0 auto", padding: "0 20px" }}>
-        
+
         {/* 상단 브레드크럼 */}
         <div style={{ marginBottom: "24px", fontSize: "14px" }}>
           <Link href="/guide" style={{ textDecoration: "none", color: "#64748b" }}>생활정보 가이드</Link>
@@ -151,6 +230,26 @@ export default async function GuideDetailPage({ params }: { params: Promise<{ sl
           </div>
         </div>
 
+        {GUIDE_CONTENT[slug]?.quickSummary && (
+          <GuideQuickSummary items={GUIDE_CONTENT[slug].quickSummary} />
+        )}
+
+        {GUIDE_CONTENT[slug]?.showInsuranceComparison && (
+          <GuideInsuranceComparison />
+        )}
+
+        {GUIDE_CONTENT[slug]?.showEmployeeSteps && (
+          <GuideEmployeeSteps />
+        )}
+
+        {GUIDE_CONTENT[slug]?.showStudentSituations && (
+          <GuideStudentSituations />
+        )}
+
+        {GUIDE_CONTENT[slug]?.audience && (
+          <GuideAudienceCards items={GUIDE_CONTENT[slug].audience} />
+        )}
+
         {/* 가이드 콘텐츠 */}
         <div className="guide-body">
           {renderStructuredContent(guide.content)}
@@ -174,7 +273,7 @@ export default async function GuideDetailPage({ params }: { params: Promise<{ sl
               🌐 공식 공공 출처 & 참고자료 (Authoritative Sources)
             </h3>
             <ul style={{ margin: 0, paddingLeft: "20px", fontSize: "14px", lineHeight: "1.6" }}>
-              {sources.map(function(src, sidx) {
+              {sources.map(function (src, sidx) {
                 return (
                   <li key={sidx} style={{ marginBottom: "6px", wordBreak: "break-all", overflowWrap: "anywhere" }}>
                     <a

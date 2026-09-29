@@ -21,7 +21,7 @@ export default function GuideLandingPage() {
   return (
     <main style={{ minHeight: "80vh", padding: "40px 0 80px", background: "#f8fafc" }}>
       <div className="wrapper" style={{ maxWidth: "1000px", margin: "0 auto", padding: "0 20px" }}>
-        
+
         {/* 히어로 헤더 */}
         <div style={{ textAlign: "center", marginBottom: "50px" }}>
           <span style={{ fontSize: "14px", color: "#2563eb", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.1em" }}>
@@ -31,20 +31,25 @@ export default function GuideLandingPage() {
             🇩🇪 독일 생활백서 & 공식 정착 가이드
           </h1>
           <p style={{ fontSize: "16px", color: "#64748b", margin: 0, maxWidth: "600px", marginLeft: "auto", marginRight: "auto", lineHeight: "1.6" }}>
-            독일 행정, 비자, 보험, 세금 등 유학생과 교민이 가장 헷갈려하는 
+            독일 행정, 비자, 보험, 세금 등 유학생과 교민이 가장 헷갈려하는
             핵심 생활정보들을 독일 공공 부처 최신 법령을 기준으로 엄격하게 선별해 드립니다.
           </p>
         </div>
 
         {/* 카테고리 그리드 */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
-          {GUIDE_CATEGORIES.map(function(cat) {
-            const isFirst = cat.value === "insurance";
+          {GUIDE_CATEGORIES.map(function (cat) {
+            const isReady = cat.value === "insurance" || cat.value === "housing" || cat.value === "visa" || cat.value === "taxes" || cat.value === "jobs" || cat.value === "education" || cat.value === "driving" || cat.value === "german-life" || cat.value === "korean-life";
             
+            const getCategoryPath = function(val: string) {
+              if (val === "visa") return "visa-residence";
+              return val;
+            };
+
             return (
               <Link
                 key={cat.value}
-                href={isFirst ? "/guide/insurance" : "#"}
+                href={isReady ? "/guide/" + getCategoryPath(cat.value) : "#"}
                 style={{
                   textDecoration: "none",
                   color: "#0f172a",
@@ -52,40 +57,16 @@ export default function GuideLandingPage() {
                 }}
               >
                 <div
+                  className={isReady ? "guide-card active-card" : "guide-card"}
                   style={{
-                    background: "#ffffff",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "12px",
-                    padding: "24px",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
-                    transition: "all 0.2s",
-                    minHeight: "160px",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                    position: "relative",
-                    opacity: isFirst ? 1 : 0.8,
-                    cursor: isFirst ? "pointer" : "not-allowed",
-                  }}
-                  onMouseEnter={function(e) {
-                    if (isFirst) {
-                      e.currentTarget.style.transform = "translateY(-3px)";
-                      e.currentTarget.style.boxShadow = "0 10px 15px -3px rgba(0,0,0,0.05)";
-                      e.currentTarget.style.borderColor = "#bfdbfe";
-                    }
-                  }}
-                  onMouseLeave={function(e) {
-                    if (isFirst) {
-                      e.currentTarget.style.transform = "none";
-                      e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.02)";
-                      e.currentTarget.style.borderColor = "#e2e8f0";
-                    }
+                    opacity: isReady ? 1 : 0.8,
+                    cursor: isReady ? "pointer" : "not-allowed",
                   }}
                 >
                   <div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span style={{ fontSize: "28px" }}>{cat.icon}</span>
-                      {!isFirst && (
+                      {!isReady && (
                         <span style={{
                           fontSize: "10px",
                           color: "#94a3b8",
@@ -97,7 +78,7 @@ export default function GuideLandingPage() {
                           준비 중
                         </span>
                       )}
-                      {isFirst && (
+                      {isReady && (
                         <span style={{
                           fontSize: "10px",
                           color: "#2563eb",
@@ -121,8 +102,7 @@ export default function GuideLandingPage() {
               </Link>
             );
           })}
-        </div>
-      </div>
+        </div>      </div>
     </main>
   );
 }
