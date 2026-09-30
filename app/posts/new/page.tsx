@@ -1,35 +1,49 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { CATEGORIES } from "@/lib/constants";
+import {
+  CATEGORIES,
+  getPostRegionPolicy,
+  getPostRegionValue,
+} from "@/lib/constants";
 import type { Post } from "@/types/post";
 
 type PostInsertPayload = Pick<
   Post,
   "title" | "content" | "category" | "region" | "author_id" | "author_name" | "sub_category" | "target_field"
 > & {
-  region: string;
+  region: string | null;
   author_id: string;
   author_name: string;
 };
 
-export default function NewPostPage() {
+function NewPostContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get("category");
+  const isValidCategory = categoryParam && CATEGORIES.some((cat) => cat.value === categoryParam);
+  const initialCategory = isValidCategory ? categoryParam : "community";
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [category, setCategory] = useState("community");
+  const [category, setCategory] = useState(initialCategory);
   const [region, setRegion] = useState("");
   
   // 유학·교육 카테고리 전용 상세 상태값
-  const [eduCity, setEduCity] = useState("Berlin");
   const [subCategory, setSubCategory] = useState("visa");
   const [targetField, setTargetField] = useState("engineering");
 
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
+
+  const regionPolicy = getPostRegionPolicy(category);
+
+  const handleCategoryChange = (nextCategory: string) => {
+    setCategory(nextCategory);
+    setRegion("");
+  };
 
   // 페이지 진입 시 로그인 여부 체크
   useEffect(() => {
@@ -53,6 +67,12 @@ export default function NewPostPage() {
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setMessage("");
+
+    const postRegion = getPostRegionValue(category, region);
+    if (regionPolicy.required && !postRegion) {
+      setMessage(`${regionPolicy.label}을 입력해 주세요.`);
+      return;
+    }
 
     const {
       data: { user },
@@ -78,7 +98,7 @@ export default function NewPostPage() {
       title,
       content,
       category,
-      region: category === "education" ? eduCity : region,
+      region: postRegion,
       author_id: user.id,
       author_name: authorName,
     };
@@ -121,7 +141,7 @@ export default function NewPostPage() {
             <select
               id="category"
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => handleCategoryChange(e.target.value)}
             >
               {CATEGORIES.map((cat) => (
                 <option key={cat.value} value={cat.value}>
@@ -132,26 +152,11 @@ export default function NewPostPage() {
           </div>
 
           {/* '유학·교육' 카테고리를 선택했을 때 나타나는 동적 상세 입력 영역 */}
-          {category === "education" ? (
+          {category === "education" && (
             <div style={{ background: "#f8fafc", padding: "16px", borderRadius: "8px", marginBottom: "16px", display: "grid", gap: "12px", border: "1px solid #e2e8f0" }}>
               <p style={{ fontSize: "13px", color: "#64748b", margin: 0, fontWeight: "500" }}>
                 💡 유학·교육 관련 상세 정보를 선택해 주세요. 교민 전체가 정확한 조언을 줄 수 있습니다.
               </p>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label htmlFor="eduCity">관련 지역</label>
-                <select
-                  id="eduCity"
-                  value={eduCity}
-                  onChange={(e) => setEduCity(e.target.value)}
-                >
-                  <option value="Berlin">베를린 (Berlin)</option>
-                  <option value="Munich">뮌헨 (München)</option>
-                  <option value="Frankfurt">프랑크푸르트 (Frankfurt)</option>
-                  <option value="Muenster">뮌스터 (Münster)</option>
-                  <option value="Etc">기타 지역</option>
-                </select>
-              </div>
 
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label htmlFor="subCategory">주요 주제</label>
@@ -181,16 +186,18 @@ export default function NewPostPage() {
                 </select>
               </div>
             </div>
-          ) : (
-            /* 일반 카테고리일 때 노출되는 기본 지역 입력 필드 */
+          )}
+
+          {regionPolicy.usesRegion && (
             <div className="form-group">
-              <label htmlFor="region">지역</label>
+              <label htmlFor="region">{regionPolicy.label}</label>
               <input
                 id="region"
                 type="text"
                 value={region}
                 onChange={(e) => setRegion(e.target.value)}
-                placeholder="예: Frankfurt"
+                placeholder="예: Berlin, München, Münster"
+                required={regionPolicy.required}
               />
             </div>
           )}
@@ -227,5 +234,19 @@ export default function NewPostPage() {
         </form>
       </div>
     </main>
+  );
+}
+
+export default function NewPostPage() {
+  return (
+    <Suspense fallback={
+      <main className="new-post-page">
+        <div className="post-form-container" style={{ textAlign: "center", padding: "40px" }}>
+          <p>인증 상태를 확인하는 중입니다...</p>
+        </div>
+      </main>
+    }>
+      <NewPostContent />
+    </Suspense>
   );
 }

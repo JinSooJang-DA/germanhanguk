@@ -17,6 +17,44 @@ export const CATEGORIES: readonly Category[] = [
 
 export type CategoryValue = typeof CATEGORIES[number]["value"];
 
+export interface PostRegionPolicy {
+  usesRegion: boolean;
+  required: boolean;
+  label: string;
+}
+
+const DEFAULT_POST_REGION_POLICY: PostRegionPolicy = {
+  usesRegion: true,
+  required: false,
+  label: "관련 지역 (선택)",
+};
+
+const POST_REGION_POLICIES: Record<CategoryValue, PostRegionPolicy> = {
+  community: { usesRegion: false, required: false, label: "" },
+  life: { usesRegion: true, required: false, label: "관련 지역 (선택)" },
+  education: { usesRegion: true, required: false, label: "관련 지역 (선택)" },
+  market: { usesRegion: true, required: true, label: "거래 지역" },
+  jobs: { usesRegion: true, required: true, label: "근무/구인 지역" },
+};
+
+export function getPostRegionPolicy(category: string): PostRegionPolicy {
+  return POST_REGION_POLICIES[category as CategoryValue] ?? DEFAULT_POST_REGION_POLICY;
+}
+
+export function getPostRegionValue(category: string, region: string): string | null {
+  const policy = getPostRegionPolicy(category);
+  const normalizedRegion = region.trim();
+
+  return policy.usesRegion && normalizedRegion ? normalizedRegion : null;
+}
+
+export function shouldDisplayPostRegion(
+  category: string,
+  region: string | null | undefined,
+): boolean {
+  return getPostRegionPolicy(category).usesRegion && Boolean(region?.trim());
+}
+
 export function getCategoryLabel(value: string, locale: "ko" | "de" | "en" = "ko"): string {
   const cat = CATEGORIES.find((c) => c.value === value);
   if (!cat) {

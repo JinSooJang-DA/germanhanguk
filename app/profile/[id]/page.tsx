@@ -4,6 +4,7 @@ import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { formatDate } from "@/lib/date";
+import { shouldDisplayPostRegion } from "@/lib/constants";
 import { PublicProfile } from "@/types/profile";
 
 interface UserPost {
@@ -452,7 +453,7 @@ export default function PublicProfilePage({
                         </Link>
                       </td>
                       <td style={{ padding: "12px 16px", fontSize: "13px", color: "#64748b" }}>
-                        {post.region || "-"}
+                        {shouldDisplayPostRegion(post.category, post.region) ? post.region : ""}
                       </td>
                       <td style={{ padding: "12px 16px", fontSize: "13px", color: "#94a3b8" }}>
                         {formatDate(post.created_at)}

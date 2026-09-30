@@ -4,7 +4,11 @@ import { FormEvent, useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { CATEGORIES } from "@/lib/constants";
+import {
+  CATEGORIES,
+  getPostRegionPolicy,
+  getPostRegionValue,
+} from "@/lib/constants";
 
 export default function EditPostPage({
   params,
@@ -20,6 +24,13 @@ export default function EditPostPage({
   const [region, setRegion] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const regionPolicy = getPostRegionPolicy(category);
+
+  const handleCategoryChange = (nextCategory: string) => {
+    setCategory(nextCategory);
+    setRegion("");
+  };
 
   useEffect(() => {
     async function loadPost() {
@@ -65,6 +76,13 @@ export default function EditPostPage({
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const postRegion = getPostRegionValue(category, region);
+
+    if (regionPolicy.required && !postRegion) {
+      alert(`${regionPolicy.label}을 입력해 주세요.`);
+      return;
+    }
+
     setSaving(true);
 
     const { error } = await supabase
@@ -73,7 +91,7 @@ export default function EditPostPage({
         title,
         content,
         category,
-        region,
+        region: postRegion,
       })
       .eq("id", id);
 
@@ -110,7 +128,7 @@ export default function EditPostPage({
             <select
               id="category"
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => handleCategoryChange(e.target.value)}
             >
               {CATEGORIES.map((cat) => (
                 <option key={cat.value} value={cat.value}>
@@ -120,16 +138,19 @@ export default function EditPostPage({
             </select>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="region">지역 (선택 입력)</label>
-            <input
-              id="region"
-              type="text"
-              value={region}
-              onChange={(e) => setRegion(e.target.value)}
-              placeholder="예: Frankfurt, Berlin, München"
-            />
-          </div>
+          {regionPolicy.usesRegion && (
+            <div className="form-group">
+              <label htmlFor="region">{regionPolicy.label}</label>
+              <input
+                id="region"
+                type="text"
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+                placeholder="예: Berlin, München, Münster"
+                required={regionPolicy.required}
+              />
+            </div>
+          )}
 
           <div className="form-group">
             <label htmlFor="title">제목</label>

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Post, Comment } from "@/types/post";
-import { getCategoryLabel } from "@/lib/constants";
+import { getCategoryLabel, shouldDisplayPostRegion } from "@/lib/constants";
 import { formatDate, formatDateTime } from "@/lib/date";
 import { VIEW_INCREMENT_EVENT } from "@/components/PostViewCount";
 
@@ -940,7 +940,9 @@ export default function PostDetailClient({
                       {p.title} {isCurrent && "◀ (현재글)"}
                     </Link>
                   </td>
-                  <td className="related-post-region" style={{ padding: "10px 12px", fontSize: "13px", color: "var(--gh-text-muted)" }}>{p.region || "-"}</td>
+                  <td className="related-post-region" style={{ padding: "10px 12px", fontSize: "13px", color: "var(--gh-text-muted)" }}>
+                    {shouldDisplayPostRegion(p.category, p.region) ? p.region : ""}
+                  </td>
                   <td className="related-post-author" style={{ padding: "10px 12px", fontSize: "13px", color: "var(--gh-text-muted)" }}>
                     {p.author_id ? (
                       <Link

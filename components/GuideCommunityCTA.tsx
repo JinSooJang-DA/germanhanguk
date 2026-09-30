@@ -45,7 +45,7 @@ export default function GuideCommunityCTA({
       </p>
 
       <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-        <Link href="/posts/new" style={{ textDecoration: "none" }}>
+        <Link href={"/posts/new?category=" + getGuideCommunityCategory(categoryValue)} style={{ textDecoration: "none" }}>
           <button
             style={{
               padding: "10px 20px",

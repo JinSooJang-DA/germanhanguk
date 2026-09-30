@@ -4,7 +4,11 @@ import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { CATEGORIES, getCategoryLabel } from "@/lib/constants";
+import {
+  CATEGORIES,
+  getCategoryLabel,
+  shouldDisplayPostRegion,
+} from "@/lib/constants";
 import { formatDate } from "@/lib/date";
 import type { Post as BasePost } from "@/types/post";
 
@@ -423,7 +427,7 @@ function HomeContent() {
             })}
           </div>
 
-          <Link href="/posts/new">
+          <Link href={selectedCategory && selectedCategory !== "all" ? `/posts/new?category=${selectedCategory}` : "/posts/new"}>
             <button
               style={{
                 padding: "10px 20px",
@@ -476,7 +480,9 @@ function HomeContent() {
                           </span>
                         )}
                       </td>
-                      <td className="main-post-region" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>{post.region || "-"}</td>
+                      <td className="main-post-region" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
+                        {shouldDisplayPostRegion(post.category, post.region) ? post.region : ""}
+                      </td>
                       <td className="main-post-author" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
                         {post.author_id ? (
                           <Link
