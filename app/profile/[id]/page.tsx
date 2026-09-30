@@ -38,16 +38,61 @@ export default function PublicProfilePage({
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
+  // Independent loading and error states
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [profileRetryKey, setProfileRetryKey] = useState(0);
+
+  const [postsLoading, setPostsLoading] = useState(false);
+  const [postsError, setPostsError] = useState<string | null>(null);
+
   // 쪽지 보내기 모달 관련 상태
   const [showModal, setShowModal] = useState(false);
   const [messageBody, setMessageBody] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
   const [sendErrorMessage, setSendErrorMessage] = useState("");
 
+  async function fetchUserPosts(authorId: string) {
+    setPostsLoading(true);
+    setPostsError(null);
+    try {
+      const { data: postsData, error: postsError } = await supabase
+        .from("posts")
+        .select("id, title, category, region, created_at")
+        .eq("author_id", authorId)
+        .order("created_at", { ascending: false });
+
+      if (postsError) {
+        console.error("User posts fetch error:", postsError);
+        setPostsError("작성한 글을 불러오지 못했습니다.");
+        setPosts([]);
+        return;
+      }
+
+      setPosts(postsData || []);
+    } catch (err) {
+      console.error("Unexpected user posts fetch error:", err);
+      setPostsError("작성한 글을 불러오지 못했습니다.");
+      setPosts([]);
+    } finally {
+      setPostsLoading(false);
+    }
+  }
+
+  function handleRetryPosts() {
+    fetchUserPosts(id);
+  }
+
+  function handleRetryProfile() {
+    setProfileRetryKey((prev) => prev + 1);
+  }
+
   useEffect(() => {
+    let isCurrent = true;
+
     async function loadPublicProfile() {
       setLoading(true);
       setNotFound(false);
+      setProfileError(null);
 
       try {
         // 1. 현재 로그인 사용자 확인 (본인 여부 판단)
@@ -55,51 +100,65 @@ export default function PublicProfilePage({
           data: { user },
         } = await supabase.auth.getUser();
 
-        if (user) {
-          setCurrentUserId(user.id);
-          setIsOwnProfile(user.id === id);
-        } else {
-          setCurrentUserId(null);
-          setIsOwnProfile(false);
+        if (isCurrent) {
+          if (user) {
+            setCurrentUserId(user.id);
+            setIsOwnProfile(user.id === id);
+          } else {
+            setCurrentUserId(null);
+            setIsOwnProfile(false);
+          }
         }
 
         // 2. 공개 프로필 정보 조회
         // * 보안: email, metadata 등 개인정보를 제외하고 오직 공개 허용 컬럼만 명시적으로 조회
-        const { data: profileData, error: profileError } = await supabase
+        const { data: profileData, error: pError } = await supabase
           .from("profiles")
           .select("id, display_name, region, avatar_url, bio, created_at")
           .eq("id", id)
-          .single();
+          .maybeSingle();
 
-        if (profileError || !profileData) {
-          setNotFound(true);
-          setLoading(false);
+        if (pError) {
+          console.error("Profile load error:", pError);
+          if (isCurrent) {
+            setProfileError("프로필 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+            setLoading(false);
+          }
           return;
         }
 
-        setProfile(profileData);
-
-        // 3. 해당 사용자가 작성한 게시글 목록 조회
-        const { data: postsData, error: postsError } = await supabase
-          .from("posts")
-          .select("id, title, category, region, created_at")
-          .eq("author_id", id)
-          .order("created_at", { ascending: false });
-
-        if (!postsError && postsData) {
-          setPosts(postsData);
+        if (!profileData) {
+          if (isCurrent) {
+            setNotFound(true);
+            setLoading(false);
+          }
+          return;
         }
 
-        setLoading(false);
+        if (isCurrent) {
+          setProfile(profileData);
+          setLoading(false);
+        }
+
+        // 3. 해당 사용자가 작성한 게시글 목록 조회
+        if (isCurrent) {
+          fetchUserPosts(id);
+        }
       } catch (err) {
         console.error("Public profile load error:", err);
-        setNotFound(true);
-        setLoading(false);
+        if (isCurrent) {
+          setProfileError("프로필 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+          setLoading(false);
+        }
       }
     }
 
     loadPublicProfile();
-  }, [id]);
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [id, profileRetryKey]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -176,6 +235,34 @@ export default function PublicProfilePage({
       <main className="post-detail" style={{ minHeight: "60vh" }}>
         <div className="wrapper" style={{ padding: "60px 20px", textAlign: "center" }}>
           <p style={{ color: "#64748b" }}>프로필을 불러오는 중입니다...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (profileError) {
+    return (
+      <main className="post-detail" style={{ minHeight: "60vh", display: "flex", alignItems: "center" }}>
+        <div className="wrapper" style={{ textAlign: "center", maxWidth: "500px", margin: "0 auto", padding: "60px 20px" }}>
+          <p style={{ marginBottom: "20px", color: "var(--gh-text-muted)" }}>{profileError}</p>
+          <button
+            type="button"
+            onClick={handleRetryProfile}
+            style={{
+              display: "inline-block",
+              padding: "10px 22px",
+              background: "#0f172a",
+              color: "#fff",
+              border: "none",
+              borderRadius: "6px",
+              textDecoration: "none",
+              fontSize: "14px",
+              fontWeight: 500,
+              cursor: "pointer",
+            }}
+          >
+            다시 시도
+          </button>
         </div>
       </main>
     );
@@ -390,7 +477,51 @@ export default function PublicProfilePage({
             </h2>
           </div>
 
-          {posts.length === 0 ? (
+          {postsLoading ? (
+            <div
+              style={{
+                background: "#f8fafc",
+                border: "1px dashed #cbd5e1",
+                borderRadius: "8px",
+                padding: "48px 20px",
+                textAlign: "center",
+                color: "#64748b",
+                fontSize: "14px",
+              }}
+            >
+              작성한 글을 불러오는 중입니다...
+            </div>
+          ) : postsError ? (
+            <div
+              style={{
+                background: "#f8fafc",
+                border: "1px dashed #cbd5e1",
+                borderRadius: "8px",
+                padding: "36px 20px",
+                textAlign: "center",
+                color: "#64748b",
+                fontSize: "14px",
+              }}
+            >
+              <p style={{ margin: "0 0 12px" }}>{postsError}</p>
+              <button
+                type="button"
+                onClick={handleRetryPosts}
+                style={{
+                  padding: "6px 14px",
+                  background: "#0f172a",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "4px",
+                  fontSize: "13px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
+              >
+                다시 시도
+              </button>
+            </div>
+          ) : posts.length === 0 ? (
             <div
               style={{
                 background: "#f8fafc",

@@ -108,7 +108,7 @@ export default function ProfilePage() {
   const [bio, setBio] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [myPosts, setMyPosts] = useState<Post[]>([]);
-  
+
   const [message, setMessage] = useState("");
   const [passwordMessage, setPasswordMessage] = useState("");
   const [loading, setLoading] = useState(true);
@@ -116,58 +116,121 @@ export default function ProfilePage() {
   const [uploading, setUploading] = useState(false);
   const [loadError, setLoadError] = useState("");
 
+  // Independent post loading and error states
+  const [postsLoading, setPostsLoading] = useState(false);
+  const [postsError, setPostsError] = useState<string | null>(null);
+  const [profileRetryKey, setProfileRetryKey] = useState(0);
+
+  async function fetchMyPosts(userId: string) {
+    setPostsLoading(true);
+    setPostsError(null);
+    try {
+      const { data: posts, error: postsError } = await supabase
+        .from("posts")
+        .select("id, title, category, region, created_at")
+        .eq("author_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (postsError) {
+        console.error("My posts fetch error:", postsError);
+        setPostsError("작성한 글을 불러오지 못했습니다.");
+        setMyPosts([]);
+        return;
+      }
+
+      setMyPosts(posts || []);
+    } catch (err) {
+      console.error("Unexpected my posts fetch error:", err);
+      setPostsError("작성한 글을 불러오지 못했습니다.");
+      setMyPosts([]);
+    } finally {
+      setPostsLoading(false);
+    }
+  }
+
+  async function handleRetryPosts() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      fetchMyPosts(user.id);
+    }
+  }
+
+  function handleRetryProfile() {
+    setProfileRetryKey((prev) => prev + 1);
+  }
+
   useEffect(() => {
+    let isCurrent = true;
+
     async function loadUserData() {
+      setLoading(true);
+      setLoadError("");
       try {
         const {
           data: { user },
+          error: userError,
         } = await supabase.auth.getUser();
 
-        if (!user) {
-          alert("로그인이 필요합니다.");
-          router.push("/auth");
+        if (userError || !user) {
+          if (isCurrent) {
+            alert("로그인이 필요합니다.");
+            router.push("/auth");
+          }
           return;
         }
 
-        setEmail(user.email || "");
+        if (isCurrent) {
+          setEmail(user.email || "");
+        }
 
         // 1. profiles 테이블에서 정보 가져오기
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("display_name, avatar_url, region, bio")
           .eq("id", user.id)
           .single();
 
-        if (profile) {
-          setDisplayName(profile.display_name || user.email?.split("@")[0] || "");
-          setAvatarUrl(profile.avatar_url || "");
-          setRegion(profile.region || "");
-          setBio(profile.bio || "");
-        } else {
-          setDisplayName(user.email?.split("@")[0] || "");
+        if (profileError) {
+          console.error("Profile DB load error:", profileError);
+          if (isCurrent) {
+            setLoadError("프로필 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+            setLoading(false);
+          }
+          return;
         }
 
-        // 2. 내가 쓴 글 가져오기 (author_id 기준으로 조회)
-        const { data: posts } = await supabase
-          .from("posts")
-          .select("id, title, category, region, created_at")
-          .eq("author_id", user.id)
-          .order("created_at", { ascending: false });
-
-        if (posts) {
-          setMyPosts(posts);
+        if (isCurrent) {
+          if (profile) {
+            setDisplayName(profile.display_name || user.email?.split("@")[0] || "");
+            setAvatarUrl(profile.avatar_url || "");
+            setRegion(profile.region || "");
+            setBio(profile.bio || "");
+          } else {
+            setDisplayName(user.email?.split("@")[0] || "");
+          }
+          setLoading(false);
         }
 
-        setLoading(false);
+        // 2. 내가 쓴 글 독립적으로 가져오기
+        if (isCurrent) {
+          fetchMyPosts(user.id);
+        }
+
       } catch (err) {
         console.error("Profile load error:", err);
-        setLoadError("프로필 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
-        setLoading(false);
+        if (isCurrent) {
+          setLoadError("프로필 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+          setLoading(false);
+        }
       }
     }
 
     loadUserData();
-  }, [router]);
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [profileRetryKey, router]);
 
   // 프로필 정보(닉네임, 거주지역, 자기소개) 저장
   async function handleProfileSubmit(e: FormEvent<HTMLFormElement>) {
@@ -345,7 +408,22 @@ export default function ProfilePage() {
     return (
       <main className="new-post-page">
         <div className="post-form-container" style={{ textAlign: "center", padding: "40px" }}>
-          <p>{loadError}</p>
+          <p style={{ marginBottom: "20px", color: "var(--gh-text-muted)" }}>{loadError}</p>
+          <button
+            type="button"
+            onClick={handleRetryProfile}
+            style={{
+              padding: "10px 20px",
+              background: "var(--gh-control-active)",
+              color: "var(--gh-control-active-text)",
+              border: "none",
+              borderRadius: "6px",
+              fontWeight: "bold",
+              cursor: "pointer",
+            }}
+          >
+            다시 시도
+          </button>
         </div>
       </main>
     );
@@ -499,7 +577,29 @@ export default function ProfilePage() {
         <div style={{ borderTop: "1px solid var(--gh-border)", paddingTop: "30px", marginBottom: "40px" }}>
           <h2 style={{ fontSize: "20px", marginBottom: "20px" }}>내가 작성한 글 ({myPosts.length})</h2>
 
-          {myPosts.length === 0 ? (
+          {postsLoading ? (
+            <p style={{ color: "var(--gh-text-muted)", textAlign: "center", padding: "20px 0" }}>작성한 글을 불러오는 중입니다...</p>
+          ) : postsError ? (
+            <div style={{ textAlign: "center", padding: "20px 0" }}>
+              <p style={{ color: "var(--gh-text-muted)", marginBottom: "10px" }}>{postsError}</p>
+              <button
+                type="button"
+                onClick={handleRetryPosts}
+                style={{
+                  padding: "6px 12px",
+                  background: "var(--gh-surface-muted)",
+                  color: "var(--gh-text)",
+                  border: "1px solid var(--gh-border)",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                }}
+              >
+                다시 시도
+              </button>
+            </div>
+          ) : myPosts.length === 0 ? (
             <p style={{ color: "var(--gh-text-muted)", textAlign: "center", padding: "20px 0" }}>작성한 게시글이 없습니다.</p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
