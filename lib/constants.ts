@@ -23,6 +23,31 @@ export interface PostRegionPolicy {
   label: string;
 }
 
+export interface PostAuthoringCopy {
+  titlePlaceholder: string;
+  contentPlaceholder: string;
+  helperText?: string;
+}
+
+export interface EducationPostOption {
+  value: string;
+  label: string;
+}
+
+export const EDUCATION_SUB_CATEGORY_OPTIONS: readonly EducationPostOption[] = [
+  { value: "visa", label: "비자 / 외국인청" },
+  { value: "housing", label: "집구하기 / WG" },
+  { value: "insurance", label: "보험 / 폐쇄계좌" },
+  { value: "admission", label: "입학 / 어학 / 서류" },
+] as const;
+
+export const EDUCATION_TARGET_FIELD_OPTIONS: readonly EducationPostOption[] = [
+  { value: "music", label: "음대 / 음악" },
+  { value: "art", label: "미대 / 미술·디자인" },
+  { value: "engineering", label: "공대 / IT / 과학" },
+  { value: "humanities", label: "인문 / 상경" },
+] as const;
+
 const DEFAULT_POST_REGION_POLICY: PostRegionPolicy = {
   usesRegion: true,
   required: false,
@@ -31,14 +56,48 @@ const DEFAULT_POST_REGION_POLICY: PostRegionPolicy = {
 
 const POST_REGION_POLICIES: Record<CategoryValue, PostRegionPolicy> = {
   community: { usesRegion: false, required: false, label: "" },
-  life: { usesRegion: true, required: false, label: "관련 지역 (선택)" },
-  education: { usesRegion: true, required: false, label: "관련 지역 (선택)" },
+  life: { usesRegion: true, required: false, label: "관련 지역" },
+  education: { usesRegion: true, required: false, label: "관련 지역" },
   market: { usesRegion: true, required: true, label: "거래 지역" },
-  jobs: { usesRegion: true, required: true, label: "근무/구인 지역" },
+  jobs: { usesRegion: true, required: true, label: "근무 지역" },
+};
+
+const DEFAULT_POST_AUTHORING_COPY: PostAuthoringCopy = {
+  titlePlaceholder: "제목을 입력하세요",
+  contentPlaceholder: "내용을 입력하세요",
+};
+
+const POST_AUTHORING_COPIES: Record<CategoryValue, PostAuthoringCopy> = {
+  community: {
+    titlePlaceholder: "자유롭게 이야기할 주제를 입력해주세요",
+    contentPlaceholder: "독일 생활 이야기, 질문, 경험 등을 자유롭게 나눠보세요.",
+  },
+  life: {
+    titlePlaceholder: "어떤 생활정보를 공유하거나 질문하고 싶으신가요?",
+    contentPlaceholder: "상황과 필요한 정보를 구체적으로 적어주면 더 좋은 답변을 받을 수 있습니다.",
+  },
+  education: {
+    titlePlaceholder: "학교, 유학, 교육과 관련된 주제를 입력해주세요",
+    contentPlaceholder: "학교·전공·지원 과정 등 질문이나 경험을 구체적으로 적어주세요.",
+  },
+  market: {
+    titlePlaceholder: "판매하거나 찾고 있는 물품을 간단히 적어주세요",
+    contentPlaceholder: "물품 상태, 가격, 거래 방법 등을 적어주세요.",
+    helperText: "물품 상태와 가격, 거래 방법을 적어주세요. 연락이 필요하면 오픈채팅 등 외부 링크를 사용할 수 있으며, 공개 글에는 불필요한 개인정보를 남기지 않는 것을 권장합니다.",
+  },
+  jobs: {
+    titlePlaceholder: "채용 또는 구직 내용을 간단히 적어주세요",
+    contentPlaceholder: "업무 내용, 조건, 근무 형태 등 필요한 정보를 구체적으로 적어주세요.",
+    helperText: "지원자와 구직자가 판단할 수 있도록 실제 근무하거나 구하는 지역을 입력해 주세요.",
+  },
 };
 
 export function getPostRegionPolicy(category: string): PostRegionPolicy {
   return POST_REGION_POLICIES[category as CategoryValue] ?? DEFAULT_POST_REGION_POLICY;
+}
+
+export function getPostAuthoringCopy(category: string): PostAuthoringCopy {
+  return POST_AUTHORING_COPIES[category as CategoryValue] ?? DEFAULT_POST_AUTHORING_COPY;
 }
 
 export function getPostRegionValue(category: string, region: string): string | null {

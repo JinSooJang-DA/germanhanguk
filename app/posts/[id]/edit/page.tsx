@@ -6,6 +6,9 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import {
   CATEGORIES,
+  EDUCATION_SUB_CATEGORY_OPTIONS,
+  EDUCATION_TARGET_FIELD_OPTIONS,
+  getPostAuthoringCopy,
   getPostRegionPolicy,
   getPostRegionValue,
 } from "@/lib/constants";
@@ -29,10 +32,13 @@ export default function EditPostPage({
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("community");
   const [region, setRegion] = useState("");
+  const [subCategory, setSubCategory] = useState("visa");
+  const [targetField, setTargetField] = useState("engineering");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const regionPolicy = getPostRegionPolicy(category);
+  const authoringCopy = getPostAuthoringCopy(category);
   const titleCharacterCount = formatCharacterCount(title, POST_TITLE_RULE.maxLength);
   const contentCharacterCount = formatCharacterCount(content, POST_CONTENT_RULE.maxLength);
 
@@ -77,6 +83,8 @@ export default function EditPostPage({
       setContent(post.content);
       setCategory(post.category);
       setRegion(post.region || "");
+      setSubCategory(post.sub_category || "visa");
+      setTargetField(post.target_field || "engineering");
       setLoading(false);
     }
 
@@ -106,14 +114,23 @@ export default function EditPostPage({
 
     setSaving(true);
 
+    const updatePayload = {
+      title: titleValidation.value,
+      content: contentValidation.value,
+      category,
+      region: postRegion,
+    };
+
+    if (category === "education") {
+      Object.assign(updatePayload, {
+        sub_category: subCategory,
+        target_field: targetField,
+      });
+    }
+
     const { error } = await supabase
       .from("posts")
-      .update({
-        title: titleValidation.value,
-        content: contentValidation.value,
-        category,
-        region: postRegion,
-      })
+      .update(updatePayload)
       .eq("id", id);
 
     setSaving(false);
@@ -162,6 +179,44 @@ export default function EditPostPage({
             </select>
           </div>
 
+          {category === "education" && (
+            <div style={{ background: "#f8fafc", padding: "16px", borderRadius: "8px", marginBottom: "16px", display: "grid", gap: "12px", border: "1px solid #e2e8f0" }}>
+              <p style={{ fontSize: "13px", color: "#64748b", margin: 0, fontWeight: "500" }}>
+                💡 유학·교육 관련 상세 정보를 선택해 주세요. 교민 전체가 정확한 조언을 줄 수 있습니다.
+              </p>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label htmlFor="subCategory">주요 주제</label>
+                <select
+                  id="subCategory"
+                  value={subCategory}
+                  onChange={(e) => setSubCategory(e.target.value)}
+                >
+                  {EDUCATION_SUB_CATEGORY_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label htmlFor="targetField">전공 계열</label>
+                <select
+                  id="targetField"
+                  value={targetField}
+                  onChange={(e) => setTargetField(e.target.value)}
+                >
+                  {EDUCATION_TARGET_FIELD_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+
           {regionPolicy.usesRegion && (
             <div className="form-group">
               <label htmlFor="region">{regionPolicy.label}</label>
@@ -176,6 +231,10 @@ export default function EditPostPage({
             </div>
           )}
 
+          {authoringCopy.helperText && (
+            <p className="post-authoring-helper">{authoringCopy.helperText}</p>
+          )}
+
           <div className="form-group">
             <label htmlFor="title">제목</label>
             <input
@@ -183,7 +242,7 @@ export default function EditPostPage({
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="제목을 입력하세요"
+              placeholder={authoringCopy.titlePlaceholder}
               aria-describedby="title-character-count"
               required
             />
@@ -199,7 +258,7 @@ export default function EditPostPage({
               rows={10}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="내용을 작성하세요"
+              placeholder={authoringCopy.contentPlaceholder}
               aria-describedby="content-character-count"
               required
             />

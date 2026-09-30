@@ -5,6 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import {
   CATEGORIES,
+  EDUCATION_SUB_CATEGORY_OPTIONS,
+  EDUCATION_TARGET_FIELD_OPTIONS,
+  getPostAuthoringCopy,
   getPostRegionPolicy,
   getPostRegionValue,
 } from "@/lib/constants";
@@ -46,6 +49,7 @@ function NewPostContent() {
   const [loading, setLoading] = useState(true);
 
   const regionPolicy = getPostRegionPolicy(category);
+  const authoringCopy = getPostAuthoringCopy(category);
   const titleCharacterCount = formatCharacterCount(title, POST_TITLE_RULE.maxLength);
   const contentCharacterCount = formatCharacterCount(content, POST_CONTENT_RULE.maxLength);
 
@@ -189,10 +193,11 @@ function NewPostContent() {
                   value={subCategory}
                   onChange={(e) => setSubCategory(e.target.value)}
                 >
-                  <option value="visa">비자 / 외국인청</option>
-                  <option value="housing">집구하기 / WG</option>
-                  <option value="insurance">보험 / 폐쇄계좌</option>
-                  <option value="admission">입학 / 어학 / 서류</option>
+                  {EDUCATION_SUB_CATEGORY_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -203,10 +208,11 @@ function NewPostContent() {
                   value={targetField}
                   onChange={(e) => setTargetField(e.target.value)}
                 >
-                  <option value="music">음대 / 음악</option>
-                  <option value="art">미대 / 미술·디자인</option>
-                  <option value="engineering">공대 / IT / 과학</option>
-                  <option value="humanities">인문 / 상경</option>
+                  {EDUCATION_TARGET_FIELD_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -226,6 +232,10 @@ function NewPostContent() {
             </div>
           )}
 
+          {authoringCopy.helperText && (
+            <p className="post-authoring-helper">{authoringCopy.helperText}</p>
+          )}
+
           <div className="form-group">
             <label htmlFor="title">제목</label>
             <input
@@ -233,7 +243,7 @@ function NewPostContent() {
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="제목을 입력하세요"
+              placeholder={authoringCopy.titlePlaceholder}
               aria-describedby="title-character-count"
               required
             />
@@ -248,7 +258,7 @@ function NewPostContent() {
               id="content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="내용을 입력하세요"
+              placeholder={authoringCopy.contentPlaceholder}
               rows={8}
               aria-describedby="content-character-count"
               required
