@@ -180,16 +180,19 @@ export default function Header() {
             >
               생활 가이드
             </Link>
-            <Link
-              href="/map"
-              style={{
-                textDecoration: "none",
-                color: pathname === "/map" ? "#0f172a" : "#475569",
-                fontWeight: pathname === "/map" ? "700" : "500",
-              }}
-            >
-              K-Spot 지도
-            </Link>
+            {/* 임시 비활성화: K-Spot 지도는 서비스 활성화 시 복구 예정 */}
+            {false && (
+              <Link
+                href="/map"
+                style={{
+                  textDecoration: "none",
+                  color: pathname === "/map" ? "#0f172a" : "#475569",
+                  fontWeight: pathname === "/map" ? "700" : "500",
+                }}
+              >
+                K-Spot 지도
+              </Link>
+            )}
           </nav>
 
           {user ? (
@@ -543,7 +546,10 @@ export default function Header() {
                 <Link href="/?category=jobs" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>구인구직</Link>
                 <Link href="/articles" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>📰 독일 소식</Link>
                 <Link href="/guide" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-accent)", fontWeight: "bold", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>📘 생활 가이드</Link>
-                <Link href="/map" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>📍 K-Spot 지도</Link>
+                {/* 임시 비활성화: K-Spot 지도는 서비스 활성화 시 복구 예정 */}
+                {false && (
+                  <Link href="/map" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>📍 K-Spot 지도</Link>
+                )}
               </nav>
 
               <ThemeSelector mobile />

@@ -12,6 +12,7 @@ import {
 import { formatDate } from "@/lib/date";
 import type { Post as BasePost } from "@/types/post";
 import type { Article } from "@/types/article";
+import AdSlot from "@/components/AdSlot";
 
 interface EngagementCount {
   count: number;
@@ -465,7 +466,10 @@ function HomeContent() {
             })}
           </div>
 
-          <Link href={selectedCategory && selectedCategory !== "all" ? `/posts/new?category=${selectedCategory}` : "/posts/new"}>
+          <Link
+            href={selectedCategory && selectedCategory !== "all" ? `/posts/new?category=${selectedCategory}` : "/posts/new"}
+            style={{ display: "inline-block" }}
+          >
             <button
               style={{
                 padding: "10px 20px",
@@ -512,7 +516,7 @@ function HomeContent() {
                 <tr style={{ borderBottom: "2px solid var(--gh-border)", background: "var(--gh-surface-muted)", color: "var(--gh-text)", textAlign: "left" }}>
                   <th style={{ padding: "14px" }}>카테고리</th>
                   <th style={{ padding: "14px" }}>제목</th>
-                  <th style={{ padding: "14px" }}>지역</th>
+                  {selectedCategory !== "community" && <th style={{ padding: "14px" }}>지역</th>}
                   <th style={{ padding: "14px" }}>작성자</th>
                   <th style={{ padding: "14px" }}>작성일</th>
                   <th style={{ padding: "14px", textAlign: "center" }}>조회/추천</th>
@@ -537,9 +541,11 @@ function HomeContent() {
                           </span>
                         )}
                       </td>
-                      <td className="main-post-region" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
-                        {shouldDisplayPostRegion(post.category, post.region) ? post.region : ""}
-                      </td>
+                      {selectedCategory !== "community" && (
+                        <td className="main-post-region" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
+                          {shouldDisplayPostRegion(post.category, post.region) ? post.region : ""}
+                        </td>
+                      )}
                       <td className="main-post-author" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
                         {post.author_id ? (
                           <Link
@@ -619,6 +625,9 @@ function HomeContent() {
             </table>
           </div>
         )}
+        
+        {/* 게시글 목록 하단 광고 영역 */}
+        <AdSlot position="board-bottom" />
       </div>
     </main>
   );

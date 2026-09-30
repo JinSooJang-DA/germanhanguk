@@ -1,5 +1,5 @@
 interface AdSlotProps {
-  position: "guide-middle" | "guide-bottom" | "guide-sidebar";
+  position: "guide-middle" | "guide-bottom" | "guide-sidebar" | "board-bottom";
 }
 
 export default function AdSlot({}: AdSlotProps) {
