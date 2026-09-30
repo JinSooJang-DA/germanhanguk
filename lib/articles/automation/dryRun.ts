@@ -1,5 +1,9 @@
 import { fetchBundesregierungArticleCandidates } from "./sources/bundesregierung";
-import type { ArticleAutomationDryRunResult } from "./types";
+import { classifyArticleRelevance } from "./relevance";
+import type {
+  ArticleAutomationDryRunResult,
+  ArticleRelevanceClassification,
+} from "./types";
 
 /**
  * Explicit server-side development entry point. It fetches and normalizes the
@@ -7,18 +11,31 @@ import type { ArticleAutomationDryRunResult } from "./types";
  */
 export async function runBundesregierungArticlesDryRun(): Promise<ArticleAutomationDryRunResult> {
   const result = await fetchBundesregierungArticleCandidates();
+  const classificationCounts: Record<ArticleRelevanceClassification, number> = {
+    relevant: 0,
+    uncertain: 0,
+    irrelevant: 0,
+  };
+  const candidates = result.candidates.map((candidate) => {
+    const relevance = classifyArticleRelevance(candidate);
+    classificationCounts[relevance.classification] += 1;
+
+    return {
+      title: candidate.title,
+      canonicalUrl: candidate.canonicalUrl,
+      ...(candidate.publishedAt ? { publishedAt: candidate.publishedAt } : {}),
+      ...relevance,
+    };
+  });
 
   return {
     sourceProvider: result.sourceProvider,
     sourceName: result.sourceName,
     sourceUrl: result.sourceUrl,
-    candidateCount: result.candidates.length,
+    candidateCount: candidates.length,
     skippedItemCount: result.skippedItemCount,
-    candidates: result.candidates.map(({ title, canonicalUrl, publishedAt }) => ({
-      title,
-      canonicalUrl,
-      ...(publishedAt ? { publishedAt } : {}),
-    })),
+    classificationCounts,
+    candidates,
     ...(result.error ? { error: result.error } : {}),
   };
 }

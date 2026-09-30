@@ -22,12 +22,25 @@ export interface SourceFetchResult {
   error?: "fetch_failed" | "invalid_feed";
 }
 
+export type ArticleRelevanceClassification =
+  | "relevant"
+  | "uncertain"
+  | "irrelevant";
+
+export interface ArticleRelevanceResult {
+  classification: ArticleRelevanceClassification;
+  matchedTopics: string[];
+  reasons: string[];
+}
+
 export interface ArticleAutomationDryRunResult {
   sourceProvider: ArticleCandidate["sourceProvider"];
   sourceName: string;
   sourceUrl: string;
   candidateCount: number;
   skippedItemCount: number;
-  candidates: Pick<ArticleCandidate, "title" | "canonicalUrl" | "publishedAt">[];
+  classificationCounts: Record<ArticleRelevanceClassification, number>;
+  candidates: (Pick<ArticleCandidate, "title" | "canonicalUrl" | "publishedAt"> &
+    ArticleRelevanceResult)[];
   error?: SourceFetchResult["error"];
 }
