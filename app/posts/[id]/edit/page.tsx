@@ -9,6 +9,13 @@ import {
   getPostRegionPolicy,
   getPostRegionValue,
 } from "@/lib/constants";
+import {
+  formatCharacterCount,
+  getContentValidationDatabaseMessage,
+  POST_CONTENT_RULE,
+  POST_TITLE_RULE,
+  validateText,
+} from "@/lib/contentValidation";
 
 export default function EditPostPage({
   params,
@@ -26,6 +33,8 @@ export default function EditPostPage({
   const [saving, setSaving] = useState(false);
 
   const regionPolicy = getPostRegionPolicy(category);
+  const titleCharacterCount = formatCharacterCount(title, POST_TITLE_RULE.maxLength);
+  const contentCharacterCount = formatCharacterCount(content, POST_CONTENT_RULE.maxLength);
 
   const handleCategoryChange = (nextCategory: string) => {
     setCategory(nextCategory);
@@ -76,6 +85,18 @@ export default function EditPostPage({
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const titleValidation = validateText(title, POST_TITLE_RULE);
+    if (titleValidation.errorMessage) {
+      alert(titleValidation.errorMessage);
+      return;
+    }
+
+    const contentValidation = validateText(content, POST_CONTENT_RULE);
+    if (contentValidation.errorMessage) {
+      alert(contentValidation.errorMessage);
+      return;
+    }
+
     const postRegion = getPostRegionValue(category, region);
 
     if (regionPolicy.required && !postRegion) {
@@ -88,8 +109,8 @@ export default function EditPostPage({
     const { error } = await supabase
       .from("posts")
       .update({
-        title,
-        content,
+        title: titleValidation.value,
+        content: contentValidation.value,
         category,
         region: postRegion,
       })
@@ -98,7 +119,10 @@ export default function EditPostPage({
     setSaving(false);
 
     if (error) {
-      alert("수정 실패: " + error.message);
+      console.error("Post update error:", error);
+      alert(
+        getContentValidationDatabaseMessage(error, "post") ?? "수정 실패: " + error.message,
+      );
       return;
     }
 
@@ -122,7 +146,7 @@ export default function EditPostPage({
       <div className="post-form-container">
         <h1>게시글 수정</h1>
 
-        <form className="post-form" onSubmit={handleSubmit}>
+        <form className="post-form" onSubmit={handleSubmit} noValidate>
           <div className="form-group">
             <label htmlFor="category">카테고리</label>
             <select
@@ -160,8 +184,12 @@ export default function EditPostPage({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="제목을 입력하세요"
+              aria-describedby="title-character-count"
               required
             />
+            <p id="title-character-count" style={{ margin: "6px 0 0", color: "var(--gh-text-subtle)", fontSize: "12px", textAlign: "right" }}>
+              {titleCharacterCount}
+            </p>
           </div>
 
           <div className="form-group">
@@ -172,8 +200,12 @@ export default function EditPostPage({
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="내용을 작성하세요"
+              aria-describedby="content-character-count"
               required
             />
+            <p id="content-character-count" style={{ margin: "6px 0 0", color: "var(--gh-text-subtle)", fontSize: "12px", textAlign: "right" }}>
+              {contentCharacterCount}
+            </p>
           </div>
 
           <button type="submit" className="submit-btn" disabled={saving}>

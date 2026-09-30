@@ -8,6 +8,12 @@ import { Post, Comment } from "@/types/post";
 import { getCategoryLabel, shouldDisplayPostRegion } from "@/lib/constants";
 import { formatDate, formatDateTime } from "@/lib/date";
 import { linkifyPlainText } from "@/lib/linkify";
+import {
+  COMMENT_RULE,
+  formatCharacterCount,
+  getContentValidationDatabaseMessage,
+  validateText,
+} from "@/lib/contentValidation";
 import { VIEW_INCREMENT_EVENT } from "@/components/PostViewCount";
 
 const PAGE_SIZE = 10;
@@ -52,6 +58,9 @@ export default function PostDetailClient({
   const [bottomPosts, setBottomPosts] = useState<Post[]>([]);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(1);
+  const newCommentCharacterCount = formatCharacterCount(newComment, COMMENT_RULE.maxLength);
+  const replyCharacterCount = formatCharacterCount(replyContent, COMMENT_RULE.maxLength);
+  const editingCommentCharacterCount = formatCharacterCount(editingCommentContent, COMMENT_RULE.maxLength);
 
   async function fetchComments() {
     const { data } = await supabase
@@ -257,7 +266,11 @@ export default function PostDetailClient({
 
   async function handleCommentSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!newComment.trim()) return;
+    const commentValidation = validateText(newComment, COMMENT_RULE);
+    if (commentValidation.errorMessage) {
+      alert(commentValidation.errorMessage);
+      return;
+    }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -280,13 +293,16 @@ export default function PostDetailClient({
       post_id: parseInt(id, 10),
       author_id: user.id,
       author_name: authorName,
-      content: newComment.trim(),
+      content: commentValidation.value,
     });
 
     setSubmitting(false);
 
     if (error) {
-      alert("댓글 작성 실패: " + error.message);
+      console.error("Comment creation error:", error);
+      alert(
+        getContentValidationDatabaseMessage(error, "comment") ?? "댓글 작성 실패: " + error.message,
+      );
       return;
     }
 
@@ -296,7 +312,11 @@ export default function PostDetailClient({
 
   async function handleReplySubmit(e: FormEvent, parentId: string) {
     e.preventDefault();
-    if (!replyContent.trim()) return;
+    const replyValidation = validateText(replyContent, COMMENT_RULE);
+    if (replyValidation.errorMessage) {
+      alert(replyValidation.errorMessage);
+      return;
+    }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -320,13 +340,16 @@ export default function PostDetailClient({
       parent_id: parentId,
       author_id: user.id,
       author_name: authorName,
-      content: replyContent.trim(),
+      content: replyValidation.value,
     });
 
     setSubmitting(false);
 
     if (error) {
-      alert("답글 작성 실패: " + error.message);
+      console.error("Reply creation error:", error);
+      alert(
+        getContentValidationDatabaseMessage(error, "comment") ?? "답글 작성 실패: " + error.message,
+      );
       return;
     }
 
@@ -346,8 +369,9 @@ export default function PostDetailClient({
   }
 
   async function handleSaveEditComment(commentId: string) {
-    if (!editingCommentContent.trim()) {
-      alert("댓글 내용을 입력해 주세요.");
+    const commentValidation = validateText(editingCommentContent, COMMENT_RULE);
+    if (commentValidation.errorMessage) {
+      alert(commentValidation.errorMessage);
       return;
     }
 
@@ -355,13 +379,16 @@ export default function PostDetailClient({
 
     const { error } = await supabase
       .from("comments")
-      .update({ content: editingCommentContent.trim() })
+      .update({ content: commentValidation.value })
       .eq("id", commentId);
 
     setUpdatingComment(false);
 
     if (error) {
-      alert("댓글 수정 실패: " + error.message);
+      console.error("Comment update error:", error);
+      alert(
+        getContentValidationDatabaseMessage(error, "comment") ?? "댓글 수정 실패: " + error.message,
+      );
       return;
     }
 
@@ -510,7 +537,7 @@ export default function PostDetailClient({
       <div style={{ marginTop: "60px", paddingTop: "30px", borderTop: "1px solid #eee" }}>
         <h3>댓글 ({comments.reduce(function(acc, c) { return acc + 1 + (c.replies?.length || 0); }, 0)})</h3>
 
-        <form onSubmit={handleCommentSubmit} style={{ marginTop: "20px", marginBottom: "30px" }}>
+        <form onSubmit={handleCommentSubmit} style={{ marginTop: "20px", marginBottom: "30px" }} noValidate>
           <textarea
             value={newComment}
             onChange={function(e) { setNewComment(e.target.value); }}
@@ -529,7 +556,10 @@ export default function PostDetailClient({
             }}
             required
           />
-          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px" }}>
+            <span style={{ color: "var(--gh-text-subtle)", fontSize: "12px" }}>
+              {newCommentCharacterCount}
+            </span>
             <button
               type="submit"
               disabled={!currentUserId || submitting}
@@ -694,6 +724,9 @@ export default function PostDetailClient({
                               boxSizing: "border-box",
                             }}
                           />
+                          <p style={{ margin: "6px 0 0", color: "var(--gh-text-subtle)", fontSize: "12px", textAlign: "right" }}>
+                            {editingCommentCharacterCount}
+                          </p>
                           <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "6px" }}>
                             <button
                               onClick={handleCancelEditComment}
@@ -757,39 +790,44 @@ export default function PostDetailClient({
                       </button>
 
                       {replyingToId === comment.id && (
-                        <form onSubmit={function(e) { handleReplySubmit(e, comment.id); }} style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-                          <input
-                            type="text"
-                            value={replyContent}
-                            onChange={function(e) { setReplyContent(e.target.value); }}
-                            placeholder="답글을 입력하세요..."
-                            style={{
-                              flex: 1,
-                              padding: "8px 12px",
-                              border: "1px solid var(--gh-border)",
-                              borderRadius: "4px",
-                              fontSize: "13px",
-                              background: "var(--gh-surface)",
-                              color: "var(--gh-text)",
-                            }}
-                            required
-                          />
-                          <button
-                            type="submit"
-                            disabled={submitting}
-                            style={{
-                              padding: "6px 14px",
-                              background: "var(--gh-control-active)",
-                              color: "var(--gh-control-active-text)",
-                              border: "none",
-                              borderRadius: "4px",
-                              cursor: "pointer",
-                              fontSize: "13px",
-                              fontWeight: "500",
-                            }}
-                          >
-                            {submitting ? "등록 중..." : "등록"}
-                          </button>
+                        <form onSubmit={function(e) { handleReplySubmit(e, comment.id); }} style={{ marginTop: "8px" }} noValidate>
+                          <div style={{ display: "flex", gap: "8px" }}>
+                            <input
+                              type="text"
+                              value={replyContent}
+                              onChange={function(e) { setReplyContent(e.target.value); }}
+                              placeholder="답글을 입력하세요..."
+                              style={{
+                                flex: 1,
+                                padding: "8px 12px",
+                                border: "1px solid var(--gh-border)",
+                                borderRadius: "4px",
+                                fontSize: "13px",
+                                background: "var(--gh-surface)",
+                                color: "var(--gh-text)",
+                              }}
+                              required
+                            />
+                            <button
+                              type="submit"
+                              disabled={submitting}
+                              style={{
+                                padding: "6px 14px",
+                                background: "var(--gh-control-active)",
+                                color: "var(--gh-control-active-text)",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "13px",
+                                fontWeight: "500",
+                              }}
+                            >
+                              {submitting ? "등록 중..." : "등록"}
+                            </button>
+                          </div>
+                          <p style={{ margin: "4px 0 0", color: "var(--gh-text-subtle)", fontSize: "12px", textAlign: "right" }}>
+                            {replyCharacterCount}
+                          </p>
                         </form>
                       )}
                     </div>
@@ -868,6 +906,9 @@ export default function PostDetailClient({
                                       boxSizing: "border-box",
                                     }}
                                   />
+                                  <p style={{ margin: "4px 0 0", color: "var(--gh-text-subtle)", fontSize: "12px", textAlign: "right" }}>
+                                    {editingCommentCharacterCount}
+                                  </p>
                                   <div style={{ display: "flex", justifyContent: "flex-end", gap: "6px", marginTop: "4px" }}>
                                     <button
                                       onClick={handleCancelEditComment}

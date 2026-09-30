@@ -8,6 +8,13 @@ import {
   getPostRegionPolicy,
   getPostRegionValue,
 } from "@/lib/constants";
+import {
+  formatCharacterCount,
+  getContentValidationDatabaseMessage,
+  POST_CONTENT_RULE,
+  POST_TITLE_RULE,
+  validateText,
+} from "@/lib/contentValidation";
 import type { Post } from "@/types/post";
 
 type PostInsertPayload = Pick<
@@ -39,6 +46,8 @@ function NewPostContent() {
   const [loading, setLoading] = useState(true);
 
   const regionPolicy = getPostRegionPolicy(category);
+  const titleCharacterCount = formatCharacterCount(title, POST_TITLE_RULE.maxLength);
+  const contentCharacterCount = formatCharacterCount(content, POST_CONTENT_RULE.maxLength);
 
   const handleCategoryChange = (nextCategory: string) => {
     setCategory(nextCategory);
@@ -68,6 +77,18 @@ function NewPostContent() {
     e.preventDefault();
     setMessage("");
 
+    const titleValidation = validateText(title, POST_TITLE_RULE);
+    if (titleValidation.errorMessage) {
+      setMessage(titleValidation.errorMessage);
+      return;
+    }
+
+    const contentValidation = validateText(content, POST_CONTENT_RULE);
+    if (contentValidation.errorMessage) {
+      setMessage(contentValidation.errorMessage);
+      return;
+    }
+
     const postRegion = getPostRegionValue(category, region);
     if (regionPolicy.required && !postRegion) {
       setMessage(`${regionPolicy.label}을 입력해 주세요.`);
@@ -95,8 +116,8 @@ function NewPostContent() {
 
     // 데이터 저장 객체 구성 ('education'인 경우에만 상세 필드값 저장)
     const postData: PostInsertPayload = {
-      title,
-      content,
+      title: titleValidation.value,
+      content: contentValidation.value,
       category,
       region: postRegion,
       author_id: user.id,
@@ -111,7 +132,10 @@ function NewPostContent() {
     const { error } = await supabase.from("posts").insert(postData);
 
     if (error) {
-      setMessage("글 작성 실패: " + error.message);
+      console.error("Post creation error:", error);
+      setMessage(
+        getContentValidationDatabaseMessage(error, "post") ?? "글 작성 실패: " + error.message,
+      );
       return;
     }
 
@@ -135,7 +159,7 @@ function NewPostContent() {
       <div className="post-form-container">
         <h1>글쓰기</h1>
 
-        <form className="post-form" onSubmit={handleSubmit}>
+        <form className="post-form" onSubmit={handleSubmit} noValidate>
           <div className="form-group">
             <label htmlFor="category">카테고리</label>
             <select
@@ -210,8 +234,12 @@ function NewPostContent() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="제목을 입력하세요"
+              aria-describedby="title-character-count"
               required
             />
+            <p id="title-character-count" style={{ margin: "6px 0 0", color: "var(--gh-text-subtle)", fontSize: "12px", textAlign: "right" }}>
+              {titleCharacterCount}
+            </p>
           </div>
 
           <div className="form-group">
@@ -222,8 +250,12 @@ function NewPostContent() {
               onChange={(e) => setContent(e.target.value)}
               placeholder="내용을 입력하세요"
               rows={8}
+              aria-describedby="content-character-count"
               required
             />
+            <p id="content-character-count" style={{ margin: "6px 0 0", color: "var(--gh-text-subtle)", fontSize: "12px", textAlign: "right" }}>
+              {contentCharacterCount}
+            </p>
           </div>
 
           {message && <p className="form-message">{message}</p>}
