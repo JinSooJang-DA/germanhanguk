@@ -38,6 +38,7 @@ export default function MessagesPage() {
         console.error("Auth init error:", err);
         setError("로그인 정보를 확인하는데 실패했습니다.");
         setIsAuthChecking(false);
+        setLoading(false);
       }
     }
 
@@ -48,62 +49,68 @@ export default function MessagesPage() {
     setLoading(true);
     setError(null);
 
-    const query = supabase
-      .from("messages")
-      .select("id, sender_id, receiver_id, body, created_at, read_at");
+    try {
+      const query = supabase
+        .from("messages")
+        .select("id, sender_id, receiver_id, body, created_at, read_at");
 
-    if (tab === "inbox") {
-      query.eq("receiver_id", userId);
-    } else {
-      query.eq("sender_id", userId);
-    }
+      if (tab === "inbox") {
+        query.eq("receiver_id", userId);
+      } else {
+        query.eq("sender_id", userId);
+      }
 
-    const { data: messagesData, error: msgError } = await query.order(
-      "created_at",
-      { ascending: false }
-    );
+      const { data: messagesData, error: msgError } = await query.order(
+        "created_at",
+        { ascending: false }
+      );
 
-    if (msgError || !messagesData) {
-      console.error("Messages fetch error:", msgError);
+      if (msgError || !messagesData) {
+        console.error("Messages fetch error:", msgError);
+        setError("쪽지 목록을 불러오지 못했습니다. 다시 시도해 주세요.");
+        setMessages([]);
+        return;
+      }
+
+      // 상대방 ID 목록 추출
+      const partnerIds = Array.from(
+        new Set(
+          messagesData
+            .map((m) => (tab === "inbox" ? m.sender_id : m.receiver_id))
+            .filter(Boolean)
+        )
+      );
+
+      let profileMap: Record<
+        string,
+        { id: string; display_name: string | null; avatar_url: string | null }
+      > = {};
+
+      if (partnerIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("id, display_name, avatar_url")
+          .in("id", partnerIds);
+
+        if (profilesData) {
+          profileMap = Object.fromEntries(profilesData.map((p) => [p.id, p]));
+        }
+      }
+
+      const combined: MessageWithProfile[] = messagesData.map((m) => ({
+        ...m,
+        sender: tab === "inbox" ? profileMap[m.sender_id] || null : null,
+        receiver: tab === "sent" ? profileMap[m.receiver_id] || null : null,
+      }));
+
+      setMessages(combined);
+    } catch (err) {
+      console.error("Unexpected messages fetch error:", err);
       setError("쪽지 목록을 불러오지 못했습니다. 다시 시도해 주세요.");
       setMessages([]);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    // 상대방 ID 목록 추출
-    const partnerIds = Array.from(
-      new Set(
-        messagesData
-          .map((m) => (tab === "inbox" ? m.sender_id : m.receiver_id))
-          .filter(Boolean)
-      )
-    );
-
-    let profileMap: Record<
-      string,
-      { id: string; display_name: string | null; avatar_url: string | null }
-    > = {};
-
-    if (partnerIds.length > 0) {
-      const { data: profilesData } = await supabase
-        .from("profiles")
-        .select("id, display_name, avatar_url")
-        .in("id", partnerIds);
-
-      if (profilesData) {
-        profileMap = Object.fromEntries(profilesData.map((p) => [p.id, p]));
-      }
-    }
-
-    const combined: MessageWithProfile[] = messagesData.map((m) => ({
-      ...m,
-      sender: tab === "inbox" ? profileMap[m.sender_id] || null : null,
-      receiver: tab === "sent" ? profileMap[m.receiver_id] || null : null,
-    }));
-
-    setMessages(combined);
-    setLoading(false);
   }
 
 

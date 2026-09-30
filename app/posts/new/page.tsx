@@ -47,6 +47,7 @@ function NewPostContent() {
 
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState("");
 
   const regionPolicy = getPostRegionPolicy(category);
   const authoringCopy = getPostAuthoringCopy(category);
@@ -61,14 +62,21 @@ function NewPostContent() {
   // 페이지 진입 시 로그인 여부 체크
   useEffect(() => {
     async function checkAuth() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      if (!session) {
-        alert("로그인이 필요한 서비스입니다.");
-        router.push("/auth");
-      } else {
+        if (!session) {
+          alert("로그인이 필요한 서비스입니다.");
+          router.push("/auth");
+          return;
+        }
+
+        setLoading(false);
+      } catch (err) {
+        console.error("Post creation auth check error:", err);
+        setAuthError("인증 정보를 확인하지 못했습니다. 잠시 후 다시 시도해주세요.");
         setLoading(false);
       }
     }
@@ -153,6 +161,16 @@ function NewPostContent() {
       <main className="new-post-page">
         <div className="post-form-container" style={{ textAlign: "center", padding: "40px" }}>
           <p>인증 상태를 확인하는 중입니다...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (authError) {
+    return (
+      <main className="new-post-page">
+        <div className="post-form-container" style={{ textAlign: "center", padding: "40px" }}>
+          <p>{authError}</p>
         </div>
       </main>
     );

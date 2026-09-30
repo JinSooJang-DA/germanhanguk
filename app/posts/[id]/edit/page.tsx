@@ -36,6 +36,7 @@ export default function EditPostPage({
   const [targetField, setTargetField] = useState("engineering");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
   const regionPolicy = getPostRegionPolicy(category);
   const authoringCopy = getPostAuthoringCopy(category);
@@ -49,43 +50,49 @@ export default function EditPostPage({
 
   useEffect(() => {
     async function loadPost() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
-      if (!user) {
-        alert("로그인이 필요합니다.");
-        router.push("/auth");
-        return;
+        if (!user) {
+          alert("로그인이 필요합니다.");
+          router.push("/auth");
+          return;
+        }
+
+        // 게시글 가져오기
+        const { data: post, error } = await supabase
+          .from("posts")
+          .select("*")
+          .eq("id", id)
+          .single();
+
+        if (error || !post) {
+          alert("게시글을 찾을 수 없습니다.");
+          router.push("/");
+          return;
+        }
+
+        // 작성자 확인
+        if (post.author_id !== user.id) {
+          alert("본인의 글만 수정할 수 있습니다.");
+          router.push(`/posts/${id}`);
+          return;
+        }
+
+        setTitle(post.title);
+        setContent(post.content);
+        setCategory(post.category);
+        setRegion(post.region || "");
+        setSubCategory(post.sub_category || "visa");
+        setTargetField(post.target_field || "engineering");
+        setLoading(false);
+      } catch (err) {
+        console.error("Post edit load error:", err);
+        setLoadError("게시글 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+        setLoading(false);
       }
-
-      // 게시글 가져오기
-      const { data: post, error } = await supabase
-        .from("posts")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (error || !post) {
-        alert("게시글을 찾을 수 없습니다.");
-        router.push("/");
-        return;
-      }
-
-      // 작성자 확인
-      if (post.author_id !== user.id) {
-        alert("본인의 글만 수정할 수 있습니다.");
-        router.push(`/posts/${id}`);
-        return;
-      }
-
-      setTitle(post.title);
-      setContent(post.content);
-      setCategory(post.category);
-      setRegion(post.region || "");
-      setSubCategory(post.sub_category || "visa");
-      setTargetField(post.target_field || "engineering");
-      setLoading(false);
     }
 
     loadPost();
@@ -153,6 +160,16 @@ export default function EditPostPage({
       <main className="new-post-page">
         <div className="post-form-container" style={{ textAlign: "center", padding: "40px" }}>
           <p>게시글 정보를 불러오는 중입니다...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <main className="new-post-page">
+        <div className="post-form-container" style={{ textAlign: "center", padding: "40px" }}>
+          <p>{loadError}</p>
         </div>
       </main>
     );

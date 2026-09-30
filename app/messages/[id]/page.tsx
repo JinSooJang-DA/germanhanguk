@@ -34,67 +34,73 @@ export default function MessageDetailPage({
       setLoading(true);
       setNotFound(false);
 
-      // 1. 로그인 사용자 확인
-      const {
-        data: { user: currentUser },
-      } = await supabase.auth.getUser();
+      try {
+        // 1. 로그인 사용자 확인
+        const {
+          data: { user: currentUser },
+        } = await supabase.auth.getUser();
 
-      if (!currentUser) {
-        router.push("/auth");
-        return;
-      }
-      setUser(currentUser);
+        if (!currentUser) {
+          router.push("/auth");
+          return;
+        }
+        setUser(currentUser);
 
-      // 2. 쪽지 단건 조회 (RLS에 의해 본인이 발신자이거나 수신자인 경우만 성공)
-      const { data: msgData, error: msgError } = await supabase
-        .from("messages")
-        .select("id, sender_id, receiver_id, body, created_at, read_at")
-        .eq("id", id)
-        .single();
+        // 2. 쪽지 단건 조회 (RLS에 의해 본인이 발신자이거나 수신자인 경우만 성공)
+        const { data: msgData, error: msgError } = await supabase
+          .from("messages")
+          .select("id, sender_id, receiver_id, body, created_at, read_at")
+          .eq("id", id)
+          .single();
 
-      if (msgError || !msgData) {
-        console.error("Message load error:", msgError);
+        if (msgError || !msgData) {
+          console.error("Message load error:", msgError);
+          setNotFound(true);
+          setLoading(false);
+          return;
+        }
+
+        // 3. 수신자가 최초 열람 시 자동 읽음 처리
+        if (currentUser.id === msgData.receiver_id && msgData.read_at === null) {
+          const nowIso = new Date().toISOString();
+          msgData.read_at = nowIso;
+
+          // DB 업데이트를 수행한 후, 성공 시점에 이벤트를 전송하여 헤더를 동기화합니다.
+          supabase
+            .from("messages")
+            .update({ read_at: nowIso })
+            .eq("id", id)
+            .then(function({ error: updateError }) {
+              if (updateError) {
+                console.warn("Message read_at background update warning:", updateError.message);
+              } else {
+                window.dispatchEvent(new Event("messages-updated"));
+              }
+            });
+        }
+
+        setMessage(msgData);
+
+        // 4. 발신자 및 수신자 프로필 조회
+        const profileIds = Array.from(new Set([msgData.sender_id, msgData.receiver_id]));
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, display_name, avatar_url")
+          .in("id", profileIds);
+
+        if (profiles) {
+          const s = profiles.find((p) => p.id === msgData.sender_id) || null;
+          const r = profiles.find((p) => p.id === msgData.receiver_id) || null;
+          setSenderProfile(s);
+          setReceiverProfile(r);
+        }
+
+        setLoading(false);
+      } catch (err) {
+        console.error("Unexpected message load error:", err);
         setNotFound(true);
         setLoading(false);
-        return;
       }
-
-      // 3. 수신자가 최초 열람 시 자동 읽음 처리
-      if (currentUser.id === msgData.receiver_id && msgData.read_at === null) {
-        const nowIso = new Date().toISOString();
-        msgData.read_at = nowIso;
-
-        // DB 업데이트를 수행한 후, 성공 시점에 이벤트를 전송하여 헤더를 동기화합니다.
-        supabase
-          .from("messages")
-          .update({ read_at: nowIso })
-          .eq("id", id)
-          .then(function({ error: updateError }) {
-            if (updateError) {
-              console.warn("Message read_at background update warning:", updateError.message);
-            } else {
-              window.dispatchEvent(new Event("messages-updated"));
-            }
-          });
-      }
-
-      setMessage(msgData);
-
-      // 4. 발신자 및 수신자 프로필 조회
-      const profileIds = Array.from(new Set([msgData.sender_id, msgData.receiver_id]));
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, display_name, avatar_url")
-        .in("id", profileIds);
-
-      if (profiles) {
-        const s = profiles.find((p) => p.id === msgData.sender_id) || null;
-        const r = profiles.find((p) => p.id === msgData.receiver_id) || null;
-        setSenderProfile(s);
-        setReceiverProfile(r);
-      }
-
-      setLoading(false);
     }
 
     loadMessage();

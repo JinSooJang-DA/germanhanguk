@@ -114,49 +114,56 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     async function loadUserData() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
-      if (!user) {
-        alert("로그인이 필요합니다.");
-        router.push("/auth");
-        return;
+        if (!user) {
+          alert("로그인이 필요합니다.");
+          router.push("/auth");
+          return;
+        }
+
+        setEmail(user.email || "");
+
+        // 1. profiles 테이블에서 정보 가져오기
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("display_name, avatar_url, region, bio")
+          .eq("id", user.id)
+          .single();
+
+        if (profile) {
+          setDisplayName(profile.display_name || user.email?.split("@")[0] || "");
+          setAvatarUrl(profile.avatar_url || "");
+          setRegion(profile.region || "");
+          setBio(profile.bio || "");
+        } else {
+          setDisplayName(user.email?.split("@")[0] || "");
+        }
+
+        // 2. 내가 쓴 글 가져오기 (author_id 기준으로 조회)
+        const { data: posts } = await supabase
+          .from("posts")
+          .select("id, title, category, region, created_at")
+          .eq("author_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (posts) {
+          setMyPosts(posts);
+        }
+
+        setLoading(false);
+      } catch (err) {
+        console.error("Profile load error:", err);
+        setLoadError("프로필 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+        setLoading(false);
       }
-
-      setEmail(user.email || "");
-
-      // 1. profiles 테이블에서 정보 가져오기
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("display_name, avatar_url, region, bio")
-        .eq("id", user.id)
-        .single();
-
-      if (profile) {
-        setDisplayName(profile.display_name || user.email?.split("@")[0] || "");
-        setAvatarUrl(profile.avatar_url || "");
-        setRegion(profile.region || "");
-        setBio(profile.bio || "");
-      } else {
-        setDisplayName(user.email?.split("@")[0] || "");
-      }
-
-      // 2. 내가 쓴 글 가져오기 (author_id 기준으로 조회)
-      const { data: posts } = await supabase
-        .from("posts")
-        .select("id, title, category, region, created_at")
-        .eq("author_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (posts) {
-        setMyPosts(posts);
-      }
-
-      setLoading(false);
     }
 
     loadUserData();
@@ -168,30 +175,39 @@ export default function ProfilePage() {
     setMessage("");
     setSaving(true);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return;
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        display_name: displayName.trim(),
-        region: region.trim(),
-        bio: bio.trim(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", user.id);
+      if (!user) {
+        setMessage("로그인 세션이 만료되었습니다. 다시 로그인해 주세요.");
+        return;
+      }
 
-    setSaving(false);
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          display_name: displayName.trim(),
+          region: region.trim(),
+          bio: bio.trim(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
 
-    if (error) {
-      setMessage("프로필 수정 실패: " + error.message);
-      return;
+      if (error) {
+        setMessage("프로필 수정 실패: " + error.message);
+        return;
+      }
+
+      setMessage("프로필이 성공적으로 변경되었습니다.");
+      router.refresh();
+    } catch (err) {
+      console.error("Profile save error:", err);
+      setMessage("프로필 수정 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setSaving(false);
     }
-
-    setMessage("프로필이 성공적으로 변경되었습니다.");
-    router.refresh();
   }
 
  // 아바타 이미지 업로드 핸들러 (자동 리사이즈 & 압축 적용)
@@ -320,6 +336,16 @@ export default function ProfilePage() {
       <main className="new-post-page">
         <div className="post-form-container" style={{ textAlign: "center", padding: "40px" }}>
           <p>프로필 정보를 불러오는 중입니다...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <main className="new-post-page">
+        <div className="post-form-container" style={{ textAlign: "center", padding: "40px" }}>
+          <p>{loadError}</p>
         </div>
       </main>
     );

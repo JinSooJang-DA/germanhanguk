@@ -49,47 +49,53 @@ export default function PublicProfilePage({
       setLoading(true);
       setNotFound(false);
 
-      // 1. 현재 로그인 사용자 확인 (본인 여부 판단)
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      try {
+        // 1. 현재 로그인 사용자 확인 (본인 여부 판단)
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
-      if (user) {
-        setCurrentUserId(user.id);
-        setIsOwnProfile(user.id === id);
-      } else {
-        setCurrentUserId(null);
-        setIsOwnProfile(false);
-      }
+        if (user) {
+          setCurrentUserId(user.id);
+          setIsOwnProfile(user.id === id);
+        } else {
+          setCurrentUserId(null);
+          setIsOwnProfile(false);
+        }
 
-      // 2. 공개 프로필 정보 조회
-      // * 보안: email, metadata 등 개인정보를 제외하고 오직 공개 허용 컬럼만 명시적으로 조회
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("id, display_name, region, avatar_url, bio, created_at")
-        .eq("id", id)
-        .single();
+        // 2. 공개 프로필 정보 조회
+        // * 보안: email, metadata 등 개인정보를 제외하고 오직 공개 허용 컬럼만 명시적으로 조회
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("id, display_name, region, avatar_url, bio, created_at")
+          .eq("id", id)
+          .single();
 
-      if (profileError || !profileData) {
+        if (profileError || !profileData) {
+          setNotFound(true);
+          setLoading(false);
+          return;
+        }
+
+        setProfile(profileData);
+
+        // 3. 해당 사용자가 작성한 게시글 목록 조회
+        const { data: postsData, error: postsError } = await supabase
+          .from("posts")
+          .select("id, title, category, region, created_at")
+          .eq("author_id", id)
+          .order("created_at", { ascending: false });
+
+        if (!postsError && postsData) {
+          setPosts(postsData);
+        }
+
+        setLoading(false);
+      } catch (err) {
+        console.error("Public profile load error:", err);
         setNotFound(true);
         setLoading(false);
-        return;
       }
-
-      setProfile(profileData);
-
-      // 3. 해당 사용자가 작성한 게시글 목록 조회
-      const { data: postsData, error: postsError } = await supabase
-        .from("posts")
-        .select("id, title, category, region, created_at")
-        .eq("author_id", id)
-        .order("created_at", { ascending: false });
-
-      if (!postsError && postsData) {
-        setPosts(postsData);
-      }
-
-      setLoading(false);
     }
 
     loadPublicProfile();
