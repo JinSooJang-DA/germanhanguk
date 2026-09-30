@@ -23,6 +23,7 @@ interface PostDetailClientProps {
   id: string;
   initialPost: Post;
   initialComments: Comment[];
+  initialCommentsError: boolean;
   initialUserId: string | null;
 }
 
@@ -30,6 +31,7 @@ export default function PostDetailClient({
   id,
   initialPost,
   initialComments,
+  initialCommentsError,
   initialUserId,
 }: PostDetailClientProps) {
   const router = useRouter();
@@ -38,6 +40,10 @@ export default function PostDetailClient({
 
   const [post] = useState<Post>(initialPost);
   const [comments, setComments] = useState<Comment[]>(initialComments);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentsError, setCommentsError] = useState<string | null>(
+    initialCommentsError ? "댓글을 불러오지 못했습니다. 잠시 후 다시 시도해주세요." : null
+  );
   const [newComment, setNewComment] = useState("");
   const [currentUserId, setCurrentUserId] = useState<string | null>(initialUserId);
   const [submitting, setSubmitting] = useState(false);
@@ -58,19 +64,32 @@ export default function PostDetailClient({
   const [bottomPosts, setBottomPosts] = useState<Post[]>([]);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(1);
+  const [relatedPostsLoading, setRelatedPostsLoading] = useState(true);
+  const [relatedPostsError, setRelatedPostsError] = useState<string | null>(null);
   const newCommentCharacterCount = formatCharacterCount(newComment, COMMENT_RULE.maxLength);
   const replyCharacterCount = formatCharacterCount(replyContent, COMMENT_RULE.maxLength);
   const editingCommentCharacterCount = formatCharacterCount(editingCommentContent, COMMENT_RULE.maxLength);
 
   async function fetchComments() {
-    const { data } = await supabase
-      .from("comments")
-      .select("*")
-      .eq("post_id", parseInt(id, 10))
-      .order("created_at", { ascending: true });
+    setCommentsLoading(true);
+    setCommentsError(null);
 
-    if (data) {
-      const authorIds = Array.from(new Set(data.map(function(c) { return c.author_id; }).filter(Boolean)));
+    try {
+      const { data, error } = await supabase
+        .from("comments")
+        .select("*")
+        .eq("post_id", parseInt(id, 10))
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        console.error("Comments fetch error:", error);
+        setComments([]);
+        setCommentsError("댓글을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+        return;
+      }
+
+      const commentsData = data || [];
+      const authorIds = Array.from(new Set(commentsData.map(function(c) { return c.author_id; }).filter(Boolean)));
       const avatarMap: Record<string, string> = {};
 
       if (authorIds.length > 0) {
@@ -90,7 +109,7 @@ export default function PostDetailClient({
       const rootComments: Comment[] = [];
       const replyMap: Record<string, Comment[]> = {};
 
-      data.forEach(function(c) {
+      commentsData.forEach(function(c) {
         const commentWithAvatar: Comment = {
           ...c,
           author_avatar: avatarMap[c.author_id] || null,
@@ -101,7 +120,7 @@ export default function PostDetailClient({
           rootComments.push(commentWithAvatar);
         } else {
           let targetParentId = c.parent_id;
-          const parentComment = data.find(function(pc) { return pc.id === targetParentId; });
+          const parentComment = commentsData.find(function(pc) { return pc.id === targetParentId; });
           if (parentComment && parentComment.parent_id) {
             targetParentId = parentComment.parent_id;
           }
@@ -118,6 +137,13 @@ export default function PostDetailClient({
       });
 
       setComments(rootComments);
+      setCommentsError(null);
+    } catch (err) {
+      console.error("Unexpected comments fetch error:", err);
+      setComments([]);
+      setCommentsError("댓글을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setCommentsLoading(false);
     }
   }
 
@@ -169,26 +195,58 @@ export default function PostDetailClient({
       const from = (currentPage - 1) * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
 
-      const { count } = await supabase
-        .from("posts")
-        .select("*", { count: "exact", head: true })
-        .eq("category", post.category);
+      setRelatedPostsLoading(true);
+      setRelatedPostsError(null);
 
-      if (!isCurrent) return;
+      try {
+        const { count, error: countError } = await supabase
+          .from("posts")
+          .select("*", { count: "exact", head: true })
+          .eq("category", post.category);
 
-      if (count !== null) {
-        setTotalPages(Math.ceil(count / PAGE_SIZE) || 1);
-      }
+        if (countError) {
+          console.error("Related posts count fetch error:", countError);
+          if (isCurrent) {
+            setBottomPosts([]);
+            setRelatedPostsError("관련 게시글을 불러오지 못했습니다.");
+          }
+          return;
+        }
 
-      const { data } = await supabase
-        .from("posts")
-        .select("*")
-        .eq("category", post.category)
-        .order("created_at", { ascending: false })
-        .range(from, to);
+        if (!isCurrent) return;
 
-      if (isCurrent && data) {
-        setBottomPosts(data as unknown as Post[]);
+        if (count !== null) {
+          setTotalPages(Math.ceil(count / PAGE_SIZE) || 1);
+        }
+
+        const { data, error } = await supabase
+          .from("posts")
+          .select("*")
+          .eq("category", post.category)
+          .order("created_at", { ascending: false })
+          .range(from, to);
+
+        if (error) {
+          console.error("Related posts fetch error:", error);
+          if (isCurrent) {
+            setBottomPosts([]);
+            setRelatedPostsError("관련 게시글을 불러오지 못했습니다.");
+          }
+          return;
+        }
+
+        if (isCurrent) {
+          setBottomPosts((data || []) as unknown as Post[]);
+          setRelatedPostsError(null);
+        }
+      } catch (err) {
+        console.error("Unexpected related posts fetch error:", err);
+        if (isCurrent) {
+          setBottomPosts([]);
+          setRelatedPostsError("관련 게시글을 불러오지 못했습니다.");
+        }
+      } finally {
+        if (isCurrent) setRelatedPostsLoading(false);
       }
     }
 
@@ -578,7 +636,27 @@ export default function PostDetailClient({
         </form>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          {comments.length === 0 ? (
+          {commentsLoading ? (
+            <p style={{ color: "var(--gh-text-muted)", fontSize: "14px" }}>댓글을 불러오는 중입니다...</p>
+          ) : commentsError ? (
+            <div style={{ color: "var(--gh-text-muted)", fontSize: "14px" }}>
+              <p style={{ margin: "0 0 10px" }}>{commentsError}</p>
+              <button
+                type="button"
+                onClick={fetchComments}
+                style={{
+                  padding: "6px 12px",
+                  background: "var(--gh-surface-muted)",
+                  color: "var(--gh-text)",
+                  border: "1px solid var(--gh-border)",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                다시 시도
+              </button>
+            </div>
+          ) : comments.length === 0 ? (
             <p style={{ color: "#888", fontSize: "14px" }}>첫 번째 댓글을 달아보세요!</p>
           ) : (
             comments.map(function(comment) {
@@ -948,19 +1026,27 @@ export default function PostDetailClient({
           {"'" + currentCategoryLabel + "' 카테고리 다른 글"}
         </h3>
 
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ borderBottom: "1px solid var(--gh-border)", background: "var(--gh-surface-muted)", textAlign: "left" }}>
-              <th style={{ padding: "10px 12px", fontSize: "14px" }}>카테고리</th>
-              <th style={{ padding: "10px 12px", fontSize: "14px" }}>제목</th>
-              <th style={{ padding: "10px 12px", fontSize: "14px" }}>지역</th>
-              <th style={{ padding: "10px 12px", fontSize: "14px" }}>작성자</th>
-              <th style={{ padding: "10px 12px", fontSize: "14px" }}>작성일</th>
-              <th style={{ padding: "10px 12px", fontSize: "14px", textAlign: "center" }}>조회</th>
-            </tr>
-          </thead>
-          <tbody>
-            {bottomPosts.map(function(p) {
+        {relatedPostsLoading ? (
+          <p style={{ color: "var(--gh-text-muted)", fontSize: "14px" }}>관련 게시글을 불러오는 중입니다...</p>
+        ) : relatedPostsError ? (
+          <p style={{ color: "var(--gh-text-muted)", fontSize: "14px" }}>{relatedPostsError}</p>
+        ) : bottomPosts.length === 0 ? (
+          <p style={{ color: "var(--gh-text-muted)", fontSize: "14px" }}>관련 게시글이 없습니다.</p>
+        ) : (
+          <>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--gh-border)", background: "var(--gh-surface-muted)", textAlign: "left" }}>
+                  <th style={{ padding: "10px 12px", fontSize: "14px" }}>카테고리</th>
+                  <th style={{ padding: "10px 12px", fontSize: "14px" }}>제목</th>
+                  <th style={{ padding: "10px 12px", fontSize: "14px" }}>지역</th>
+                  <th style={{ padding: "10px 12px", fontSize: "14px" }}>작성자</th>
+                  <th style={{ padding: "10px 12px", fontSize: "14px" }}>작성일</th>
+                  <th style={{ padding: "10px 12px", fontSize: "14px", textAlign: "center" }}>조회</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bottomPosts.map(function(p) {
               const isCurrent = String(p.id) === String(post.id);
               return (
                 <tr
@@ -1013,40 +1099,42 @@ export default function PostDetailClient({
                   </td>
                 </tr>
               );
-            })}
-          </tbody>
-        </table>
+                })}
+              </tbody>
+            </table>
 
-        {totalPages > 1 && (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "6px",
-              marginTop: "20px",
-            }}
-          >
-            {Array.from({ length: totalPages }, function(_, i) { return i + 1; }).map(function(pageNum) {
-              return (
-                <button
-                  key={pageNum}
-                  onClick={setCurrentPage.bind(null, pageNum)}
-                  style={{
-                    padding: "6px 12px",
-                    border: "1px solid #cbd5e1",
-                    borderRadius: "4px",
-                    background: currentPage === pageNum ? "#0f172a" : "#fff",
-                    color: currentPage === pageNum ? "#fff" : "#334155",
-                    fontWeight: currentPage === pageNum ? "bold" : "normal",
-                    cursor: "pointer",
-                    fontSize: "13px",
-                  }}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
-          </div>
+            {totalPages > 1 && (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: "6px",
+                  marginTop: "20px",
+                }}
+              >
+                {Array.from({ length: totalPages }, function(_, i) { return i + 1; }).map(function(pageNum) {
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={setCurrentPage.bind(null, pageNum)}
+                      style={{
+                        padding: "6px 12px",
+                        border: "1px solid #cbd5e1",
+                        borderRadius: "4px",
+                        background: currentPage === pageNum ? "#0f172a" : "#fff",
+                        color: currentPage === pageNum ? "#fff" : "#334155",
+                        fontWeight: currentPage === pageNum ? "bold" : "normal",
+                        cursor: "pointer",
+                        fontSize: "13px",
+                      }}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

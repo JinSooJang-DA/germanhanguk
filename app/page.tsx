@@ -41,6 +41,8 @@ function HomeContent() {
   const selectedCategory = categoryParam;
   const [searchKeyword] = useState("");
   const [loadedCategory, setLoadedCategory] = useState<string | null>(null);
+  const [postsError, setPostsError] = useState<string | null>(null);
+  const [postsRetryKey, setPostsRetryKey] = useState(0);
   const loading = loadedCategory !== selectedCategory;
 
   useEffect(function() {
@@ -104,21 +106,32 @@ function HomeContent() {
     }
 
     async function fetchTrendingPosts() {
-    // 조회수(views)가 높은 인기 글 5개 조회 (N+1 방지를 위해 댓글/좋아요 카운트 조인)
-    const { data, error } = await supabase
-      .from("posts")
-      .select("*, comments(count), post_likes(count)")
-      .order("views", { ascending: false })
-      .limit(5)
-      .returns<Post[]>();
+      try {
+        // 조회수(views)가 높은 인기 글 5개 조회 (N+1 방지를 위해 댓글/좋아요 카운트 조인)
+        const { data, error } = await supabase
+          .from("posts")
+          .select("*, comments(count), post_likes(count)")
+          .order("views", { ascending: false })
+          .limit(5)
+          .returns<Post[]>();
 
-    if (!error && data && isCurrent) {
-      setTrendingPosts(data);
-    }
+        if (error) {
+          console.error("Trending posts fetch error:", error);
+          if (isCurrent) setTrendingPosts([]);
+          return;
+        }
+
+        if (data && isCurrent) {
+          setTrendingPosts(data);
+        }
+      } catch (err) {
+        console.error("Unexpected trending posts fetch error:", err);
+        if (isCurrent) setTrendingPosts([]);
+      }
     }
 
     async function fetchPosts() {
-    try {
+      try {
       // N+1 방지를 위해 댓글 수(comments) 및 좋아요 수(post_likes) 조인하여 한 번에 페칭
       let query = supabase
         .from("posts")
@@ -135,35 +148,52 @@ function HomeContent() {
       }
 
       const { data, error } = await query.returns<Post[]>();
-      if (!error && data) {
-        const authorIds = Array.from(new Set(data.map(function(p) { return p.author_id; }).filter(Boolean)));
-        const avatarMap: Record<string, string> = {};
-
-        if (authorIds.length > 0) {
-          const { data: profiles } = await supabase
-            .from("profiles")
-            .select("id, avatar_url")
-            .in("id", authorIds);
-
-          if (profiles) {
-            profiles.forEach(function(p) {
-              if (p.avatar_url) avatarMap[p.id] = p.avatar_url;
-            });
-          }
+      if (error) {
+        console.error("Posts fetch error:", error);
+        if (isCurrent) {
+          setPosts([]);
+          setPostsError("게시글을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
         }
-
-        const postsWithAvatar: Post[] = data.map(function(p) {
-          return {
-            ...p,
-            author_avatar: p.author_id ? avatarMap[p.author_id] || "" : "",
-          };
-        });
-
-        if (isCurrent) setPosts(postsWithAvatar);
+        return;
       }
-    } finally {
-      if (isCurrent) setLoadedCategory(selectedCategory);
-    }
+
+      const postsData = data || [];
+      const authorIds = Array.from(new Set(postsData.map(function(p) { return p.author_id; }).filter(Boolean)));
+      const avatarMap: Record<string, string> = {};
+
+      if (authorIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, avatar_url")
+          .in("id", authorIds);
+
+        if (profiles) {
+          profiles.forEach(function(p) {
+            if (p.avatar_url) avatarMap[p.id] = p.avatar_url;
+          });
+        }
+      }
+
+      const postsWithAvatar: Post[] = postsData.map(function(p) {
+        return {
+          ...p,
+          author_avatar: p.author_id ? avatarMap[p.author_id] || "" : "",
+        };
+      });
+
+      if (isCurrent) {
+        setPosts(postsWithAvatar);
+        setPostsError(null);
+      }
+      } catch (err) {
+        console.error("Unexpected posts fetch error:", err);
+        if (isCurrent) {
+          setPosts([]);
+          setPostsError("게시글을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+        }
+      } finally {
+        if (isCurrent) setLoadedCategory(selectedCategory);
+      }
     }
 
     fetchPosts();
@@ -173,7 +203,15 @@ function HomeContent() {
     return function() {
       isCurrent = false;
     };
-  }, [searchKeyword, selectedCategory]);
+  }, [postsRetryKey, searchKeyword, selectedCategory]);
+
+  const retryPosts = function() {
+    setPostsError(null);
+    setLoadedCategory(null);
+    setPostsRetryKey(function(previous) {
+      return previous + 1;
+    });
+  };
 
   const nextSlide = function() {
     setCurrentSlide(function(prev) {
@@ -446,6 +484,25 @@ function HomeContent() {
 
         {loading ? (
           <p style={{ textAlign: "center", padding: "40px 0", color: "#64748b" }}>게시글을 불러오는 중입니다...</p>
+        ) : postsError ? (
+          <div style={{ textAlign: "center", padding: "60px 0", color: "var(--gh-text-muted)" }}>
+            <p style={{ margin: "0 0 14px" }}>{postsError}</p>
+            <button
+              type="button"
+              onClick={retryPosts}
+              style={{
+                padding: "8px 14px",
+                background: "var(--gh-surface-muted)",
+                color: "var(--gh-text)",
+                border: "1px solid var(--gh-border)",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontWeight: 600,
+              }}
+            >
+              다시 시도
+            </button>
+          </div>
         ) : posts.length === 0 ? (
           <p style={{ color: "#64748b", padding: "60px 0", textAlign: "center" }}>등록된 게시글이 없습니다.</p>
         ) : (

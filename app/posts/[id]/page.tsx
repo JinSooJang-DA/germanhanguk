@@ -53,11 +53,15 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   }
 
   // 2. Fetch comments on Server (pre-rendered for search indexability)
-  const { data: commentsData } = await supabase
+  const { data: commentsData, error: commentsError } = await supabase
     .from("comments")
     .select("*")
     .eq("post_id", parseInt(id, 10))
     .order("created_at", { ascending: true });
+
+  if (commentsError) {
+    console.error("Post comments load error:", commentsError);
+  }
 
   const commentsRaw = (commentsData || []) as Comment[];
 
@@ -175,7 +179,13 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         </div>
 
         {/* Client-side interactive layer (Optimistic likes, Replies list, submission forms, list navigation) */}
-        <PostDetailClient id={id} initialPost={post} initialComments={comments} initialUserId={userId} />
+        <PostDetailClient
+          id={id}
+          initialPost={post}
+          initialComments={comments}
+          initialCommentsError={Boolean(commentsError)}
+          initialUserId={userId}
+        />
       </div>
     </main>
   );
