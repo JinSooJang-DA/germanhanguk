@@ -2,6 +2,7 @@ import { SITE_URL } from "@/lib/config";
 import React from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { formatDate } from "@/lib/date";
 
 export const metadata = {
   title: "독일 세금 & 연말정산 가이드 - GermanHanguk",
@@ -139,7 +140,7 @@ export default async function TaxesHubPage() {
                 </h3>
                 <p style={{ fontSize: "12px", color: "#94a3b8", margin: 0 }}>
                   {isPublished
-                    ? "정식 가이드 게시됨 · 마지막 검증일: " + new Date(matchedDb.last_verified_at).toLocaleDateString()
+                    ? "정식 가이드 게시됨 · 마지막 검증일: " + formatDate(matchedDb.last_verified_at)
                     : "에디터 집필 중 · 2026 하반기 공개 예정"}
                 </p>
               </div>

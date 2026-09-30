@@ -2,6 +2,7 @@ import { SITE_URL } from "@/lib/config";
 import React from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { formatDate } from "@/lib/date";
 
 export const metadata = {
   title: "한독 문화·여행 가이드 - GermanHanguk",
@@ -64,7 +65,7 @@ export default async function CultureTravelHubPage() {
           <div style={{ flex: "1 1 300px", minWidth: "260px" }}>
             <h3 style={{ fontSize: "15px", fontWeight: "bold", margin: "0 0 6px", color: isPublished ? "#0f172a" : "#64748b", wordBreak: "keep-all" }}>{isPublished ? matchedDb.title : topic.title}</h3>
             <p style={{ fontSize: "13px", color: "#64748b", lineHeight: "1.5", margin: "0 0 6px", wordBreak: "keep-all" }}>{isPublished ? matchedDb.description : topic.defaultDesc}</p>
-            <p style={{ fontSize: "12px", color: "#94a3b8", margin: 0 }}>{isPublished ? "정식 가이드 게시됨 · 마지막 검증일: " + new Date(matchedDb.last_verified_at).toLocaleDateString() : "에디터 집필 중 · 2026 하반기 공개 예정"}</p>
+            <p style={{ fontSize: "12px", color: "#94a3b8", margin: 0 }}>{isPublished ? "정식 가이드 게시됨 · 마지막 검증일: " + formatDate(matchedDb.last_verified_at) : "에디터 집필 중 · 2026 하반기 공개 예정"}</p>
           </div>
           {isPublished ? <Link href={"/guide/" + matchedDb.slug} style={{ textDecoration: "none" }}><button style={{ padding: "6px 14px", background: "#2563eb", color: "#fff", border: "none", borderRadius: "4px", fontSize: "13px", fontWeight: "bold", cursor: "pointer" }}>가이드 읽기</button></Link> : <span style={{ fontSize: "12px", color: "#94a3b8", background: "#f1f5f9", padding: "4px 10px", borderRadius: "4px", fontWeight: "500" }}>준비 중</span>}
         </div>;

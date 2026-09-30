@@ -52,8 +52,52 @@ export const GUIDE_CATEGORIES: readonly GuideCategory[] = [
   { value: "culture-travel", label: { ko: "문화·여행", de: "Kultur & Reisen", en: "Culture & Travel" }, icon: "✈️", description: "독일 주말 휴일, 연차 사용, 기차 여행" },
 ] as const;
 
+export interface GuideCategoryMapping {
+  dbCategory: string;
+  hubSlug: string;
+  label: {
+    ko: string;
+    de: string;
+    en: string;
+  };
+  communityCategory: CategoryValue;
+}
+
+// Guides use DB category values that are not always identical to their public hub URLs.
+// Keep their display labels and community destinations explicit in one place.
+export const GUIDE_CATEGORY_MAPPINGS: readonly GuideCategoryMapping[] = [
+  { dbCategory: "visa-residence", hubSlug: "visa-residence", label: { ko: "비자·행정", de: "Visum & Behörden", en: "Visa & Bureaucracy" }, communityCategory: "life" },
+  { dbCategory: "jobs", hubSlug: "jobs", label: { ko: "취업·직장", de: "Arbeit & Beruf", en: "Jobs & Career" }, communityCategory: "jobs" },
+  { dbCategory: "education", hubSlug: "education", label: { ko: "유학·교육", de: "Studium & Ausbildung", en: "Study & Education" }, communityCategory: "education" },
+  { dbCategory: "housing", hubSlug: "housing", label: { ko: "집·이사", de: "Wohnen & Umzug", en: "Housing & Relocation" }, communityCategory: "life" },
+  { dbCategory: "tax", hubSlug: "taxes", label: { ko: "세금", de: "Steuern", en: "Taxes" }, communityCategory: "life" },
+  { dbCategory: "insurance", hubSlug: "insurance", label: { ko: "보험", de: "Versicherungen", en: "Insurance" }, communityCategory: "life" },
+  { dbCategory: "driving", hubSlug: "driving", label: { ko: "교통·운전", de: "Verkehr & Führerschein", en: "Traffic & Driving" }, communityCategory: "life" },
+  { dbCategory: "german-life", hubSlug: "german-life", label: { ko: "독일생활", de: "Leben in DE", en: "German Life" }, communityCategory: "life" },
+  { dbCategory: "korean-life", hubSlug: "korean-life", label: { ko: "한국생활", de: "Leben in KR", en: "Korean Life" }, communityCategory: "community" },
+  { dbCategory: "language", hubSlug: "language", label: { ko: "언어", de: "Sprache", en: "Language" }, communityCategory: "community" },
+  { dbCategory: "culture-travel", hubSlug: "culture-travel", label: { ko: "문화·여행", de: "Kultur & Reisen", en: "Culture & Travel" }, communityCategory: "community" },
+] as const;
+
+function getGuideCategoryMapping(value: string): GuideCategoryMapping | undefined {
+  return GUIDE_CATEGORY_MAPPINGS.find(function(mapping) {
+    return mapping.dbCategory === value;
+  });
+}
+
 export function getGuideCategoryLabel(value: string, locale: "ko" | "de" | "en" = "ko"): string {
+  const mapping = getGuideCategoryMapping(value);
+  if (mapping) return mapping.label[locale] || mapping.label.ko;
+
   const cat = GUIDE_CATEGORIES.find((c) => c.value === value);
   if (!cat) return value;
   return cat.label[locale] || cat.label.ko;
+}
+
+export function getGuideCategoryHubSlug(value: string): string {
+  return getGuideCategoryMapping(value)?.hubSlug || value;
+}
+
+export function getGuideCommunityCategory(value: string): CategoryValue {
+  return getGuideCategoryMapping(value)?.communityCategory || "community";
 }

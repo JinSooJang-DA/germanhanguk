@@ -6,6 +6,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Post, Comment } from "@/types/post";
 import { getCategoryLabel } from "@/lib/constants";
+import { formatDate, formatDateTime } from "@/lib/date";
 import { VIEW_INCREMENT_EVENT } from "@/components/PostViewCount";
 
 const PAGE_SIZE = 10;
@@ -26,8 +27,9 @@ export default function PostDetailClient({
 }: PostDetailClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const initialPage = parseInt(searchParams.get("page") || "1", 10);
 
-  const [post, setPost] = useState<Post>(initialPost);
+  const [post] = useState<Post>(initialPost);
   const [comments, setComments] = useState<Comment[]>(initialComments);
   const [newComment, setNewComment] = useState("");
   const [currentUserId, setCurrentUserId] = useState<string | null>(initialUserId);
@@ -47,33 +49,8 @@ export default function PostDetailClient({
   const [replyContent, setReplyContent] = useState("");
 
   const [bottomPosts, setBottomPosts] = useState<Post[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(1);
-
-  async function fetchBottomPosts(page: number, category: string) {
-    const from = (page - 1) * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
-
-    const { count } = await supabase
-      .from("posts")
-      .select("*", { count: "exact", head: true })
-      .eq("category", category);
-
-    if (count !== null) {
-      setTotalPages(Math.ceil(count / PAGE_SIZE) || 1);
-    }
-
-    const { data } = await supabase
-      .from("posts")
-      .select("*")
-      .eq("category", category)
-      .order("created_at", { ascending: false })
-      .range(from, to);
-
-    if (data) {
-      setBottomPosts(data as unknown as Post[]);
-    }
-  }
 
   async function fetchComments() {
     const { data } = await supabase
@@ -135,13 +112,12 @@ export default function PostDetailClient({
   }
 
   useEffect(function() {
-    const pageParam = parseInt(searchParams.get("page") || "1", 10);
-    setCurrentPage(pageParam);
-  }, [searchParams]);
+    let isCurrent = true;
 
-  useEffect(function() {
     async function loadSessionAndLikes() {
       const { data: { session } } = await supabase.auth.getSession();
+      if (!isCurrent) return;
+
       const userId = session?.user?.id || null;
       setCurrentUserId(userId);
 
@@ -166,17 +142,52 @@ export default function PostDetailClient({
           .eq("user_id", userId)
           .maybeSingle();
 
+        if (!isCurrent) return;
+
         if (userLike) {
           initialIsLiked = true;
         }
       }
 
+      if (!isCurrent) return;
+
       setLikesCount(initialLikesCount);
       setIsLiked(initialIsLiked);
     }
 
+    async function loadBottomPosts() {
+      const from = (currentPage - 1) * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
+      const { count } = await supabase
+        .from("posts")
+        .select("*", { count: "exact", head: true })
+        .eq("category", post.category);
+
+      if (!isCurrent) return;
+
+      if (count !== null) {
+        setTotalPages(Math.ceil(count / PAGE_SIZE) || 1);
+      }
+
+      const { data } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("category", post.category)
+        .order("created_at", { ascending: false })
+        .range(from, to);
+
+      if (isCurrent && data) {
+        setBottomPosts(data as unknown as Post[]);
+      }
+    }
+
     loadSessionAndLikes();
-    fetchBottomPosts(currentPage, post.category);
+    loadBottomPosts();
+
+    return function() {
+      isCurrent = false;
+    };
   }, [id, currentPage, post.category]);
 
   useEffect(function() {
@@ -423,6 +434,53 @@ export default function PostDetailClient({
 
   return (
     <div>
+      {isAuthor && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "8px",
+            margin: "24px 0",
+          }}
+        >
+          <Link
+            href={"/posts/" + id + "/edit"}
+            style={{
+              padding: "8px 12px",
+              background: "var(--gh-surface-muted)",
+              color: "var(--gh-text)",
+              border: "1px solid var(--gh-border)",
+              borderRadius: "6px",
+              fontSize: "14px",
+              fontWeight: "500",
+              textDecoration: "none",
+              whiteSpace: "nowrap",
+            }}
+          >
+            수정
+          </Link>
+          <button
+            type="button"
+            onClick={handleDeletePost}
+            style={{
+              padding: "8px 12px",
+              background: "var(--gh-surface-muted)",
+              color: "var(--gh-text)",
+              border: "1px solid var(--gh-border)",
+              borderRadius: "6px",
+              fontSize: "14px",
+              fontWeight: "500",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            삭제
+          </button>
+        </div>
+      )}
+
       {/* 좋아요 버튼 영역 */}
       <div style={{ display: "flex", justifyContent: "center", margin: "40px 0" }}>
         <button
@@ -584,7 +642,7 @@ export default function PostDetailClient({
                           <span style={{ fontWeight: "bold", color: "var(--gh-text)" }}>{comment.author_name}</span>
                         )}
                         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                          <span>{new Date(comment.created_at).toLocaleString()}</span>
+                          <span>{formatDateTime(comment.created_at)}</span>
                           {isCommentAuthor && !isEditing && (
                             <div style={{ display: "flex", gap: "8px" }}>
                               <button
@@ -772,7 +830,7 @@ export default function PostDetailClient({
                                 <div style={{ display: "flex", fontSize: "12px", color: "var(--gh-text-muted)", marginBottom: "4px", justifyContent: "space-between" }}>
                                 <span style={{ fontWeight: "bold", color: "var(--gh-text)" }}>{reply.author_name}</span>
                                 <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                                  <span>{new Date(reply.created_at).toLocaleString()}</span>
+                                  <span>{formatDateTime(reply.created_at)}</span>
                                   {isReplyAuthor && !isEditingReply && (
                                     <div style={{ display: "flex", gap: "8px" }}>
                                       <button
@@ -900,7 +958,7 @@ export default function PostDetailClient({
                     )}
                   </td>
                   <td className="related-post-date" style={{ padding: "10px 12px", fontSize: "13px", color: "var(--gh-text-subtle)" }}>
-                    {new Date(p.created_at).toLocaleDateString()}
+                    {formatDate(p.created_at)}
                   </td>
                   <td className="related-post-views" style={{ padding: "10px 12px", fontSize: "13px", color: "var(--gh-text-subtle)", textAlign: "center" }}>
                     {p.views || 0}
@@ -943,13 +1001,6 @@ export default function PostDetailClient({
           </div>
         )}
       </div>
-
-      {/* 포스트 글 삭제 관련 버튼 핸들러 연결용 빈 폼 또는 트리거 */}
-      {isAuthor && (
-        <div style={{ display: "none" }}>
-          <button id="btn-delete-post" onClick={handleDeletePost} />
-        </div>
-      )}
     </div>
   );
 }

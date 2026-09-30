@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { formatDateTime } from "@/lib/date";
 
 interface NotificationItem {
   id: string;
@@ -26,46 +27,62 @@ interface NotificationItem {
 export default function NotificationsPage() {
   const router = useRouter();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-
-  async function checkAuthAndFetch() {
-    setLoading(true);
-    setError(null);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        alert("로그인이 필요한 서비스입니다.");
-        router.push("/auth");
-        return;
-      }
-      setCurrentUserId(session.user.id);
-      await fetchNotifications();
-    } catch (err: unknown) {
-      console.error("Auth fetch error:", err);
-      setError("알림 목록을 불러오는 데 실패했습니다.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function fetchNotifications() {
-    const { data, error: fetchErr } = await supabase
-      .from("notifications")
-      .select("id,recipient_id,actor_id,type,reference_id,post_id,is_read,created_at,profiles:actor_id(display_name,avatar_url),posts:post_id(title)")
-      .order("created_at", { ascending: false });
-
-    if (fetchErr) {
-      setError(fetchErr.message);
-    } else {
-      setNotifications((data || []) as unknown as NotificationItem[]);
-    }
-  }
+  const [reloadKey, setReloadKey] = useState(0);
+  const [completedLoadKey, setCompletedLoadKey] = useState<number | null>(null);
+  const loading = completedLoadKey !== reloadKey;
 
   useEffect(function() {
-    checkAuthAndFetch();
-  }, []);
+    let isCurrent = true;
+
+    async function loadNotifications() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!isCurrent) return;
+
+        if (!session) {
+          setNotifications([]);
+          setCurrentUserId(null);
+          setError(null);
+          alert("로그인이 필요한 서비스입니다.");
+          router.push("/auth");
+          return;
+        }
+
+        setCurrentUserId(session.user.id);
+
+        const { data, error: fetchErr } = await supabase
+          .from("notifications")
+          .select("id,recipient_id,actor_id,type,reference_id,post_id,is_read,created_at,profiles:actor_id(display_name,avatar_url),posts:post_id(title)")
+          .order("created_at", { ascending: false });
+
+        if (!isCurrent) return;
+
+        if (fetchErr) {
+          setError(fetchErr.message);
+        } else {
+          setError(null);
+          setNotifications((data || []) as unknown as NotificationItem[]);
+        }
+      } catch (err: unknown) {
+        if (isCurrent) {
+          console.error("Auth fetch error:", err);
+          setError("알림 목록을 불러오는 데 실패했습니다.");
+        }
+      } finally {
+        if (isCurrent) {
+          setCompletedLoadKey(reloadKey);
+        }
+      }
+    }
+
+    loadNotifications();
+
+    return function() {
+      isCurrent = false;
+    };
+  }, [reloadKey, router]);
 
   async function handleMarkAsRead(notifId: string) {
     try {
@@ -153,7 +170,11 @@ export default function NotificationsPage() {
         <div className="wrapper" style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
           <p style={{ color: "#ef4444", marginBottom: "16px" }}>에러: {error}</p>
           <button
-            onClick={checkAuthAndFetch}
+            onClick={function() {
+              setReloadKey(function(previousKey) {
+                return previousKey + 1;
+              });
+            }}
             style={{
               padding: "10px 20px",
               background: "#0f172a",
@@ -272,7 +293,7 @@ export default function NotificationsPage() {
                     </p>
                     <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
                       <span style={{ fontSize: "12px", color: "#94a3b8" }}>
-                        {new Date(item.created_at).toLocaleString()}
+                        {formatDateTime(item.created_at)}
                       </span>
                       
                       <Link

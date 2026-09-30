@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { formatDate } from "@/lib/date";
 import { PublicProfile } from "@/types/profile";
 
 interface UserPost {
@@ -203,7 +204,7 @@ export default function PublicProfilePage({
   }
 
   const joinDate = profile.created_at
-    ? new Date(profile.created_at).toLocaleDateString()
+    ? formatDate(profile.created_at)
     : "-";
 
   return (
@@ -454,7 +455,7 @@ export default function PublicProfilePage({
                         {post.region || "-"}
                       </td>
                       <td style={{ padding: "12px 16px", fontSize: "13px", color: "#94a3b8" }}>
-                        {new Date(post.created_at).toLocaleDateString()}
+                        {formatDate(post.created_at)}
                       </td>
                     </tr>
                   ))}

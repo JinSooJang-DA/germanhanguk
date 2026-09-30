@@ -3,15 +3,21 @@
   text-decoration: none;
 }
 
-:root { color-scheme: light; --gh-page-bg:#f8fafc; --gh-surface:#ffffff; --gh-surface-muted:#f1f5f9; --gh-text:#0f172a; --gh-text-muted:#475569; --gh-text-subtle:#64748b; --gh-border:#e2e8f0; --gh-accent:#2563eb; --gh-focus:#2563eb; --gh-control-active:#0f172a; --gh-control-active-text:#ffffff; }
-html[data-theme="dark"] { color-scheme: dark; --gh-page-bg:#0b1220; --gh-surface:#111827; --gh-surface-muted:#1e293b; --gh-text:#f8fafc; --gh-text-muted:#cbd5e1; --gh-text-subtle:#94a3b8; --gh-border:#334155; --gh-accent:#60a5fa; --gh-focus:#93c5fd; --gh-control-active:#e2e8f0; --gh-control-active-text:#0f172a; }
+:root { color-scheme: light; --gh-page-bg:#f8fafc; --gh-surface:#ffffff; --gh-surface-muted:#f1f5f9; --gh-text:#0f172a; --gh-text-muted:#475569; --gh-text-subtle:#64748b; --gh-border:#e2e8f0; --gh-accent:#2563eb; --gh-focus:#2563eb; --gh-control-active:#0f172a; --gh-control-active-text:#ffffff; --gh-cta-surface:#eff6ff; --gh-cta-border:#bfdbfe; --gh-cta-text:#1e3a8a; --gh-cta-muted:#1e40af; --gh-cta-primary:#1d4ed8; }
+html[data-theme="dark"] { color-scheme: dark; --gh-page-bg:#17202a; --gh-surface:#202a36; --gh-surface-muted:#293543; --gh-text:#edf1f5; --gh-text-muted:#c1c9d2; --gh-text-subtle:#9ca8b5; --gh-border:#34414e; --gh-accent:#7aa7d9; --gh-focus:#a8c7e8; --gh-control-active:#d5dde5; --gh-control-active-text:#17202a; --gh-cta-surface:#263443; --gh-cta-border:#3c5369; --gh-cta-text:#e2eaf2; --gh-cta-muted:#becbd8; --gh-cta-primary:#5f8fbd; }
 
 body {
   margin: 0;
   color: var(--gh-text);
   background: var(--gh-page-bg);
-  font-family: Arial, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", Arial, sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
 }
+
+button, input, select, textarea { font: inherit; }
+h1 { font-weight: 700; }
+h2, h3 { font-weight: 600; }
 
 .wrapper {
   width: 100%;
@@ -51,7 +57,7 @@ header .wrapper {
   height: 100%;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1179px) {
   header {
     height: 60px; /* 모바일 전용 컴팩트 높이 지정 */
   }
@@ -60,6 +66,40 @@ header .wrapper {
   }
   .mobile-header {
     display: flex !important;
+  }
+}
+
+@media (min-width: 1180px) {
+  .desktop-header {
+    flex-wrap: nowrap;
+    min-width: 0;
+  }
+
+  .desktop-logo,
+  .desktop-nav a,
+  .desktop-login,
+  .desktop-login button,
+  .desktop-user-actions,
+  .desktop-user-actions a,
+  .desktop-user-actions button {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .desktop-nav {
+    flex: 1 1 auto;
+    min-width: 0;
+    flex-wrap: nowrap !important;
+    gap: clamp(12px, 1.5vw, 24px) !important;
+    white-space: nowrap;
+  }
+
+  .desktop-user-actions {
+    gap: 10px !important;
+  }
+
+  .desktop-header > .theme-selector {
+    flex-shrink: 0;
   }
 }
 
@@ -296,6 +336,123 @@ html[data-theme="dark"] [style*="color: rgb(148, 163, 184)"] { color:var(--gh-te
   .related-post-views::before {
     content: "조회 ";
   }
+
+  .main-post-list {
+    overflow-x: visible !important;
+  }
+
+  .main-post-list table,
+  .main-post-list tbody,
+  .main-post-list tr,
+  .main-post-list td {
+    display: block;
+    width: 100%;
+    min-width: 0 !important;
+  }
+
+  .main-post-list thead {
+    display: none;
+  }
+
+  .main-post-list tbody tr {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    column-gap: 8px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--gh-border) !important;
+  }
+
+  .main-post-list td {
+    padding: 0 !important;
+    text-align: left !important;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+
+  .main-post-category,
+  .main-post-title {
+    grid-column: 1 / -1;
+  }
+
+  .main-post-category {
+    margin-bottom: 6px;
+    color: var(--gh-accent) !important;
+    font-size: 12px !important;
+    font-weight: 600;
+  }
+
+  .main-post-title {
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+
+  .main-post-title a {
+    display: inline;
+    font-weight: 600 !important;
+  }
+
+  .main-post-region,
+  .main-post-author,
+  .main-post-date,
+  .main-post-views {
+    font-size: 12px !important;
+  }
+
+  .main-post-region,
+  .main-post-date {
+    grid-column: 1;
+  }
+
+  .main-post-author,
+  .main-post-views {
+    grid-column: 2;
+  }
+
+  .main-post-author > div,
+  .main-post-author a {
+    display: inline-flex !important;
+    gap: 4px !important;
+  }
+
+  .main-post-author div[style*="width"] {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .main-post-views::before {
+    content: "조회·추천 ";
+  }
+
+  .new-post-page > .post-form-container {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .kspot-map-controls {
+    top: 12px !important;
+    right: 12px !important;
+    left: 12px;
+    max-width: none !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    padding: 4px !important;
+    scrollbar-width: none;
+  }
+
+  .kspot-map-controls::-webkit-scrollbar { display: none; }
+
+  .kspot-map-controls button {
+    flex: 0 0 auto;
+    min-height: 36px;
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+    white-space: nowrap;
+  }
+
+  .kspot-status {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+  }
 }
 
 .back-link {
@@ -343,8 +500,8 @@ html[data-theme="dark"] [style*="color: rgb(148, 163, 184)"] { color:var(--gh-te
 }
 
 .auth-box {
-  width: 420px;
-  max-width: 90%;
+  width: calc(100% - 40px);
+  max-width: 420px;
   padding: 40px;
   background: var(--gh-surface);
   border-radius: 12px;
@@ -475,7 +632,7 @@ html[data-theme="dark"] [style*="color: rgb(148, 163, 184)"] { color:var(--gh-te
 .form-group label {
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: var(--gh-text);
 }
 
 .form-group input,
@@ -483,32 +640,37 @@ html[data-theme="dark"] [style*="color: rgb(148, 163, 184)"] { color:var(--gh-te
 .form-group textarea {
   width: 100%;
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--gh-border);
   border-radius: 6px;
   font-size: 15px;
   font-family: inherit;
+  background: var(--gh-surface);
+  color: var(--gh-text);
 }
+
+.form-group input::placeholder,
+.form-group textarea::placeholder { color: var(--gh-text-subtle); }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #222;
+  border-color: var(--gh-focus);
 }
 
 .submit-btn {
   padding: 14px;
   border: 0;
   border-radius: 6px;
-  background: #222;
-  color: white;
+  background: var(--gh-control-active);
+  color: var(--gh-control-active-text);
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
 }
 
 .submit-btn:hover {
-  background: #444;
+  filter: brightness(1.08);
 }
 
 .form-message {
@@ -605,5 +767,27 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .guide-card.active-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
-  border-color: #bfdbfe !important;
+  border-color: var(--gh-cta-border) !important;
+}
+
+.guide-card.active-card:focus-within { border-color: var(--gh-cta-border); }
+
+html[data-theme="dark"] main:has(> .wrapper a[href^="/guide/"]) button[style*="background: #2563eb"],
+html[data-theme="dark"] main:has(> .wrapper a[href^="/guide/"]) button[style*="background:#2563eb"] {
+  background: var(--gh-cta-primary) !important;
+}
+
+html[data-theme="dark"] main:has(> .wrapper a[href^="/guide/"]) button[style*="background: #2563eb"]:hover,
+html[data-theme="dark"] main:has(> .wrapper a[href^="/guide/"]) button[style*="background:#2563eb"]:hover {
+  background: var(--gh-accent) !important;
+}
+
+@media (max-width: 768px) {
+  .home-hero-title {
+    font-size: clamp(25px, 7.5vw, 30px) !important;
+    line-height: 1.3 !important;
+    letter-spacing: -0.04em;
+    word-break: keep-all;
+    overflow-wrap: normal;
+  }
 }

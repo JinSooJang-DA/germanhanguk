@@ -81,12 +81,13 @@ export default function KSpotMap({ spots }: KSpotMapProps) {
     <div style={{ width: "100%", height: "calc(100vh - 200px)", minHeight: "550px", position: "relative" }}>
       {/* 지도 컨트롤 퀵 버튼 */}
       <div
+        className="kspot-map-controls"
         style={{
           position: "absolute",
           top: "16px",
           right: "16px",
           zIndex: 1000,
-          background: "rgba(255, 255, 255, 0.95)",
+          background: "var(--gh-surface)",
           backdropFilter: "blur(4px)",
           padding: "6px",
           borderRadius: "8px",
@@ -105,10 +106,10 @@ export default function KSpotMap({ spots }: KSpotMapProps) {
             padding: "6px 12px",
             fontSize: "12px",
             fontWeight: "600",
-            border: "1px solid #cbd5e1",
+            border: "1px solid var(--gh-border)",
             borderRadius: "6px",
-            background: "#ffffff",
-            color: "#334155",
+            background: "var(--gh-surface)",
+            color: "var(--gh-text-muted)",
             cursor: "pointer",
           }}
         >
@@ -121,10 +122,10 @@ export default function KSpotMap({ spots }: KSpotMapProps) {
             padding: "6px 12px",
             fontSize: "12px",
             fontWeight: "600",
-            border: "1px solid #cbd5e1",
+            border: "1px solid var(--gh-border)",
             borderRadius: "6px",
-            background: "#ffffff",
-            color: "#334155",
+            background: "var(--gh-surface)",
+            color: "var(--gh-text-muted)",
             cursor: "pointer",
           }}
         >
@@ -137,10 +138,10 @@ export default function KSpotMap({ spots }: KSpotMapProps) {
             padding: "6px 12px",
             fontSize: "12px",
             fontWeight: "600",
-            border: "1px solid #cbd5e1",
+            border: "1px solid var(--gh-border)",
             borderRadius: "6px",
-            background: "#ffffff",
-            color: "#334155",
+            background: "var(--gh-surface)",
+            color: "var(--gh-text-muted)",
             cursor: "pointer",
           }}
         >

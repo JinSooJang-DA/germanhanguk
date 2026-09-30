@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Message, MessagePartnerProfile } from "@/types/message";
+import { formatDateTime } from "@/lib/date";
 import { User } from "@supabase/supabase-js";
 
 export default function MessageDetailPage({
@@ -195,8 +196,6 @@ export default function MessageDetailPage({
   }
 
   const isReceiver = user?.id === message.receiver_id;
-  const isSender = user?.id === message.sender_id;
-
   const partnerProfile = isReceiver ? senderProfile : receiverProfile;
   const partnerLabel = isReceiver ? "보낸사람" : "받는사람";
   const partnerName = partnerProfile?.display_name || "회원";
@@ -288,10 +287,10 @@ export default function MessageDetailPage({
                   </Link>
                 </div>
                 <div style={{ fontSize: "12px", color: "#94a3b8", display: "flex", gap: "12px" }}>
-                  <span>전송: {new Date(message.created_at).toLocaleString()}</span>
+                  <span>전송: {formatDateTime(message.created_at)}</span>
                   {message.read_at ? (
                     <span style={{ color: "#16a34a" }}>
-                      읽음: {new Date(message.read_at).toLocaleString()}
+                      읽음: {formatDateTime(message.read_at)}
                     </span>
                   ) : (
                     <span style={{ color: "#f59e0b" }}>안읽음</span>

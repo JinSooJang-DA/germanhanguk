@@ -5,21 +5,17 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { CATEGORIES, getCategoryLabel } from "@/lib/constants";
+import { formatDate } from "@/lib/date";
+import type { Post as BasePost } from "@/types/post";
 
-interface Post {
-  id: number;
-  title: string;
-  content: string;
-  category: string;
-  region: string;
-  author_id?: string;
-  author_name: string;
-  author_avatar?: string;
-  created_at: string;
-  views: number;
-  comments?: { count: number }[];
-  post_likes?: { count: number }[];
+interface EngagementCount {
+  count: number;
 }
+
+type Post = BasePost & {
+  comments?: EngagementCount[] | null;
+  post_likes?: EngagementCount[] | null;
+};
 
 interface NewsArticle {
   id: number;
@@ -38,21 +34,15 @@ function HomeContent() {
   const [newsList, setNewsList] = useState<NewsArticle[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const [selectedCategory, setSelectedCategory] = useState(categoryParam);
-  const [searchKeyword, setSearchKeyword] = useState("");
-  const [loading, setLoading] = useState(true);
+  const selectedCategory = categoryParam;
+  const [searchKeyword] = useState("");
+  const [loadedCategory, setLoadedCategory] = useState<string | null>(null);
+  const loading = loadedCategory !== selectedCategory;
 
   useEffect(function() {
-    setSelectedCategory(categoryParam);
-  }, [categoryParam]);
+    let isCurrent = true;
 
-  useEffect(function() {
-    fetchPosts();
-    fetchNews();
-    fetchTrendingPosts();
-  }, [selectedCategory]);
-
-  async function fetchNews() {
+    async function fetchNews() {
     const { data, error } = await supabase
       .from("news_articles")
       .select("*")
@@ -60,8 +50,8 @@ function HomeContent() {
       .limit(10);
 
     if (!error && data && data.length > 0) {
-      setNewsList(data);
-    } else {
+      if (isCurrent) setNewsList(data);
+    } else if (isCurrent) {
       setNewsList([
         {
           id: 1,
@@ -107,67 +97,79 @@ function HomeContent() {
         },
       ]);
     }
-  }
+    }
 
-  async function fetchTrendingPosts() {
+    async function fetchTrendingPosts() {
     // 조회수(views)가 높은 인기 글 5개 조회 (N+1 방지를 위해 댓글/좋아요 카운트 조인)
     const { data, error } = await supabase
       .from("posts")
       .select("*, comments(count), post_likes(count)")
       .order("views", { ascending: false })
-      .limit(5);
+      .limit(5)
+      .returns<Post[]>();
 
-    if (!error && data) {
-      setTrendingPosts(data as any);
+    if (!error && data && isCurrent) {
+      setTrendingPosts(data);
     }
-  }
-
-  async function fetchPosts() {
-    setLoading(true);
-    // N+1 방지를 위해 댓글 수(comments) 및 좋아요 수(post_likes) 조인하여 한 번에 페칭
-    let query = supabase
-      .from("posts")
-      .select("*, comments(count), post_likes(count)")
-      .order("created_at", { ascending: false });
-
-    if (selectedCategory !== "all") {
-      query = query.eq("category", selectedCategory);
     }
 
-    if (searchKeyword.trim()) {
-      const keyword = searchKeyword.trim();
-      query = query.or("title.ilike.%" + keyword + "%,content.ilike.%" + keyword + "%");
-    }
+    async function fetchPosts() {
+    try {
+      // N+1 방지를 위해 댓글 수(comments) 및 좋아요 수(post_likes) 조인하여 한 번에 페칭
+      let query = supabase
+        .from("posts")
+        .select("*, comments(count), post_likes(count)")
+        .order("created_at", { ascending: false });
 
-    const { data, error } = await query;
-    if (!error && data) {
-      const authorIds = Array.from(new Set(data.map(function(p) { return p.author_id; }).filter(Boolean)));
-      let avatarMap: Record<string, string> = {};
-
-      if (authorIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("id, avatar_url")
-          .in("id", authorIds);
-
-        if (profiles) {
-          profiles.forEach(function(p) {
-            if (p.avatar_url) avatarMap[p.id] = p.avatar_url;
-          });
-        }
+      if (selectedCategory !== "all") {
+        query = query.eq("category", selectedCategory);
       }
 
-      const postsWithAvatar = data.map(function(p) {
-        return {
-          ...p,
-          author_avatar: p.author_id ? avatarMap[p.author_id] || "" : "",
-        };
-      });
+      if (searchKeyword.trim()) {
+        const keyword = searchKeyword.trim();
+        query = query.or("title.ilike.%" + keyword + "%,content.ilike.%" + keyword + "%");
+      }
 
-      setPosts(postsWithAvatar as any);
+      const { data, error } = await query.returns<Post[]>();
+      if (!error && data) {
+        const authorIds = Array.from(new Set(data.map(function(p) { return p.author_id; }).filter(Boolean)));
+        const avatarMap: Record<string, string> = {};
+
+        if (authorIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from("profiles")
+            .select("id, avatar_url")
+            .in("id", authorIds);
+
+          if (profiles) {
+            profiles.forEach(function(p) {
+              if (p.avatar_url) avatarMap[p.id] = p.avatar_url;
+            });
+          }
+        }
+
+        const postsWithAvatar: Post[] = data.map(function(p) {
+          return {
+            ...p,
+            author_avatar: p.author_id ? avatarMap[p.author_id] || "" : "",
+          };
+        });
+
+        if (isCurrent) setPosts(postsWithAvatar);
+      }
+    } finally {
+      if (isCurrent) setLoadedCategory(selectedCategory);
     }
-    setLoading(false);
-  }
+    }
+
+    fetchPosts();
+    fetchNews();
+    fetchTrendingPosts();
+
+    return function() {
+      isCurrent = false;
+    };
+  }, [searchKeyword, selectedCategory]);
 
   const nextSlide = function() {
     setCurrentSlide(function(prev) {
@@ -234,7 +236,7 @@ function HomeContent() {
                         textAlign: "left",
                       }}
                     >
-                      <h2 style={{ fontSize: "32px", fontWeight: "bold", margin: "0 0 12px 0", lineHeight: "1.2" }}>
+                      <h2 className="home-hero-title" style={{ fontSize: "32px", fontWeight: "bold", margin: "0 0 12px 0", lineHeight: "1.2" }}>
                         {news.title}
                       </h2>
                       <p style={{ fontSize: "15px", color: "#cbd5e1", margin: 0, maxWidth: "800px" }}>
@@ -401,7 +403,7 @@ function HomeContent() {
               return (
                 <Link
                   key={cat.value}
-                  href={"/?.category=" + cat.value}
+                  href={"/?category=" + cat.value}
                   style={{
                     padding: "8px 18px",
                     border: "none",
@@ -443,7 +445,7 @@ function HomeContent() {
         ) : posts.length === 0 ? (
           <p style={{ color: "#64748b", padding: "60px 0", textAlign: "center" }}>등록된 게시글이 없습니다.</p>
         ) : (
-          <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+          <div className="main-post-list" style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px", minWidth: "600px" }}>
               <thead>
                 <tr style={{ borderBottom: "2px solid var(--gh-border)", background: "var(--gh-surface-muted)", color: "var(--gh-text)", textAlign: "left" }}>
@@ -461,10 +463,10 @@ function HomeContent() {
                   const likesCount = post.post_likes?.[0]?.count || 0;
                   return (
                     <tr key={post.id} style={{ borderBottom: "1px solid var(--gh-border)" }}>
-                      <td style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
+                      <td className="main-post-category" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
                         {getCategoryLabel(post.category, "ko")}
                       </td>
-                      <td style={{ padding: "14px" }}>
+                      <td className="main-post-title" style={{ padding: "14px" }}>
                         <Link href={"/posts/" + post.id} style={{ textDecoration: "none", color: "var(--gh-text)", fontWeight: "600" }}>
                           {post.title}
                         </Link>
@@ -474,8 +476,8 @@ function HomeContent() {
                           </span>
                         )}
                       </td>
-                      <td style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>{post.region || "-"}</td>
-                      <td style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
+                      <td className="main-post-region" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>{post.region || "-"}</td>
+                      <td className="main-post-author" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
                         {post.author_id ? (
                           <Link
                             href={"/profile/" + post.author_id}
@@ -541,10 +543,10 @@ function HomeContent() {
                           </div>
                         )}
                       </td>
-                      <td style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-subtle)" }}>
-                        {new Date(post.created_at).toLocaleDateString()}
+                      <td className="main-post-date" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-subtle)" }}>
+                        {formatDate(post.created_at)}
                       </td>
-                      <td style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)", textAlign: "center" }}>
+                      <td className="main-post-views" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)", textAlign: "center" }}>
                         👁️ {post.views || 0} &nbsp;&nbsp; ❤️ {likesCount}
                       </td>
                     </tr>

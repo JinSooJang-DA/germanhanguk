@@ -148,11 +148,11 @@ export default function Header() {
             1. 데스크톱 헤더 (769px 이상에서만 노출, 기존 디자인 및 동작 100% 동일 보장)
            ====================================================================== */}
         <div className="desktop-header">
-          <Link href="/" style={{ textDecoration: "none", color: "var(--gh-text)", marginRight: "24px" }}>
+          <Link className="desktop-logo" href="/" style={{ textDecoration: "none", color: "var(--gh-text)", marginRight: "24px" }}>
             <h1 style={{ fontSize: "20px", fontWeight: "bold", margin: 0 }}>German Hanguk</h1>
           </Link>
 
-          <nav style={{ display: "flex", gap: "24px", alignItems: "center", flexWrap: "wrap", marginRight: "auto" }}>
+          <nav className="desktop-nav" style={{ display: "flex", gap: "24px", alignItems: "center", marginRight: "auto" }}>
             <Link href="/?category=community" style={{ textDecoration: "none", color: "#475569", fontWeight: "500" }}>커뮤니티</Link>
             <Link href="/?category=education" style={{ textDecoration: "none", color: "#475569", fontWeight: "500" }}>유학·교육</Link>
             <Link href="/?category=life" style={{ textDecoration: "none", color: "#475569", fontWeight: "500" }}>생활정보</Link>
@@ -183,7 +183,7 @@ export default function Header() {
           <ThemeSelector />
 
           {user ? (
-            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+            <div className="desktop-user-actions" style={{ display: "flex", alignItems: "center", gap: "14px" }}>
               {/* 알림 배지 */}
               <Link
                 href="/notifications"
@@ -283,7 +283,7 @@ export default function Header() {
               </button>
             </div>
           ) : (
-            <Link href="/auth">
+            <Link className="desktop-login" href="/auth">
               <button style={{ padding: "6px 14px", cursor: "pointer", background: "#0f172a", color: "#fff", border: "none", borderRadius: "4px" }}>
                 로그인
               </button>

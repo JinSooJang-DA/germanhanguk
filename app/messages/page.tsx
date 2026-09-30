@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { MessageWithProfile } from "@/types/message";
+import { formatConciseDate } from "@/lib/date";
 import { User } from "@supabase/supabase-js";
 
 export default function MessagesPage() {
@@ -105,32 +106,7 @@ export default function MessagesPage() {
     setLoading(false);
   }
 
-  function formatConciseDate(dateStr: string) {
-    try {
-      const date = new Date(dateStr);
-      const now = new Date();
-      if (
-        date.getDate() === now.getDate() &&
-        date.getMonth() === now.getMonth() &&
-        date.getFullYear() === now.getFullYear()
-      ) {
-        return date.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false });
-      }
-      if (date.getFullYear() === now.getFullYear()) {
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-        const hours = String(date.getHours()).padStart(2, "0");
-        const minutes = String(date.getMinutes()).padStart(2, "0");
-        return `${month}.${day} ${hours}:${minutes}`;
-      }
-      const year = String(date.getFullYear()).slice(-2);
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      return `${year}.${month}.${day}`;
-    } catch (e) {
-      return dateStr;
-    }
-  }
+
 
   if (isAuthChecking) {
     return (

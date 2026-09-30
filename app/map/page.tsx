@@ -14,8 +14,8 @@ export default async function MapPage() {
       {/* 상단 안내 바 */}
       <section
         style={{
-          background: "#ffffff",
-          borderBottom: "1px solid #e2e8f0",
+          background: "var(--gh-surface)",
+          borderBottom: "1px solid var(--gh-border)",
           padding: "16px 20px",
         }}
       >
@@ -33,7 +33,7 @@ export default async function MapPage() {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
               <span style={{ fontSize: "20px" }}>🗺️</span>
-              <h1 style={{ fontSize: "20px", fontWeight: "bold", margin: 0, color: "#0f172a" }}>
+              <h1 style={{ fontSize: "20px", fontWeight: "bold", margin: 0, color: "var(--gh-text)" }}>
                 K-Spot 지도
               </h1>
               <span
@@ -49,17 +49,18 @@ export default async function MapPage() {
                 Münster &amp; Düsseldorf
               </span>
             </div>
-            <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>
+            <p style={{ margin: 0, fontSize: "13px", color: "var(--gh-text-muted)" }}>
               독일 뮌스터와 뒤셀도르프 지역의 한식당 및 주요 스팟 정보를 확인하세요. 마커를 클릭하면 상세 정보를 볼 수 있습니다.
             </p>
           </div>
 
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
             <span
+              className="kspot-status"
               style={{
                 fontSize: "12px",
-                background: "#f1f5f9",
-                color: "#334155",
+                background: "var(--gh-surface-muted)",
+                color: "var(--gh-text-muted)",
                 padding: "6px 12px",
                 borderRadius: "6px",
                 display: "inline-flex",

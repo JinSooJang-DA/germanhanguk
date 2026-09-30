@@ -3,7 +3,7 @@ import React from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { getGuideCategoryLabel } from "@/lib/constants";
+import { getGuideCategoryHubSlug, getGuideCategoryLabel } from "@/lib/constants";
 import AdSlot from "@/components/AdSlot";
 import GuideCommunityCTA from "@/components/GuideCommunityCTA";
 import GuideAudienceCards from "@/components/GuideAudienceCards";
@@ -12,6 +12,7 @@ import GuideEmployeeSteps from "@/components/GuideEmployeeSteps";
 import GuideStudentSituations from "@/components/GuideStudentSituations";
 import GuideInsuranceComparison from "@/components/GuideInsuranceComparison";
 import { GUIDE_CONTENT } from "@/lib/guide-content";
+import { formatDate } from "@/lib/date";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -206,7 +207,7 @@ export default async function GuideDetailPage({ params }: { params: Promise<{ sl
         <div style={{ marginBottom: "24px", fontSize: "14px" }}>
           <Link href="/guide" style={{ textDecoration: "none", color: "#64748b" }}>생활정보 가이드</Link>
           <span style={{ color: "#94a3b8", margin: "0 8px" }}>&gt;</span>
-          <Link href={"/guide/" + guide.category} style={{ textDecoration: "none", color: "#64748b" }}>{categoryLabel}</Link>
+          <Link href={"/guide/" + getGuideCategoryHubSlug(guide.category)} style={{ textDecoration: "none", color: "#64748b" }}>{categoryLabel}</Link>
           <span style={{ color: "#94a3b8", margin: "0 8px" }}>&gt;</span>
           <span style={{ color: "var(--gh-text)", fontWeight: "bold" }}>상세 정보</span>
         </div>
@@ -223,10 +224,10 @@ export default async function GuideDetailPage({ params }: { params: Promise<{ sl
             <span>✍️ GermanHanguk 공식 에디터 집필</span>
             {guide.last_verified_at && (
               <span style={{ color: "#16a34a", fontWeight: "bold" }}>
-                ✅ 마지막 정보 확인일: {new Date(guide.last_verified_at).toLocaleDateString()}
+                ✅ 마지막 정보 확인일: {formatDate(guide.last_verified_at)}
               </span>
             )}
-            <span>수정일: {new Date(guide.updated_at).toLocaleDateString()}</span>
+            <span>수정일: {formatDate(guide.updated_at)}</span>
           </div>
         </div>
 
@@ -280,7 +281,7 @@ export default async function GuideDetailPage({ params }: { params: Promise<{ sl
                       href={src.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ color: "#2563eb", textDecoration: "underline", fontWeight: "500" }}
+                      style={{ color: "var(--gh-accent)", textDecoration: "underline", fontWeight: "500" }}
                     >
                       {src.title}
                     </a>

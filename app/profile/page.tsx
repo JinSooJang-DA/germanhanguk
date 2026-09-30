@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { formatDate } from "@/lib/date";
 
 interface Post {
   id: number;
@@ -270,8 +271,15 @@ export default function ProfilePage() {
       setAvatarUrl(publicUrl);
       alert("프로필 이미지가 가볍고 선명하게 최적화되어 등록되었습니다!");
       router.refresh();
-    } catch (error: any) {
-      alert("이미지 저장 중 오류가 발생했습니다: " + error.message);
+    } catch (error: unknown) {
+      const errorMessage =
+        typeof error === "object" &&
+        error !== null &&
+        "message" in error &&
+        typeof error.message === "string"
+          ? error.message
+          : "알 수 없는 오류가 발생했습니다.";
+      alert("이미지 저장 중 오류가 발생했습니다: " + errorMessage);
     } finally {
       setUploading(false);
     }
@@ -323,14 +331,14 @@ export default function ProfilePage() {
         <h1>마이페이지 (프로필 관리)</h1>
 
         {/* 1. 프로필 이미지 및 기본 정보 섹션 */}
-        <div style={{ display: "flex", gap: "30px", alignItems: "center", marginBottom: "30px", background: "#f8fafc", padding: "20px", borderRadius: "10px" }}>
+        <div style={{ display: "flex", gap: "30px", alignItems: "center", marginBottom: "30px", background: "var(--gh-surface-muted)", padding: "20px", borderRadius: "10px" }}>
           <div style={{ textAlign: "center" }}>
             <div
               style={{
                 width: "90px",
                 height: "90px",
                 borderRadius: "50%",
-                background: "#cbd5e1",
+                background: "var(--gh-surface)",
                 overflow: "hidden",
                 margin: "0 auto 10px auto",
                 display: "flex",
@@ -351,11 +359,11 @@ export default function ProfilePage() {
           </div>
 
           <div style={{ flex: 1 }}>
-            <p style={{ margin: "0 0 5px 0", fontSize: "14px", color: "#64748b" }}>
-              로그인 계정 <span style={{ fontSize: "12px", color: "#94a3b8" }}>(이메일 변경 불가)</span>
+            <p style={{ margin: "0 0 5px 0", fontSize: "14px", color: "var(--gh-text-muted)" }}>
+              로그인 계정 <span style={{ fontSize: "12px", color: "var(--gh-text-subtle)" }}>(이메일 변경 불가)</span>
             </p>
             <p style={{ margin: "0 0 15px 0", fontSize: "16px", fontWeight: "bold" }}>{email}</p>
-            <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>
+            <p style={{ margin: 0, fontSize: "13px", color: "var(--gh-text-muted)" }}>
               독일 거주 한인 커뮤니티 German Hanguk에서 활동 중이신 회원님입니다.
             </p>
           </div>
@@ -387,10 +395,11 @@ export default function ProfilePage() {
               style={{
                 width: "100%",
                 padding: "10px",
-                border: "1px solid #cbd5e1",
+                border: "1px solid var(--gh-border)",
                 borderRadius: "4px",
                 fontSize: "15px",
-                background: "#fff",
+                background: "var(--gh-surface)",
+                color: "var(--gh-text)",
               }}
             >
               <option value="">거주지역을 선택하세요</option>
@@ -414,7 +423,7 @@ export default function ProfilePage() {
               style={{
                 width: "100%",
                 padding: "10px",
-                border: "1px solid #cbd5e1",
+                border: "1px solid var(--gh-border)",
                 borderRadius: "4px",
                 fontSize: "14px",
                 resize: "vertical",
@@ -435,7 +444,7 @@ export default function ProfilePage() {
         </form>
 
         {/* 3. 비밀번호 변경 폼 */}
-        <form className="post-form" onSubmit={handlePasswordChange} style={{ marginBottom: "40px", borderTop: "1px solid #e5e5e5", paddingTop: "30px" }}>
+        <form className="post-form" onSubmit={handlePasswordChange} style={{ marginBottom: "40px", borderTop: "1px solid var(--gh-border)", paddingTop: "30px" }}>
           <h2>비밀번호 변경</h2>
           <div className="form-group">
             <label htmlFor="newPassword">새 비밀번호 (6자 이상)</label>
@@ -455,17 +464,17 @@ export default function ProfilePage() {
             </p>
           )}
 
-          <button type="submit" className="submit-btn" style={{ background: "#475569" }}>
+          <button type="submit" className="submit-btn" style={{ background: "var(--gh-control-active)" }}>
             비밀번호 변경하기
           </button>
         </form>
 
         {/* 4. 내가 작성한 글 목록 */}
-        <div style={{ borderTop: "1px solid #e5e5e5", paddingTop: "30px", marginBottom: "40px" }}>
+        <div style={{ borderTop: "1px solid var(--gh-border)", paddingTop: "30px", marginBottom: "40px" }}>
           <h2 style={{ fontSize: "20px", marginBottom: "20px" }}>내가 작성한 글 ({myPosts.length})</h2>
 
           {myPosts.length === 0 ? (
-            <p style={{ color: "#666", textAlign: "center", padding: "20px 0" }}>작성한 게시글이 없습니다.</p>
+            <p style={{ color: "var(--gh-text-muted)", textAlign: "center", padding: "20px 0" }}>작성한 게시글이 없습니다.</p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {myPosts.map((post) => (
@@ -473,24 +482,24 @@ export default function ProfilePage() {
                   key={post.id}
                   style={{
                     padding: "14px",
-                    border: "1px solid #e2e8f0",
+                    border: "1px solid var(--gh-border)",
                     borderRadius: "6px",
-                    background: "#fff",
+                    background: "var(--gh-surface)",
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
                   }}
                 >
                   <div>
-                    <span style={{ fontSize: "12px", color: "#2563eb", fontWeight: "bold", marginRight: "8px" }}>
+                    <span style={{ fontSize: "12px", color: "var(--gh-accent)", fontWeight: "bold", marginRight: "8px" }}>
                       {CATEGORIES[post.category] || post.category}
                     </span>
-                    <Link href={`/posts/${post.id}`} style={{ fontSize: "15px", fontWeight: "500", color: "#111", textDecoration: "none" }}>
+                    <Link href={`/posts/${post.id}`} style={{ fontSize: "15px", fontWeight: "500", color: "var(--gh-text)", textDecoration: "none" }}>
                       {post.title}
                     </Link>
                   </div>
-                  <div style={{ fontSize: "13px", color: "#888" }}>
-                    <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                  <div style={{ fontSize: "13px", color: "var(--gh-text-subtle)" }}>
+                    <span>{formatDate(post.created_at)}</span>
                   </div>
                 </div>
               ))}
@@ -499,8 +508,8 @@ export default function ProfilePage() {
         </div>
 
         {/* 5. 하단 계정 액션 (로그아웃 및 홈 이동) */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #e5e5e5", paddingTop: "20px" }}>
-          <Link href="/" style={{ color: "#666", fontSize: "14px", textDecoration: "none" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--gh-border)", paddingTop: "20px" }}>
+          <Link href="/" style={{ color: "var(--gh-text-muted)", fontSize: "14px", textDecoration: "none" }}>
             ← 메인으로 돌아가기
           </Link>
           <button

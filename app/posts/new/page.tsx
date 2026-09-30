@@ -4,6 +4,16 @@ import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { CATEGORIES } from "@/lib/constants";
+import type { Post } from "@/types/post";
+
+type PostInsertPayload = Pick<
+  Post,
+  "title" | "content" | "category" | "region" | "author_id" | "author_name" | "sub_category" | "target_field"
+> & {
+  region: string;
+  author_id: string;
+  author_name: string;
+};
 
 export default function NewPostPage() {
   const router = useRouter();
@@ -64,7 +74,7 @@ export default function NewPostPage() {
     const authorName = profile?.display_name || user.email?.split("@")[0] || "회원";
 
     // 데이터 저장 객체 구성 ('education'인 경우에만 상세 필드값 저장)
-    const postData: any = {
+    const postData: PostInsertPayload = {
       title,
       content,
       category,

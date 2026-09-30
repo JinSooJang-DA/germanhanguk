@@ -2,6 +2,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import PostDetailClient from "@/components/PostDetailClient";
 import { getCategoryLabel } from "@/lib/constants";
+import { formatDate } from "@/lib/date";
 import { Post, Comment } from "@/types/post";
 import PostViewCount from "@/components/PostViewCount";
 
@@ -139,7 +140,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         <div className="post-meta">
           <span>[{currentCategoryLabel}]</span>
           {post.region && <span>{post.region}</span>}
-          <span>{new Date(post.created_at).toLocaleDateString()}</span>
+          <span>{formatDate(post.created_at)}</span>
         </div>
 
         <h1>{post.title}</h1>

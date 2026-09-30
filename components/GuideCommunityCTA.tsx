@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { getGuideCommunityCategory } from "@/lib/constants";
 
 interface GuideCommunityCTAProps {
   categoryLabel: string;
@@ -15,8 +16,8 @@ export default function GuideCommunityCTA({
       style={{
         margin: "50px 0 30px 0",
         padding: "30px 24px",
-        background: "#eff6ff",
-        border: "1px solid #bfdbfe",
+        background: "var(--gh-cta-surface)",
+        border: "1px solid var(--gh-cta-border)",
         borderRadius: "12px",
         boxSizing: "border-box",
       }}
@@ -25,7 +26,7 @@ export default function GuideCommunityCTA({
         style={{
           margin: "0 0 10px 0",
           fontSize: "18px",
-          color: "#1e3a8a",
+          color: "var(--gh-cta-text)",
           fontWeight: "bold",
         }}
       >
@@ -35,7 +36,7 @@ export default function GuideCommunityCTA({
         style={{
           margin: "0 0 20px 0",
           fontSize: "14px",
-          color: "#1e40af",
+          color: "var(--gh-cta-muted)",
           lineHeight: "1.6",
         }}
       >
@@ -48,8 +49,8 @@ export default function GuideCommunityCTA({
           <button
             style={{
               padding: "10px 20px",
-              background: "#1d4ed8",
-              color: "#fff",
+              background: "var(--gh-cta-primary)",
+              color: "var(--gh-control-active-text)",
               border: "none",
               borderRadius: "6px",
               fontWeight: "bold",
@@ -62,13 +63,13 @@ export default function GuideCommunityCTA({
           </button>
         </Link>
 
-        <Link href={"/?category=" + (categoryValue === "insurance" ? "life" : categoryValue)} style={{ textDecoration: "none" }}>
+        <Link href={"/?category=" + getGuideCommunityCategory(categoryValue)} style={{ textDecoration: "none" }}>
           <button
             style={{
               padding: "10px 20px",
-              background: "#fff",
-              color: "#1d4ed8",
-              border: "1px solid #bfdbfe",
+              background: "var(--gh-surface)",
+              color: "var(--gh-accent)",
+              border: "1px solid var(--gh-cta-border)",
               borderRadius: "6px",
               fontWeight: "bold",
               fontSize: "14px",

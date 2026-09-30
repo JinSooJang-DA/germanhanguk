@@ -24,7 +24,7 @@ export default function GuideLandingPage() {
 
         {/* 히어로 헤더 */}
         <div style={{ textAlign: "center", marginBottom: "50px" }}>
-          <span style={{ fontSize: "14px", color: "#2563eb", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+          <span style={{ fontSize: "14px", color: "var(--gh-accent)", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.1em" }}>
             GermanHanguk Living Guide
           </span>
           <h1 style={{ fontSize: "clamp(24px, 5vw, 36px)", fontWeight: "bold", color: "var(--gh-text)", margin: "10px 0 16px 0" }}>
@@ -69,8 +69,8 @@ export default function GuideLandingPage() {
                       {!isReady && (
                         <span style={{
                           fontSize: "10px",
-                          color: "#94a3b8",
-                          background: "#f1f5f9",
+                          color: "var(--gh-text-subtle)",
+                          background: "var(--gh-surface-muted)",
                           padding: "2px 8px",
                           borderRadius: "10px",
                           fontWeight: "bold"
@@ -81,8 +81,8 @@ export default function GuideLandingPage() {
                       {isReady && (
                         <span style={{
                           fontSize: "10px",
-                          color: "#2563eb",
-                          background: "#eff6ff",
+                          color: "var(--gh-cta-text)",
+                          background: "var(--gh-cta-surface)",
                           padding: "2px 8px",
                           borderRadius: "10px",
                           fontWeight: "bold"
