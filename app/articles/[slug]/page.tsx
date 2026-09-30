@@ -1,10 +1,10 @@
-"use client";
-
-import { use, useEffect, useState } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { formatDate } from "@/lib/date";
+import { notFound } from "next/navigation";
 import type { Article } from "@/types/article";
+import ArticleRetryButton from "@/components/ArticleRetryButton";
 
 function renderParagraphs(text: string) {
   if (!text) return null;
@@ -23,128 +23,96 @@ function renderParagraphs(text: string) {
   });
 }
 
-export default function ArticleDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = use(params);
+function parseSafeUrl(urlString: string): string | null {
+  try {
+    const parsed = new URL(urlString);
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      return parsed.toString();
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
-  const [article, setArticle] = useState<Article | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [notFound, setNotFound] = useState(false);
-  const [retryKey, setRetryKey] = useState(0);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  try {
+    const { data: article } = await supabase
+      .from("articles")
+      .select("title, summary, image_url")
+      .eq("slug", slug)
+      .eq("status", "published")
+      .maybeSingle();
 
-  useEffect(() => {
-    let isCurrent = true;
-
-    async function fetchArticle() {
-      setLoading(true);
-      setError(null);
-      setNotFound(false);
-      try {
-        const { data, error: fetchError } = await supabase
-          .from("articles")
-          .select("*")
-          .eq("slug", slug)
-          .eq("status", "published")
-          .maybeSingle();
-
-        if (fetchError) {
-          console.error("Article fetch error:", fetchError);
-          if (isCurrent) {
-            setError("기사를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
-          }
-          return;
-        }
-
-        if (!data) {
-          if (isCurrent) {
-            setNotFound(true);
-          }
-          return;
-        }
-
-        if (isCurrent) {
-          setArticle(data);
-        }
-      } catch (err) {
-        console.error("Unexpected error fetching article:", err);
-        if (isCurrent) {
-          setError("기사를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
-        }
-      } finally {
-        if (isCurrent) {
-          setLoading(false);
-        }
-      }
+    if (!article) {
+      return { title: "기사를 찾을 수 없습니다 - GermanHanguk" };
     }
 
-    fetchArticle();
+    const title = article.title + " - GermanHanguk";
+    const description = article.summary || "";
 
-    return () => {
-      isCurrent = false;
+    const metadata: Metadata = {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        type: "article",
+      },
     };
-  }, [slug, retryKey]);
 
-  function handleRetry() {
-    setRetryKey((prev) => prev + 1);
+    if (article.image_url) {
+      metadata.openGraph.images = [{ url: article.image_url, alt: article.title }];
+    }
+
+    return metadata;
+  } catch (err) {
+    console.error("Error generating metadata:", err);
+    return { title: "독일 소식 - GermanHanguk" };
+  }
+}
+
+export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+
+  let article: Article | null = null;
+  let fetchError = false;
+
+  try {
+    const { data, error } = await supabase
+      .from("articles")
+      .select("*")
+      .eq("slug", slug)
+      .eq("status", "published")
+      .maybeSingle();
+
+    if (error) {
+      console.error("Article fetch error inside page:", error);
+      fetchError = true;
+    } else {
+      article = data;
+    }
+  } catch (err) {
+    console.error("Unexpected error fetching article inside page:", err);
+    fetchError = true;
   }
 
-  if (loading) {
-    return (
-      <main style={{ minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <p style={{ color: "var(--gh-text-muted)", fontSize: "15px" }}>기사를 불러오는 중입니다...</p>
-      </main>
-    );
-  }
-
-  if (error) {
+  if (fetchError) {
     return (
       <main style={{ minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center", padding: "40px 20px" }}>
-          <p style={{ color: "var(--gh-text-muted)", marginBottom: "20px", fontSize: "15px" }}>{error}</p>
-          <button
-            onClick={handleRetry}
-            style={{
-              padding: "10px 20px",
-              background: "var(--gh-control-active)",
-              color: "var(--gh-control-active-text)",
-              border: "none",
-              borderRadius: "6px",
-              fontWeight: "bold",
-              cursor: "pointer",
-              fontSize: "14px",
-            }}
-          >
-            다시 시도
-          </button>
+          <p style={{ color: "var(--gh-text-muted)", marginBottom: "20px", fontSize: "15px" }}>
+            기사를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+          </p>
+          <ArticleRetryButton />
         </div>
       </main>
     );
   }
 
-  if (notFound || !article) {
-    return (
-      <main style={{ minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ textAlign: "center", padding: "40px 20px" }}>
-          <p style={{ color: "var(--gh-text-muted)", marginBottom: "20px", fontSize: "15px" }}>존재하지 않거나 게시되지 않은 기사입니다.</p>
-          <Link href="/articles" style={{ textDecoration: "none" }}>
-            <button
-              style={{
-                padding: "10px 20px",
-                background: "var(--gh-control-active)",
-                color: "var(--gh-control-active-text)",
-                border: "none",
-                borderRadius: "6px",
-                fontWeight: "bold",
-                cursor: "pointer",
-                fontSize: "14px",
-              }}
-            >
-              독일 소식 목록으로 돌아가기
-            </button>
-          </Link>
-        </div>
-      </main>
-    );
+  if (!article) {
+    notFound();
   }
 
   return (
@@ -202,14 +170,14 @@ export default function ArticleDetailPage({ params }: { params: Promise<{ slug: 
             <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "var(--gh-text)", margin: "0 0 12px 0" }}>🔗 관련 공식 출처</h3>
             <ul style={{ paddingLeft: "20px", margin: 0 }}>
               {article.source_urls.map((source, sIdx) => {
-                const isSafeUrl = source.url && (source.url.startsWith("http://") || source.url.startsWith("https://"));
+                const safeUrl = parseSafeUrl(source.url);
                 return (
                   <li key={sIdx} style={{ marginBottom: "8px" }}>
-                    {isSafeUrl ? (
+                    {safeUrl ? (
                       <a
-                        href={source.url}
+                        href={safeUrl}
                         target="_blank"
-                        rel="noopener noreferrer nofollow"
+                        rel="noopener noreferrer"
                         style={{ color: "#3b82f6", textDecoration: "underline", fontSize: "14px", fontWeight: "500" }}
                       >
                         {source.title || source.url}
