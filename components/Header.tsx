@@ -17,6 +17,7 @@ export default function Header() {
 
   // 모바일 메뉴 서랍 열림 상태
   const [menuOpen, setMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   async function loadUserProfile(userId: string, defaultEmail?: string) {
     const { data: profile } = await supabase
@@ -136,6 +137,7 @@ export default function Header() {
     setDisplayName("");
     setUnreadCount(0);
     setUnreadNotificationsCount(0);
+    setProfileMenuOpen(false);
     router.push("/");
     router.refresh();
   }
@@ -179,8 +181,6 @@ export default function Header() {
               K-Spot 지도
             </Link>
           </nav>
-
-          <ThemeSelector />
 
           {user ? (
             <div className="desktop-user-actions" style={{ display: "flex", alignItems: "center", gap: "14px" }}>
@@ -256,38 +256,94 @@ export default function Header() {
                 )}
               </Link>
 
-              <Link
-                href="/profile"
-                style={{
-                  textDecoration: "none",
-                  color: "#0f172a",
-                  fontWeight: "bold",
-                  fontSize: "14px",
-                }}
-              >
-                {displayName || user.email?.split("@")[0]}님
-              </Link>
-              <button 
-                onClick={handleLogout} 
-                style={{ 
-                  padding: "6px 12px", 
-                  cursor: "pointer", 
-                  border: "1px solid #cbd5e1", 
-                  background: "#fff", 
-                  borderRadius: "4px",
-                  fontSize: "13px",
-                  color: "#334155"
-                }}
-              >
-                로그아웃
-              </button>
+              <div style={{ position: "relative" }}>
+                <button
+                  type="button"
+                  onClick={function() { setProfileMenuOpen(!profileMenuOpen); }}
+                  aria-haspopup="menu"
+                  aria-expanded={profileMenuOpen}
+                  style={{
+                    padding: "6px 0",
+                    cursor: "pointer",
+                    border: "none",
+                    background: "transparent",
+                    color: "var(--gh-text)",
+                    fontWeight: "bold",
+                    fontSize: "14px",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {displayName || user.email?.split("@")[0]}님
+                </button>
+
+                {profileMenuOpen && (
+                  <div
+                    role="menu"
+                    style={{
+                      position: "absolute",
+                      top: "calc(100% + 8px)",
+                      right: 0,
+                      zIndex: 1000,
+                      width: "220px",
+                      padding: "8px",
+                      border: "1px solid var(--gh-border)",
+                      borderRadius: "8px",
+                      background: "var(--gh-surface)",
+                      boxShadow: "0 8px 20px rgba(0, 0, 0, 0.12)",
+                    }}
+                  >
+                    <Link
+                      href="/profile"
+                      role="menuitem"
+                      onClick={function() { setProfileMenuOpen(false); }}
+                      style={{
+                        display: "block",
+                        padding: "10px 12px",
+                        textDecoration: "none",
+                        color: "var(--gh-text)",
+                        fontWeight: "600",
+                        fontSize: "14px",
+                      }}
+                    >
+                      내 프로필
+                    </Link>
+                    <div style={{ borderTop: "1px solid var(--gh-border)", padding: "10px 0" }}>
+                      <span style={{ display: "block", padding: "0 12px 6px", color: "var(--gh-text-muted)", fontSize: "12px", fontWeight: "600" }}>
+                        화면 설정
+                      </span>
+                      <ThemeSelector />
+                    </div>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={handleLogout}
+                      style={{
+                        width: "100%",
+                        padding: "10px 12px",
+                        cursor: "pointer",
+                        border: "1px solid var(--gh-border)",
+                        background: "var(--gh-surface-muted)",
+                        borderRadius: "6px",
+                        fontSize: "13px",
+                        color: "var(--gh-text)",
+                        textAlign: "left",
+                      }}
+                    >
+                      로그아웃
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
-            <Link className="desktop-login" href="/auth">
-              <button style={{ padding: "6px 14px", cursor: "pointer", background: "#0f172a", color: "#fff", border: "none", borderRadius: "4px" }}>
-                로그인
-              </button>
-            </Link>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <Link className="desktop-login" href="/auth">
+                <button style={{ padding: "6px 14px", cursor: "pointer", background: "#0f172a", color: "#fff", border: "none", borderRadius: "4px" }}>
+                  로그인
+                </button>
+              </Link>
+              <ThemeSelector />
+            </div>
           )}
         </div>
 
