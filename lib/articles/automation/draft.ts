@@ -1,4 +1,4 @@
-import type { ArticleCandidate, ArticleRelevanceResult } from "./types";
+import type { ArticleCandidate, ArticleRelevanceClassification } from "./types";
 
 export const ARTICLE_DRAFT_CATEGORIES = [
   "정책",
@@ -15,8 +15,20 @@ export const ARTICLE_DRAFT_CATEGORIES = [
 export type ArticleDraftCategory = (typeof ARTICLE_DRAFT_CATEGORIES)[number];
 
 export interface ArticleDraftEvidence {
-  candidate: ArticleCandidate;
-  relevance: ArticleRelevanceResult;
+  source: {
+    provider: ArticleCandidate["sourceProvider"];
+    name: string;
+    canonicalUrl: string;
+    publishedAt?: string;
+  };
+  facts: {
+    headline: string;
+    sourceSummary?: string;
+  };
+  relevance: {
+    classification: Exclude<ArticleRelevanceClassification, "irrelevant">;
+    matchedTopics: string[];
+  };
 }
 
 export interface GeneratedArticleDraft {

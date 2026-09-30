@@ -49,7 +49,7 @@ export function validateGeneratedArticleDraft(
   if (!isNonEmptyWithin(draft.content, MAX_CONTENT_LENGTH)) errors.push("invalid_content");
   if (!ARTICLE_DRAFT_CATEGORIES.includes(draft.category)) errors.push("invalid_category");
 
-  const expectedUrl = normalizeUrl(evidence.candidate.canonicalUrl);
+  const expectedUrl = normalizeUrl(evidence.source.canonicalUrl);
   if (draft.sourceUrls.length === 0) {
     errors.push("missing_source");
   } else {
