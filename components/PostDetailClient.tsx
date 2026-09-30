@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { Post, Comment } from "@/types/post";
 import { getCategoryLabel, shouldDisplayPostRegion } from "@/lib/constants";
 import { formatDate, formatDateTime } from "@/lib/date";
+import { linkifyPlainText } from "@/lib/linkify";
 import { VIEW_INCREMENT_EVENT } from "@/components/PostViewCount";
 
 const PAGE_SIZE = 10;
@@ -727,7 +728,9 @@ export default function PostDetailClient({
                           </div>
                         </div>
                       ) : (
-                        <p style={{ margin: 0, fontSize: "15px", color: "var(--gh-text)", whiteSpace: "pre-wrap" }}>{comment.content}</p>
+                        <p style={{ margin: 0, fontSize: "15px", color: "var(--gh-text)", whiteSpace: "pre-wrap" }}>
+                          {linkifyPlainText(comment.content)}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -881,7 +884,9 @@ export default function PostDetailClient({
                                   </div>
                                 </div>
                               ) : (
-                                <p style={{ margin: 0, fontSize: "14px", color: "var(--gh-text)", whiteSpace: "pre-wrap" }}>{reply.content}</p>
+                                <p style={{ margin: 0, fontSize: "14px", color: "var(--gh-text)", whiteSpace: "pre-wrap" }}>
+                                  {linkifyPlainText(reply.content)}
+                                </p>
                               )}
                             </div>
                           </div>

@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import PostDetailClient from "@/components/PostDetailClient";
 import { getCategoryLabel, shouldDisplayPostRegion } from "@/lib/constants";
 import { formatDate } from "@/lib/date";
+import { linkifyPlainText } from "@/lib/linkify";
 import { Post, Comment } from "@/types/post";
 import PostViewCount from "@/components/PostViewCount";
 
@@ -170,7 +171,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
         {/* Static Post Content - 100% indexable by search engine crawlers */}
         <div className="post-content" style={{ whiteSpace: "pre-wrap", fontSize: "16px", lineHeight: "1.8" }}>
-          {post.content}
+          {linkifyPlainText(post.content)}
         </div>
 
         {/* Client-side interactive layer (Optimistic likes, Replies list, submission forms, list navigation) */}
