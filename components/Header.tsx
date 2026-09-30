@@ -161,6 +161,16 @@ export default function Header() {
             <Link href="/?category=market" style={{ textDecoration: "none", color: "#475569", fontWeight: "500" }}>중고장터</Link>
             <Link href="/?category=jobs" style={{ textDecoration: "none", color: "#475569", fontWeight: "500" }}>구인구직</Link>
             <Link
+              href="/articles"
+              style={{
+                textDecoration: "none",
+                color: pathname.startsWith("/articles") ? "#0f172a" : "#475569",
+                fontWeight: pathname.startsWith("/articles") ? "700" : "500",
+              }}
+            >
+              독일 소식
+            </Link>
+            <Link
               href="/guide"
               style={{
                 textDecoration: "none",
@@ -531,6 +541,7 @@ export default function Header() {
                 <Link href="/?category=life" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>생활정보</Link>
                 <Link href="/?category=market" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>중고장터</Link>
                 <Link href="/?category=jobs" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>구인구직</Link>
+                <Link href="/articles" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>📰 독일 소식</Link>
                 <Link href="/guide" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-accent)", fontWeight: "bold", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>📘 생활 가이드</Link>
                 <Link href="/map" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>📍 K-Spot 지도</Link>
               </nav>

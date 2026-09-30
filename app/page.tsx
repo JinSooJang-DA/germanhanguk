@@ -11,6 +11,7 @@ import {
 } from "@/lib/constants";
 import { formatDate } from "@/lib/date";
 import type { Post as BasePost } from "@/types/post";
+import type { Article } from "@/types/article";
 
 interface EngagementCount {
   count: number;
@@ -21,13 +22,7 @@ type Post = BasePost & {
   post_likes?: EngagementCount[] | null;
 };
 
-interface NewsArticle {
-  id: number;
-  title: string;
-  summary: string;
-  image_url: string;
-  link_url: string;
-}
+
 
 function HomeContent() {
   const searchParams = useSearchParams();
@@ -35,7 +30,8 @@ function HomeContent() {
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [trendingPosts, setTrendingPosts] = useState<Post[]>([]);
-  const [newsList, setNewsList] = useState<NewsArticle[]>([]);
+  const [featuredArticles, setFeaturedArticles] = useState<Article[]>([]);
+  const [articlesError, setArticlesError] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const selectedCategory = categoryParam;
@@ -48,61 +44,36 @@ function HomeContent() {
   useEffect(function() {
     let isCurrent = true;
 
-    async function fetchNews() {
-    const { data, error } = await supabase
-      .from("news_articles")
-      .select("*")
-      .order("display_order", { ascending: true })
-      .limit(10);
+    async function fetchFeaturedArticles() {
+      try {
+        setArticlesError(false);
+        const { data, error } = await supabase
+          .from("articles")
+          .select("*")
+          .eq("status", "published")
+          .eq("is_featured", true)
+          .order("published_at", { ascending: false })
+          .limit(10);
 
-    if (!error && data && data.length > 0) {
-      if (isCurrent) setNewsList(data);
-    } else if (isCurrent) {
-      setNewsList([
-        {
-          id: 1,
-          title: "독일 대중교통 도이칠란트 티켓 최신 개정 및 이용 가이드",
-          summary: "전국 근교 대중교통 이용 규정과 지역별 연계 혜택을 한눈에 정리했습니다.",
-          image_url: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=1200&auto=format&fit=crop",
-          link_url: "#",
-        },
-        {
-          id: 2,
-          title: "베를린·프랑크푸르트 한인 청년 및 유학생 네트워킹 데이 안내",
-          summary: "현지 취업 및 정착 경험을 공유하는 교민 교류의 장이 열립니다.",
-          image_url: "https://images.unsplash.com/photo-1528605248644-14dd04022da1?q=80&w=1200&auto=format&fit=crop",
-          link_url: "#",
-        },
-        {
-          id: 3,
-          title: "독일 현지 IT·스타트업 취업을 위한 영문·독문 레주메 작성법",
-          summary: "독일 인사담당자가 눈여겨보는 포트폴리오 구성과 면접 대비 체크리스트.",
-          image_url: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop",
-          link_url: "#",
-        },
-        {
-          id: 4,
-          title: "주요 도시 보증금 및 월세 규정(Mietpreisbremse) 핵심 정리",
-          summary: "안전한 주택 임대차 계약과 불합리한 월세 인상 대응 방안을 확인하세요.",
-          image_url: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop",
-          link_url: "#",
-        },
-        {
-          id: 5,
-          title: "프랑크푸르트·뮌헨 한독 문화 페스티벌 및 푸드 마켓 개최",
-          summary: "전통 음식 체험과 다양한 문화 공연이 함께하는 주말 축제에 여러분을 초대합니다.",
-          image_url: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1200&auto=format&fit=crop",
-          link_url: "#",
-        },
-        {
-          id: 6,
-          title: "독일 생활 필수 공적·사적 건강보험(Krankenkasse) 비교 분석",
-          summary: "직장인과 프리랜서를 위한 보험 전환 기준과 가족 혜택 범위를 알아봅니다.",
-          image_url: "https://images.unsplash.com/photo-1450133064473-71024230f91b?q=80&w=1200&auto=format&fit=crop",
-          link_url: "#",
-        },
-      ]);
-    }
+        if (error) {
+          console.error("Featured articles fetch error:", error);
+          if (isCurrent) {
+            setFeaturedArticles([]);
+            setArticlesError(true);
+          }
+          return;
+        }
+
+        if (isCurrent) {
+          setFeaturedArticles(data || []);
+        }
+      } catch (err) {
+        console.error("Unexpected articles fetch error:", err);
+        if (isCurrent) {
+          setFeaturedArticles([]);
+          setArticlesError(true);
+        }
+      }
     }
 
     async function fetchTrendingPosts() {
@@ -197,7 +168,7 @@ function HomeContent() {
     }
 
     fetchPosts();
-    fetchNews();
+    fetchFeaturedArticles();
     fetchTrendingPosts();
 
     return function() {
@@ -215,20 +186,26 @@ function HomeContent() {
 
   const nextSlide = function() {
     setCurrentSlide(function(prev) {
-      return prev === newsList.length - 1 ? 0 : prev + 1;
+      return prev === featuredArticles.length - 1 ? 0 : prev + 1;
     });
   };
 
   const prevSlide = function() {
     setCurrentSlide(function(prev) {
-      return prev === 0 ? newsList.length - 1 : prev - 1;
+      return prev === 0 ? featuredArticles.length - 1 : prev - 1;
     });
   };
 
   return (
     <main className="main-page">
-      {newsList.length > 0 && (
+      {selectedCategory === "all" && !articlesError && featuredArticles.length > 0 && (
         <section style={{ maxWidth: "1200px", margin: "30px auto", padding: "0 20px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+            <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "var(--gh-text)", margin: 0 }}>독일 주요 소식</h2>
+            <Link href="/articles" style={{ color: "var(--gh-text-muted)", fontSize: "14px", textDecoration: "none", fontWeight: "500" }}>
+              전체 기사 보기 →
+            </Link>
+          </div>
           <div
             style={{
               position: "relative",
@@ -248,26 +225,39 @@ function HomeContent() {
                 transition: "transform 0.5s ease-in-out",
               }}
             >
-              {newsList.map(function(news) {
+              {featuredArticles.map(function(article) {
                 return (
-                  <div
-                    key={news.id}
+                  <Link
+                    key={article.id}
+                    href={"/articles/" + article.slug}
                     style={{
                       minWidth: "100%",
                       height: "100%",
                       position: "relative",
+                      display: "block",
+                      textDecoration: "none",
                     }}
                   >
-                    <img
-                      src={news.image_url}
-                      alt={news.title}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        opacity: 0.4,
-                      }}
-                    />
+                    {article.image_url ? (
+                      <img
+                        src={article.image_url}
+                        alt={article.title}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          opacity: 0.4,
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
+                        }}
+                      />
+                    )}
                     <div
                       style={{
                         position: "absolute",
@@ -278,91 +268,101 @@ function HomeContent() {
                         textAlign: "left",
                       }}
                     >
+                      <div style={{ fontSize: "13px", fontWeight: "bold", color: "#60a5fa", textTransform: "uppercase", marginBottom: "8px", display: "inline-block", background: "rgba(0, 0, 0, 0.4)", padding: "2px 8px", borderRadius: "4px" }}>
+                        {article.category}
+                      </div>
                       <h2 className="home-hero-title" style={{ fontSize: "32px", fontWeight: "bold", margin: "0 0 12px 0", lineHeight: "1.2" }}>
-                        {news.title}
+                        {article.title}
                       </h2>
                       <p style={{ fontSize: "15px", color: "#cbd5e1", margin: 0, maxWidth: "800px" }}>
-                        {news.summary}
+                        {article.summary}
                       </p>
                     </div>
-                  </div>
+                  </Link>
                 );
               })}
             </div>
 
-            <button
-              onClick={prevSlide}
-              style={{
-                position: "absolute",
-                left: "16px",
-                top: "50%",
-                transform: "translateY(-50%)",
-                background: "rgba(0, 0, 0, 0.5)",
-                color: "#fff",
-                border: "none",
-                borderRadius: "50%",
-                width: "40px",
-                height: "40px",
-                cursor: "pointer",
-                fontSize: "18px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              ❮
-            </button>
-            <button
-              onClick={nextSlide}
-              style={{
-                position: "absolute",
-                right: "16px",
-                top: "50%",
-                transform: "translateY(-50%)",
-                background: "rgba(0, 0, 0, 0.5)",
-                color: "#fff",
-                border: "none",
-                borderRadius: "50%",
-                width: "40px",
-                height: "40px",
-                cursor: "pointer",
-                fontSize: "18px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              ❯
-            </button>
+            {featuredArticles.length > 1 && (
+              <>
+                <button
+                  onClick={prevSlide}
+                  style={{
+                    position: "absolute",
+                    left: "16px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "rgba(0, 0, 0, 0.5)",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "50%",
+                    width: "40px",
+                    height: "40px",
+                    cursor: "pointer",
+                    fontSize: "18px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 10,
+                  }}
+                >
+                  ❮
+                </button>
+                <button
+                  onClick={nextSlide}
+                  style={{
+                    position: "absolute",
+                    right: "16px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "rgba(0, 0, 0, 0.5)",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "50%",
+                    width: "40px",
+                    height: "40px",
+                    cursor: "pointer",
+                    fontSize: "18px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 10,
+                  }}
+                >
+                  ❯
+                </button>
 
-            <div
-              style={{
-                position: "absolute",
-                bottom: "16px",
-                left: "50%",
-                transform: "translateX(-50%)",
-                display: "flex",
-                gap: "8px",
-              }}
-            >
-              {newsList.map(function(_, index) {
-                return (
-                  <button
-                    key={index}
-                    onClick={setCurrentSlide.bind(null, index)}
-                    style={{
-                      width: currentSlide === index ? "24px" : "10px",
-                      height: "10px",
-                      borderRadius: "5px",
-                      border: "none",
-                      background: currentSlide === index ? "#2563eb" : "rgba(255, 255, 255, 0.5)",
-                      cursor: "pointer",
-                      transition: "width 0.3s ease",
-                    }}
-                  />
-                );
-              })}
-            </div>
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: "16px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    display: "flex",
+                    gap: "8px",
+                    zIndex: 10,
+                  }}
+                >
+                  {featuredArticles.map(function(_, index) {
+                    return (
+                      <button
+                        key={index}
+                        onClick={setCurrentSlide.bind(null, index)}
+                        style={{
+                          width: currentSlide === index ? "24px" : "10px",
+                          height: "10px",
+                          borderRadius: "5px",
+                          border: "none",
+                          background: currentSlide === index ? "#2563eb" : "rgba(255, 255, 255, 0.5)",
+                          cursor: "pointer",
+                          transition: "width 0.3s ease",
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
         </section>
       )}
@@ -370,7 +370,7 @@ function HomeContent() {
       <div className="wrapper" style={{ padding: "0 20px 60px 20px", maxWidth: "1200px", margin: "0 auto" }}>
         
         {/* 실시간 인기 게시글 목록 */}
-        {trendingPosts.length > 0 && (
+        {selectedCategory === "all" && trendingPosts.length > 0 && (
           <div style={{ marginBottom: "40px", background: "var(--gh-surface-muted)", borderRadius: "12px", padding: "24px", border: "1px solid var(--gh-border)" }}>
             <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "var(--gh-text)", margin: "0 0 16px 0", display: "flex", alignItems: "center", gap: "6px" }}>
               🔥 지금 가장 많이 읽은 인기 글
