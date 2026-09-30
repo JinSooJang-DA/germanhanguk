@@ -59,12 +59,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         title,
         description,
         type: "article",
+        images: article.image_url ? [{ url: article.image_url, alt: article.title }] : undefined,
       },
     };
-
-    if (article.image_url) {
-      metadata.openGraph.images = [{ url: article.image_url, alt: article.title }];
-    }
 
     return metadata;
   } catch (err) {
