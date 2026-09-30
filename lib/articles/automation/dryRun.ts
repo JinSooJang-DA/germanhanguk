@@ -1,9 +1,34 @@
 import { fetchBundesregierungArticleCandidates } from "./sources/bundesregierung";
+import { findDuplicateCandidates } from "./identity";
 import { classifyArticleRelevance } from "./relevance";
 import type {
+  ArticleCandidate,
   ArticleAutomationDryRunResult,
   ArticleRelevanceClassification,
+  ArticleRelevanceResult,
 } from "./types";
+
+type DownstreamArticleRelevanceClassification = Exclude<
+  ArticleRelevanceClassification,
+  "irrelevant"
+>;
+
+interface ClassifiedArticleCandidate {
+  candidate: ArticleCandidate;
+  relevance: ArticleRelevanceResult;
+}
+
+interface DownstreamClassifiedArticleCandidate extends ClassifiedArticleCandidate {
+  relevance: ArticleRelevanceResult & {
+    classification: DownstreamArticleRelevanceClassification;
+  };
+}
+
+function isDownstreamCandidate(
+  candidate: ClassifiedArticleCandidate,
+): candidate is DownstreamClassifiedArticleCandidate {
+  return candidate.relevance.classification !== "irrelevant";
+}
 
 /**
  * Explicit server-side development entry point. It fetches and normalizes the
@@ -16,10 +41,16 @@ export async function runBundesregierungArticlesDryRun(): Promise<ArticleAutomat
     uncertain: 0,
     irrelevant: 0,
   };
-  const candidates = result.candidates.map((candidate) => {
+  const classifiedCandidates = result.candidates.map((candidate) => {
     const relevance = classifyArticleRelevance(candidate);
     classificationCounts[relevance.classification] += 1;
 
+    return {
+      candidate,
+      relevance,
+    };
+  });
+  const candidates = classifiedCandidates.map(({ candidate, relevance }) => {
     return {
       title: candidate.title,
       canonicalUrl: candidate.canonicalUrl,
@@ -27,6 +58,20 @@ export async function runBundesregierungArticlesDryRun(): Promise<ArticleAutomat
       ...relevance,
     };
   });
+  const downstreamClassifiedCandidates = classifiedCandidates.filter(isDownstreamCandidate);
+  const duplicateResults = findDuplicateCandidates(
+    downstreamClassifiedCandidates.map(({ candidate }) => candidate),
+  );
+  const downstreamCandidates = duplicateResults.map((result, index) => ({
+    title: result.candidate.title,
+    classification: downstreamClassifiedCandidates[index].relevance.classification,
+    hasExternalId: Boolean(result.candidate.externalId?.trim()),
+    normalizedCanonicalUrl: result.identity.normalizedCanonicalUrl,
+    fingerprint: result.identity.fingerprint,
+    ...(result.duplicateOfIndex === undefined
+      ? {}
+      : { duplicateOfIndex: result.duplicateOfIndex }),
+  }));
 
   return {
     sourceProvider: result.sourceProvider,
@@ -36,6 +81,11 @@ export async function runBundesregierungArticlesDryRun(): Promise<ArticleAutomat
     skippedItemCount: result.skippedItemCount,
     classificationCounts,
     candidates,
+    downstreamCandidateCount: downstreamCandidates.length,
+    duplicateCandidateCount: downstreamCandidates.filter(
+      (candidate) => candidate.duplicateOfIndex !== undefined,
+    ).length,
+    downstreamCandidates,
     ...(result.error ? { error: result.error } : {}),
   };
 }

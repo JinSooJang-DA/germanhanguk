@@ -33,6 +33,29 @@ export interface ArticleRelevanceResult {
   reasons: string[];
 }
 
+export type ArticleCandidateIdentityKind = "external-id" | "canonical-url";
+
+export interface ArticleCandidateIdentity {
+  kind: ArticleCandidateIdentityKind;
+  normalizedCanonicalUrl: string;
+  fingerprint: string;
+}
+
+export interface ArticleCandidateDuplicateResult {
+  candidate: ArticleCandidate;
+  identity: ArticleCandidateIdentity;
+  duplicateOfIndex?: number;
+}
+
+export interface ArticleAutomationDownstreamCandidate {
+  title: string;
+  classification: Exclude<ArticleRelevanceClassification, "irrelevant">;
+  hasExternalId: boolean;
+  normalizedCanonicalUrl: string;
+  fingerprint: string;
+  duplicateOfIndex?: number;
+}
+
 export interface ArticleAutomationDryRunResult {
   sourceProvider: ArticleCandidate["sourceProvider"];
   sourceName: string;
@@ -42,5 +65,8 @@ export interface ArticleAutomationDryRunResult {
   classificationCounts: Record<ArticleRelevanceClassification, number>;
   candidates: (Pick<ArticleCandidate, "title" | "canonicalUrl" | "publishedAt"> &
     ArticleRelevanceResult)[];
+  downstreamCandidateCount: number;
+  duplicateCandidateCount: number;
+  downstreamCandidates: ArticleAutomationDownstreamCandidate[];
   error?: SourceFetchResult["error"];
 }
