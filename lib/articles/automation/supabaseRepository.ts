@@ -90,14 +90,12 @@ export function createSupabaseArticleSourceRepository(): ArticleSourceRepository
         return { status: "reserved" };
       }
 
-      const { data: existingRow, error: seenError } = await supabase
-        .from("article_sources")
-        .update({ last_seen_at: new Date().toISOString() })
-        .eq("fingerprint", row.fingerprint)
-        .select("id")
-        .maybeSingle();
+      const { data: touchedId, error: seenError } = await supabase.rpc(
+        "touch_article_source_last_seen",
+        { p_fingerprint: row.fingerprint },
+      );
 
-      if (seenError || !existingRow) {
+      if (seenError || typeof touchedId !== "string" || !touchedId) {
         throw new Error("Article source reservation failed.");
       }
 
