@@ -19,7 +19,7 @@ export const metadata = {
 
 export default function GuideLandingPage() {
   return (
-    <main style={{ minHeight: "80vh", padding: "40px 0 80px", background: "#f8fafc" }}>
+    <main style={{ minHeight: "80vh", padding: "40px 0 80px", background: "var(--gh-page-bg)" }}>
       <div className="wrapper" style={{ maxWidth: "1000px", margin: "0 auto", padding: "0 20px" }}>
 
         {/* 히어로 헤더 */}
@@ -27,10 +27,10 @@ export default function GuideLandingPage() {
           <span style={{ fontSize: "14px", color: "#2563eb", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.1em" }}>
             GermanHanguk Living Guide
           </span>
-          <h1 style={{ fontSize: "clamp(24px, 5vw, 36px)", fontWeight: "bold", color: "#0f172a", margin: "10px 0 16px 0" }}>
+          <h1 style={{ fontSize: "clamp(24px, 5vw, 36px)", fontWeight: "bold", color: "var(--gh-text)", margin: "10px 0 16px 0" }}>
             🇩🇪 독일 생활백서 & 공식 정착 가이드
           </h1>
-          <p style={{ fontSize: "16px", color: "#64748b", margin: 0, maxWidth: "600px", marginLeft: "auto", marginRight: "auto", lineHeight: "1.6" }}>
+          <p style={{ fontSize: "16px", color: "var(--gh-text-muted)", margin: 0, maxWidth: "600px", marginLeft: "auto", marginRight: "auto", lineHeight: "1.6" }}>
             독일 행정, 비자, 보험, 세금 등 유학생과 교민이 가장 헷갈려하는
             핵심 생활정보들을 독일 공공 부처 최신 법령을 기준으로 엄격하게 선별해 드립니다.
           </p>
@@ -39,7 +39,7 @@ export default function GuideLandingPage() {
         {/* 카테고리 그리드 */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
           {GUIDE_CATEGORIES.map(function (cat) {
-            const isReady = cat.value === "insurance" || cat.value === "housing" || cat.value === "visa" || cat.value === "taxes" || cat.value === "jobs" || cat.value === "education" || cat.value === "driving" || cat.value === "german-life" || cat.value === "korean-life";
+            const isReady = cat.value === "insurance" || cat.value === "housing" || cat.value === "visa" || cat.value === "taxes" || cat.value === "jobs" || cat.value === "education" || cat.value === "driving" || cat.value === "german-life" || cat.value === "korean-life" || cat.value === "language" || cat.value === "culture-travel";
             
             const getCategoryPath = function(val: string) {
               if (val === "visa") return "visa-residence";
@@ -52,7 +52,7 @@ export default function GuideLandingPage() {
                 href={isReady ? "/guide/" + getCategoryPath(cat.value) : "#"}
                 style={{
                   textDecoration: "none",
-                  color: "#0f172a",
+                  color: "var(--gh-text)",
                   display: "block"
                 }}
               >
@@ -94,7 +94,7 @@ export default function GuideLandingPage() {
                     <h3 style={{ fontSize: "18px", fontWeight: "bold", margin: "16px 0 8px 0" }}>
                       {cat.label.ko}
                     </h3>
-                    <p style={{ fontSize: "13px", color: "#64748b", margin: 0, lineHeight: "1.5" }}>
+                    <p style={{ fontSize: "13px", color: "var(--gh-text-muted)", margin: 0, lineHeight: "1.5" }}>
                       {cat.description}
                     </p>
                   </div>

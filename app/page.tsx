@@ -327,8 +327,8 @@ function HomeContent() {
         
         {/* 실시간 인기 게시글 목록 */}
         {trendingPosts.length > 0 && (
-          <div style={{ marginBottom: "40px", background: "#f8fafc", borderRadius: "12px", padding: "24px", border: "1px solid #e2e8f0" }}>
-            <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "#0f172a", margin: "0 0 16px 0", display: "flex", alignItems: "center", gap: "6px" }}>
+          <div style={{ marginBottom: "40px", background: "var(--gh-surface-muted)", borderRadius: "12px", padding: "24px", border: "1px solid var(--gh-border)" }}>
+            <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "var(--gh-text)", margin: "0 0 16px 0", display: "flex", alignItems: "center", gap: "6px" }}>
               🔥 지금 가장 많이 읽은 인기 글
             </h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
@@ -340,12 +340,12 @@ function HomeContent() {
                     key={tp.id}
                     href={"/posts/" + tp.id}
                     style={{
-                      background: "#fff",
+                      background: "var(--gh-surface)",
                       borderRadius: "8px",
                       padding: "16px",
-                      border: "1px solid #e2e8f0",
+                      border: "1px solid var(--gh-border)",
                       textDecoration: "none",
-                      color: "#0f172a",
+                      color: "var(--gh-text)",
                       display: "flex",
                       flexDirection: "column",
                       justifyContent: "space-between",
@@ -362,7 +362,7 @@ function HomeContent() {
                         {tp.title}
                       </h4>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#94a3b8" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "var(--gh-text-subtle)" }}>
                       <span>👁️ {tp.views || 0}</span>
                       <div style={{ display: "flex", gap: "8px" }}>
                         {commentCount > 0 && <span>💬 {commentCount}</span>}
@@ -384,8 +384,8 @@ function HomeContent() {
               style={{
                 padding: "8px 18px",
                 border: "none",
-                background: selectedCategory === "all" ? "#0f172a" : "#f1f5f9",
-                color: selectedCategory === "all" ? "#fff" : "#475569",
+                background: selectedCategory === "all" ? "var(--gh-control-active)" : "var(--gh-surface-muted)",
+                color: selectedCategory === "all" ? "var(--gh-control-active-text)" : "var(--gh-text-muted)",
                 borderRadius: "20px",
                 cursor: "pointer",
                 fontWeight: selectedCategory === "all" ? "bold" : "normal",
@@ -405,8 +405,8 @@ function HomeContent() {
                   style={{
                     padding: "8px 18px",
                     border: "none",
-                    background: selectedCategory === cat.value ? "#0f172a" : "#f1f5f9",
-                    color: selectedCategory === cat.value ? "#fff" : "#475569",
+                    background: selectedCategory === cat.value ? "var(--gh-control-active)" : "var(--gh-surface-muted)",
+                    color: selectedCategory === cat.value ? "var(--gh-control-active-text)" : "var(--gh-text-muted)",
                     borderRadius: "20px",
                     cursor: "pointer",
                     fontWeight: selectedCategory === cat.value ? "bold" : "normal",
@@ -425,8 +425,8 @@ function HomeContent() {
             <button
               style={{
                 padding: "10px 20px",
-                background: "#0f172a",
-                color: "#fff",
+                background: "var(--gh-control-active)",
+                color: "var(--gh-control-active-text)",
                 border: "none",
                 borderRadius: "6px",
                 fontWeight: "bold",
@@ -446,7 +446,7 @@ function HomeContent() {
           <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px", minWidth: "600px" }}>
               <thead>
-                <tr style={{ borderBottom: "2px solid #e2e8f0", background: "#f8fafc", textAlign: "left" }}>
+                <tr style={{ borderBottom: "2px solid var(--gh-border)", background: "var(--gh-surface-muted)", color: "var(--gh-text)", textAlign: "left" }}>
                   <th style={{ padding: "14px" }}>카테고리</th>
                   <th style={{ padding: "14px" }}>제목</th>
                   <th style={{ padding: "14px" }}>지역</th>
@@ -460,12 +460,12 @@ function HomeContent() {
                   const commentsCount = post.comments?.[0]?.count || 0;
                   const likesCount = post.post_likes?.[0]?.count || 0;
                   return (
-                    <tr key={post.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                      <td style={{ padding: "14px", fontSize: "14px", color: "#64748b" }}>
+                    <tr key={post.id} style={{ borderBottom: "1px solid var(--gh-border)" }}>
+                      <td style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
                         {getCategoryLabel(post.category, "ko")}
                       </td>
                       <td style={{ padding: "14px" }}>
-                        <Link href={"/posts/" + post.id} style={{ textDecoration: "none", color: "#0f172a", fontWeight: "500" }}>
+                        <Link href={"/posts/" + post.id} style={{ textDecoration: "none", color: "var(--gh-text)", fontWeight: "600" }}>
                           {post.title}
                         </Link>
                         {commentsCount > 0 && (
@@ -474,8 +474,8 @@ function HomeContent() {
                           </span>
                         )}
                       </td>
-                      <td style={{ padding: "14px", fontSize: "14px", color: "#64748b" }}>{post.region || "-"}</td>
-                      <td style={{ padding: "14px", fontSize: "14px", color: "#64748b" }}>
+                      <td style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>{post.region || "-"}</td>
+                      <td style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
                         {post.author_id ? (
                           <Link
                             href={"/profile/" + post.author_id}
@@ -484,7 +484,7 @@ function HomeContent() {
                               alignItems: "center",
                               gap: "8px",
                               textDecoration: "none",
-                              color: "#334155",
+                              color: "var(--gh-text)",
                             }}
                           >
                             <div
@@ -492,7 +492,7 @@ function HomeContent() {
                                 width: "24px",
                                 height: "24px",
                                 borderRadius: "50%",
-                                background: "#e2e8f0",
+                                background: "var(--gh-surface-muted)",
                                 overflow: "hidden",
                                 display: "flex",
                                 alignItems: "center",
@@ -519,7 +519,7 @@ function HomeContent() {
                                 width: "24px",
                                 height: "24px",
                                 borderRadius: "50%",
-                                background: "#e2e8f0",
+                                background: "var(--gh-surface-muted)",
                                 overflow: "hidden",
                                 display: "flex",
                                 alignItems: "center",
@@ -541,10 +541,10 @@ function HomeContent() {
                           </div>
                         )}
                       </td>
-                      <td style={{ padding: "14px", fontSize: "14px", color: "#94a3b8" }}>
+                      <td style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-subtle)" }}>
                         {new Date(post.created_at).toLocaleDateString()}
                       </td>
-                      <td style={{ padding: "14px", fontSize: "14px", color: "#64748b", textAlign: "center" }}>
+                      <td style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)", textAlign: "center" }}>
                         👁️ {post.views || 0} &nbsp;&nbsp; ❤️ {likesCount}
                       </td>
                     </tr>

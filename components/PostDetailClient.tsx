@@ -6,8 +6,10 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Post, Comment } from "@/types/post";
 import { getCategoryLabel } from "@/lib/constants";
+import { VIEW_INCREMENT_EVENT } from "@/components/PostViewCount";
 
 const PAGE_SIZE = 10;
+const VIEW_COUNT_DEDUPLICATION_MS = 30 * 60 * 1000;
 
 interface PostDetailClientProps {
   id: string;
@@ -180,8 +182,43 @@ export default function PostDetailClient({
   useEffect(function() {
     // Safe, atomic view increment via RPC (실패해도 렌더링에 영향 없도록 안전처리)
     async function incrementView() {
+      const postId = Number.parseInt(id, 10);
+
+      if (!Number.isSafeInteger(postId) || postId <= 0) {
+        console.error("Invalid post id:", id);
+        return;
+      }
+
+      // 일반 사용자의 새로고침 중복 집계 완화용이며 보안 또는 악용 방어 수단이 아닙니다.
+      const storageKey = "post-view-counted:" + postId;
       try {
-        await supabase.rpc("increment_page_view", { post_id: parseInt(id, 10) });
+        const lastCountedAt = Number(localStorage.getItem(storageKey));
+        if (Number.isFinite(lastCountedAt) && Date.now() - lastCountedAt < VIEW_COUNT_DEDUPLICATION_MS) {
+          return;
+        }
+      } catch (err) {
+        console.warn("View count localStorage read error:", err);
+      }
+
+      try {
+        const { error } = await supabase.rpc("increment_page_view", { post_id: postId });
+
+        if (error) {
+          console.error("View increment RPC error:", error);
+          return;
+        }
+
+        if (process.env.NODE_ENV === "development") {
+          console.log("View increment RPC success:", postId);
+        }
+
+        try {
+          localStorage.setItem(storageKey, String(Date.now()));
+        } catch (err) {
+          console.warn("View count localStorage write error:", err);
+        }
+
+        window.dispatchEvent(new CustomEvent(VIEW_INCREMENT_EVENT, { detail: { postId } }));
       } catch (err) {
         console.error("View increment RPC error:", err);
       }
@@ -424,10 +461,12 @@ export default function PostDetailClient({
             style={{
               width: "100%",
               padding: "12px",
-              border: "1px solid #ddd",
+              border: "1px solid var(--gh-border)",
               borderRadius: "6px",
               fontSize: "14px",
               resize: "vertical",
+              background: "var(--gh-surface)",
+              color: "var(--gh-text)",
             }}
             required
           />
@@ -437,8 +476,8 @@ export default function PostDetailClient({
               disabled={!currentUserId || submitting}
               style={{
                 padding: "8px 18px",
-                background: currentUserId ? "#222" : "#ccc",
-                color: "#fff",
+                background: currentUserId && !submitting ? "var(--gh-control-active)" : "var(--gh-surface-muted)",
+                color: currentUserId && !submitting ? "var(--gh-control-active-text)" : "var(--gh-text-subtle)",
                 border: "none",
                 borderRadius: "4px",
                 cursor: currentUserId ? "pointer" : "not-allowed",
@@ -463,7 +502,8 @@ export default function PostDetailClient({
                   id={"comment-" + comment.id}
                   style={{
                     padding: "16px",
-                    background: "#f9f9f9",
+                    background: "var(--gh-surface-muted)",
+                    border: "1px solid var(--gh-border)",
                     borderRadius: "6px",
                     display: "flex",
                     gap: "12px",
@@ -530,18 +570,18 @@ export default function PostDetailClient({
                           justifyContent: "space-between",
                           marginBottom: "8px",
                           fontSize: "13px",
-                          color: "#666",
+                          color: "var(--gh-text-muted)",
                         }}
                       >
                         {comment.author_id ? (
                           <Link
                             href={"/profile/" + comment.author_id}
-                            style={{ fontWeight: "bold", color: "#222", textDecoration: "none" }}
+                            style={{ fontWeight: "bold", color: "var(--gh-text)", textDecoration: "none" }}
                           >
                             {comment.author_name}
                           </Link>
                         ) : (
-                          <span style={{ fontWeight: "bold", color: "#222" }}>{comment.author_name}</span>
+                          <span style={{ fontWeight: "bold", color: "var(--gh-text)" }}>{comment.author_name}</span>
                         )}
                         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                           <span>{new Date(comment.created_at).toLocaleString()}</span>
@@ -588,7 +628,7 @@ export default function PostDetailClient({
                             style={{
                               width: "100%",
                               padding: "10px",
-                              border: "1px solid #cbd5e1",
+                                border: "1px solid var(--gh-border)",
                               borderRadius: "4px",
                               fontSize: "14px",
                               resize: "vertical",
@@ -629,7 +669,7 @@ export default function PostDetailClient({
                           </div>
                         </div>
                       ) : (
-                        <p style={{ margin: 0, fontSize: "15px", whiteSpace: "pre-wrap" }}>{comment.content}</p>
+                        <p style={{ margin: 0, fontSize: "15px", color: "var(--gh-text)", whiteSpace: "pre-wrap" }}>{comment.content}</p>
                       )}
                     </div>
                   </div>
@@ -665,10 +705,11 @@ export default function PostDetailClient({
                             style={{
                               flex: 1,
                               padding: "8px 12px",
-                              border: "1px solid #cbd5e1",
+                              border: "1px solid var(--gh-border)",
                               borderRadius: "4px",
                               fontSize: "13px",
-                              background: "#fff",
+                              background: "var(--gh-surface)",
+                              color: "var(--gh-text)",
                             }}
                             required
                           />
@@ -677,8 +718,8 @@ export default function PostDetailClient({
                             disabled={submitting}
                             style={{
                               padding: "6px 14px",
-                              background: "#0f172a",
-                              color: "#fff",
+                              background: "var(--gh-control-active)",
+                              color: "var(--gh-control-active-text)",
                               border: "none",
                               borderRadius: "4px",
                               cursor: "pointer",
@@ -701,7 +742,7 @@ export default function PostDetailClient({
                       display: "flex",
                       flexDirection: "column",
                       gap: "12px",
-                      borderLeft: "2px solid #e2e8f0",
+                      borderLeft: "2px solid var(--gh-border)",
                       paddingLeft: "16px"
                     }}>
                       {comment.replies.map(function(reply) {
@@ -728,8 +769,8 @@ export default function PostDetailClient({
                               )}
                             </div>
                             <div style={{ flex: 1 }}>
-                              <div style={{ display: "flex", fontSize: "12px", color: "#64748b", marginBottom: "4px", justifyContent: "space-between" }}>
-                                <span style={{ fontWeight: "bold", color: "#334155" }}>{reply.author_name}</span>
+                                <div style={{ display: "flex", fontSize: "12px", color: "var(--gh-text-muted)", marginBottom: "4px", justifyContent: "space-between" }}>
+                                <span style={{ fontWeight: "bold", color: "var(--gh-text)" }}>{reply.author_name}</span>
                                 <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                                   <span>{new Date(reply.created_at).toLocaleString()}</span>
                                   {isReplyAuthor && !isEditingReply && (
@@ -760,7 +801,7 @@ export default function PostDetailClient({
                                     style={{
                                       width: "100%",
                                       padding: "8px",
-                                      border: "1px solid #cbd5e1",
+                                      border: "1px solid var(--gh-border)",
                                       borderRadius: "4px",
                                       fontSize: "13px",
                                       boxSizing: "border-box",
@@ -782,7 +823,7 @@ export default function PostDetailClient({
                                   </div>
                                 </div>
                               ) : (
-                                <p style={{ margin: 0, fontSize: "14px", color: "#1e293b", whiteSpace: "pre-wrap" }}>{reply.content}</p>
+                                <p style={{ margin: 0, fontSize: "14px", color: "var(--gh-text)", whiteSpace: "pre-wrap" }}>{reply.content}</p>
                               )}
                             </div>
                           </div>
@@ -798,14 +839,14 @@ export default function PostDetailClient({
       </div>
 
       {/* 하단 동일 카테고리 게시글 목록 */}
-      <div style={{ marginTop: "60px", paddingTop: "30px", borderTop: "2px solid #0f172a" }}>
+      <div className="related-posts" style={{ marginTop: "60px", paddingTop: "30px", borderTop: "2px solid var(--gh-text)" }}>
         <h3 style={{ marginBottom: "16px", fontSize: "18px", color: "#0f172a" }}>
           {"'" + currentCategoryLabel + "' 카테고리 다른 글"}
         </h3>
 
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
-            <tr style={{ borderBottom: "1px solid #ddd", background: "#f8f9fa", textAlign: "left" }}>
+            <tr style={{ borderBottom: "1px solid var(--gh-border)", background: "var(--gh-surface-muted)", textAlign: "left" }}>
               <th style={{ padding: "10px 12px", fontSize: "14px" }}>카테고리</th>
               <th style={{ padding: "10px 12px", fontSize: "14px" }}>제목</th>
               <th style={{ padding: "10px 12px", fontSize: "14px" }}>지역</th>
@@ -821,19 +862,19 @@ export default function PostDetailClient({
                 <tr
                   key={p.id}
                   style={{
-                    borderBottom: "1px solid #eee",
-                    background: isCurrent ? "#eff6ff" : "transparent",
+                    borderBottom: "1px solid var(--gh-border)",
+                    background: isCurrent ? "var(--gh-surface-muted)" : "transparent",
                   }}
                 >
-                  <td style={{ padding: "10px 12px", fontSize: "13px", color: "#666" }}>
+                  <td className="related-post-category" style={{ padding: "10px 12px", fontSize: "13px", color: "var(--gh-text-muted)" }}>
                     {getCategoryLabel(p.category, "ko")}
                   </td>
-                  <td style={{ padding: "10px 12px" }}>
+                  <td className="related-post-title" style={{ padding: "10px 12px" }}>
                     <Link
                       href={"/posts/" + p.id + "?page=" + currentPage}
                       style={{
                         textDecoration: "none",
-                        color: isCurrent ? "#2563eb" : "#222",
+                        color: isCurrent ? "var(--gh-accent)" : "var(--gh-text)",
                         fontWeight: isCurrent ? "bold" : "normal",
                         fontSize: "14px",
                       }}
@@ -841,14 +882,14 @@ export default function PostDetailClient({
                       {p.title} {isCurrent && "◀ (현재글)"}
                     </Link>
                   </td>
-                  <td style={{ padding: "10px 12px", fontSize: "13px", color: "#666" }}>{p.region || "-"}</td>
-                  <td style={{ padding: "10px 12px", fontSize: "13px", color: "#666" }}>
+                  <td className="related-post-region" style={{ padding: "10px 12px", fontSize: "13px", color: "var(--gh-text-muted)" }}>{p.region || "-"}</td>
+                  <td className="related-post-author" style={{ padding: "10px 12px", fontSize: "13px", color: "var(--gh-text-muted)" }}>
                     {p.author_id ? (
                       <Link
                         href={"/profile/" + p.author_id}
                         style={{
                           textDecoration: "none",
-                          color: "#475569",
+                          color: "var(--gh-text-muted)",
                           fontWeight: 500,
                         }}
                       >
@@ -858,10 +899,10 @@ export default function PostDetailClient({
                       p.author_name
                     )}
                   </td>
-                  <td style={{ padding: "10px 12px", fontSize: "13px", color: "#888" }}>
+                  <td className="related-post-date" style={{ padding: "10px 12px", fontSize: "13px", color: "var(--gh-text-subtle)" }}>
                     {new Date(p.created_at).toLocaleDateString()}
                   </td>
-                  <td style={{ padding: "10px 12px", fontSize: "13px", color: "#888", textAlign: "center" }}>
+                  <td className="related-post-views" style={{ padding: "10px 12px", fontSize: "13px", color: "var(--gh-text-subtle)", textAlign: "center" }}>
                     {p.views || 0}
                   </td>
                 </tr>

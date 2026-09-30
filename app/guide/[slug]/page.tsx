@@ -124,7 +124,7 @@ function parseBlocks(blocks: string[]): ParsedBlock[] {
 function renderTextWithBold(text: string) {
   const parts = text.split("**");
   return parts.map(function(part, index) {
-    return index % 2 === 1 ? <strong key={index} style={{ color: "#0f172a" }}>{part}</strong> : part;
+    return index % 2 === 1 ? <strong key={index} style={{ color: "var(--gh-text)" }}>{part}</strong> : part;
   });
 }
 
@@ -138,21 +138,21 @@ function renderStructuredContent(content: string) {
     switch (block.type) {
       case "h2":
         return (
-          <h2 key={i} style={{ fontSize: "22px", fontWeight: "bold", marginTop: "34px", marginBottom: "16px", color: "#0f172a", borderLeft: "4px solid #2563eb", paddingLeft: "12px" }}>
+          <h2 key={i} style={{ fontSize: "22px", fontWeight: "bold", marginTop: "34px", marginBottom: "16px", color: "var(--gh-text)", borderLeft: "4px solid var(--gh-accent)", paddingLeft: "12px" }}>
             {renderTextWithBold(block.content)}
           </h2>
         );
       case "h3":
         return (
-          <h3 key={i} style={{ fontSize: "18px", fontWeight: "bold", marginTop: "26px", marginBottom: "12px", color: "#1e293b" }}>
+          <h3 key={i} style={{ fontSize: "18px", fontWeight: "bold", marginTop: "26px", marginBottom: "12px", color: "var(--gh-text)" }}>
             {renderTextWithBold(block.content)}
           </h3>
         );
       case "hr":
-        return <hr key={i} style={{ border: "none", borderTop: "1px solid #e2e8f0", margin: "32px 0" }} />;
+        return <hr key={i} style={{ border: "none", borderTop: "1px solid var(--gh-border)", margin: "32px 0" }} />;
       case "ul":
         return (
-          <ul key={i} style={{ paddingLeft: "20px", margin: "16px 0", lineHeight: "1.7", color: "#334155" }}>
+          <ul key={i} style={{ paddingLeft: "20px", margin: "16px 0", lineHeight: "1.7", color: "var(--gh-text-muted)" }}>
             {block.items?.map(function(item, idx) {
               return (
                 <li key={idx} style={{ marginBottom: "8px" }}>
@@ -164,7 +164,7 @@ function renderStructuredContent(content: string) {
         );
       case "p":
         return (
-          <p key={i} style={{ fontSize: "15px", lineHeight: "1.8", color: "#334155", margin: "14px 0", textAlign: "left" }}>
+          <p key={i} style={{ fontSize: "15px", lineHeight: "1.8", color: "var(--gh-text-muted)", margin: "14px 0", textAlign: "left" }}>
             {renderTextWithBold(block.content)}
           </p>
         );
@@ -199,7 +199,7 @@ export default async function GuideDetailPage({ params }: { params: Promise<{ sl
   const sources = (guide.sources || []) as SourceItem[];
 
   return (
-    <main style={{ minHeight: "80vh", padding: "40px 0 80px", background: "#f8fafc" }}>
+    <main style={{ minHeight: "80vh", padding: "40px 0 80px", background: "var(--gh-page-bg)" }}>
       <article style={{ maxWidth: "720px", margin: "0 auto", padding: "0 20px" }}>
 
         {/* 상단 브레드크럼 */}
@@ -208,15 +208,15 @@ export default async function GuideDetailPage({ params }: { params: Promise<{ sl
           <span style={{ color: "#94a3b8", margin: "0 8px" }}>&gt;</span>
           <Link href={"/guide/" + guide.category} style={{ textDecoration: "none", color: "#64748b" }}>{categoryLabel}</Link>
           <span style={{ color: "#94a3b8", margin: "0 8px" }}>&gt;</span>
-          <span style={{ color: "#0f172a", fontWeight: "bold" }}>상세 정보</span>
+          <span style={{ color: "var(--gh-text)", fontWeight: "bold" }}>상세 정보</span>
         </div>
 
         {/* 에디토리얼 메타 정보 */}
-        <div style={{ borderBottom: "1px solid #e2e8f0", paddingBottom: "24px", marginBottom: "32px" }}>
-          <h1 style={{ fontSize: "clamp(22px, 5vw, 30px)", fontWeight: "bold", color: "#0f172a", margin: "0 0 16px 0", lineHeight: "1.3" }}>
+        <div style={{ borderBottom: "1px solid var(--gh-border)", paddingBottom: "24px", marginBottom: "32px" }}>
+          <h1 style={{ fontSize: "clamp(22px, 5vw, 30px)", fontWeight: "bold", color: "var(--gh-text)", margin: "0 0 16px 0", lineHeight: "1.3" }}>
             {guide.title}
           </h1>
-          <p style={{ fontSize: "16px", color: "#475569", lineHeight: "1.6", margin: "0 0 16px 0", fontStyle: "italic" }}>
+          <p style={{ fontSize: "16px", color: "var(--gh-text-muted)", lineHeight: "1.6", margin: "0 0 16px 0", fontStyle: "italic" }}>
             {guide.description}
           </p>
           <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", fontSize: "13px", color: "#94a3b8" }}>
@@ -264,12 +264,12 @@ export default async function GuideDetailPage({ params }: { params: Promise<{ sl
             style={{
               marginTop: "40px",
               padding: "20px 24px",
-              background: "#f1f5f9",
+              background: "var(--gh-surface-muted)",
               borderRadius: "8px",
               boxSizing: "border-box",
             }}
           >
-            <h3 style={{ fontSize: "15px", fontWeight: "bold", color: "#334155", margin: "0 0 12px 0", display: "flex", alignItems: "center", gap: "6px" }}>
+            <h3 style={{ fontSize: "15px", fontWeight: "bold", color: "var(--gh-text)", margin: "0 0 12px 0", display: "flex", alignItems: "center", gap: "6px" }}>
               🌐 공식 공공 출처 & 참고자료 (Authoritative Sources)
             </h3>
             <ul style={{ margin: 0, paddingLeft: "20px", fontSize: "14px", lineHeight: "1.6" }}>

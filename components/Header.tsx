@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
+import ThemeSelector from "@/components/ThemeSelector";
 
 export default function Header() {
   const router = useRouter();
@@ -140,14 +141,14 @@ export default function Header() {
   }
 
   return (
-    <header style={{ borderBottom: "1px solid #e2e8f0", background: "#fff", padding: "16px 0" }}>
+    <header style={{ borderBottom: "1px solid var(--gh-border)", background: "var(--gh-surface)", padding: "16px 0" }}>
       <div className="wrapper" style={{ maxWidth: "1200px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 20px" }}>
         
         {/* ======================================================================
             1. 데스크톱 헤더 (769px 이상에서만 노출, 기존 디자인 및 동작 100% 동일 보장)
            ====================================================================== */}
         <div className="desktop-header">
-          <Link href="/" style={{ textDecoration: "none", color: "#0f172a", marginRight: "24px" }}>
+          <Link href="/" style={{ textDecoration: "none", color: "var(--gh-text)", marginRight: "24px" }}>
             <h1 style={{ fontSize: "20px", fontWeight: "bold", margin: 0 }}>German Hanguk</h1>
           </Link>
 
@@ -178,6 +179,8 @@ export default function Header() {
               K-Spot 지도
             </Link>
           </nav>
+
+          <ThemeSelector />
 
           {user ? (
             <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
@@ -292,7 +295,7 @@ export default function Header() {
             2. 모바일 헤더 (768px 이하 전용, 360px 기기 완벽 대응 컴팩트 구조)
            ====================================================================== */}
         <div className="mobile-header">
-          <Link href="/" style={{ textDecoration: "none", color: "#0f172a" }}>
+          <Link href="/" style={{ textDecoration: "none", color: "var(--gh-text)" }}>
             <h1 style={{ fontSize: "18px", fontWeight: "bold", margin: 0, letterSpacing: "-0.02em" }}>German Hanguk</h1>
           </Link>
 
@@ -306,7 +309,7 @@ export default function Header() {
                   aria-label={"알림 확인, 수신된 알림 " + unreadNotificationsCount + "개"}
                   style={{
                     textDecoration: "none",
-                    color: "#334155",
+                    color: "var(--gh-text)",
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -346,7 +349,7 @@ export default function Header() {
                   aria-label={"쪽지함 이동, 안읽은 쪽지 " + unreadCount + "개"}
                   style={{
                     textDecoration: "none",
-                    color: "#334155",
+                    color: "var(--gh-text)",
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -398,7 +401,7 @@ export default function Header() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                color: "#334155"
+                color: "var(--gh-text)"
               }}
             >
               ☰
@@ -431,7 +434,7 @@ export default function Header() {
                 right: 0,
                 bottom: 0,
                 width: "280px",
-                background: "#ffffff",
+                background: "var(--gh-surface)",
                 boxShadow: "-4px 0 24px rgba(0, 0, 0, 0.15)",
                 zIndex: 999,
                 display: "flex",
@@ -443,7 +446,7 @@ export default function Header() {
             >
               {/* 서랍 헤더 */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
-                <span style={{ fontWeight: "bold", fontSize: "16px", color: "#0f172a" }}>GermanHanguk 메뉴</span>
+                <span style={{ fontWeight: "bold", fontSize: "16px", color: "var(--gh-text)" }}>GermanHanguk 메뉴</span>
                 <button
                   onClick={function() { setMenuOpen(false); }}
                   aria-label="메뉴 닫기"
@@ -458,7 +461,7 @@ export default function Header() {
                     alignItems: "center",
                     justifyContent: "center",
                     padding: 0,
-                    color: "#64748b"
+                    color: "var(--gh-text-muted)"
                   }}
                 >
                   ✕
@@ -467,20 +470,22 @@ export default function Header() {
 
               {/* 드로어 내비게이션 리스트 (최소 44px 높이 터치 타겟) */}
               <nav style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1 }}>
-                <Link href="/?category=community" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "#334155", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid #f1f5f9", fontSize: "14px" }}>커뮤니티</Link>
-                <Link href="/?category=education" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "#334155", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid #f1f5f9", fontSize: "14px" }}>유학·교육</Link>
-                <Link href="/?category=life" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "#334155", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid #f1f5f9", fontSize: "14px" }}>생활정보</Link>
-                <Link href="/?category=market" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "#334155", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid #f1f5f9", fontSize: "14px" }}>중고장터</Link>
-                <Link href="/?category=jobs" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "#334155", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid #f1f5f9", fontSize: "14px" }}>구인구직</Link>
-                <Link href="/guide" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "#2563eb", fontWeight: "bold", minHeight: "44px", borderBottom: "1px solid #f1f5f9", fontSize: "14px" }}>📘 생활 가이드</Link>
-                <Link href="/map" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "#334155", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid #f1f5f9", fontSize: "14px" }}>📍 K-Spot 지도</Link>
+                <Link href="/?category=community" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>커뮤니티</Link>
+                <Link href="/?category=education" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>유학·교육</Link>
+                <Link href="/?category=life" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>생활정보</Link>
+                <Link href="/?category=market" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>중고장터</Link>
+                <Link href="/?category=jobs" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>구인구직</Link>
+                <Link href="/guide" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-accent)", fontWeight: "bold", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>📘 생활 가이드</Link>
+                <Link href="/map" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>📍 K-Spot 지도</Link>
               </nav>
 
+              <ThemeSelector mobile />
+
               {/* 드로어 하단 사용자 영역 */}
-              <div style={{ marginTop: "auto", paddingTop: "20px", borderTop: "1px solid #e2e8f0" }}>
+              <div style={{ marginTop: "auto", paddingTop: "20px", borderTop: "1px solid var(--gh-border)" }}>
                 {user ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                    <Link href="/profile" onClick={function() { setMenuOpen(false); }} style={{ textDecoration: "none", color: "#0f172a", fontWeight: "bold", display: "flex", alignItems: "center", minHeight: "44px", fontSize: "14px" }}>
+                    <Link href="/profile" onClick={function() { setMenuOpen(false); }} style={{ textDecoration: "none", color: "var(--gh-text)", fontWeight: "bold", display: "flex", alignItems: "center", minHeight: "44px", fontSize: "14px" }}>
                       👤 {displayName || user.email?.split("@")[0]}님 프로필
                     </Link>
                     <button
@@ -488,10 +493,10 @@ export default function Header() {
                       style={{
                         width: "100%",
                         padding: "12px",
-                        background: "#f8fafc",
-                        border: "1px solid #cbd5e1",
+                        background: "var(--gh-surface-muted)",
+                        border: "1px solid var(--gh-border)",
                         borderRadius: "6px",
-                        color: "#475569",
+                        color: "var(--gh-text)",
                         fontWeight: "bold",
                         cursor: "pointer",
                         minHeight: "44px",
@@ -507,8 +512,8 @@ export default function Header() {
                       style={{
                         width: "100%",
                         padding: "12px",
-                        background: "#0f172a",
-                        color: "#fff",
+                        background: "var(--gh-control-active)",
+                        color: "var(--gh-control-active-text)",
                         border: "none",
                         borderRadius: "6px",
                         fontWeight: "bold",

@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import PostDetailClient from "@/components/PostDetailClient";
 import { getCategoryLabel } from "@/lib/constants";
 import { Post, Comment } from "@/types/post";
+import PostViewCount from "@/components/PostViewCount";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -157,8 +158,10 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           }}
         >
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-            <span style={{ fontWeight: "bold" }}>{post.author_name}</span>
-            <span style={{ marginLeft: "8px", color: "#94a3b8" }}>👁️ 조회 {post.views || 0}회</span>
+            <span style={{ fontWeight: "bold", color: "var(--gh-text)" }}>{post.author_name}</span>
+            <span style={{ marginLeft: "8px", color: "#94a3b8" }}>
+              <PostViewCount postId={post.id} initialViews={post.views || 0} />
+            </span>
           </div>
         </div>
 
