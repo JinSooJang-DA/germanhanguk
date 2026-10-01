@@ -49,6 +49,9 @@
   --gh-border:var(--gh-palette-border);
   --gh-accent:var(--gh-palette-accent);
   --gh-focus:var(--gh-palette-focus);
+  --gh-alert:#a45f59;
+  --gh-warning:#8a7248;
+  --gh-success:#557c68;
   --gh-control-active:var(--gh-palette-control-active);
   --gh-control-active-text:var(--gh-text-white);
 
@@ -83,6 +86,9 @@ html[data-theme="dark"] {
   --gh-border:#36423c;
   --gh-accent:#86afa5;
   --gh-focus:#a8c8bf;
+  --gh-alert:#a86f68;
+  --gh-warning:#aa9468;
+  --gh-success:#789887;
   --gh-control-active:#d8ded8;
   --gh-control-active-text:#18201d;
 

@@ -158,7 +158,7 @@ export default function NotificationsPage() {
     return (
       <main style={{ padding: "80px 0", minHeight: "calc(100vh - 80px)" }}>
         <div className="wrapper" style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
-          <p style={{ color: "#64748b" }}>알림 목록을 불러오는 중...</p>
+          <p style={{ color: "var(--gh-text-muted)" }}>알림 목록을 불러오는 중...</p>
         </div>
       </main>
     );
@@ -168,7 +168,7 @@ export default function NotificationsPage() {
     return (
       <main style={{ padding: "80px 0", minHeight: "calc(100vh - 80px)" }}>
         <div className="wrapper" style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
-          <p style={{ color: "#ef4444", marginBottom: "16px" }}>에러: {error}</p>
+          <p style={{ color: "var(--gh-alert)", marginBottom: "16px" }}>에러: {error}</p>
           <button
             onClick={function() {
               setReloadKey(function(previousKey) {
@@ -177,8 +177,8 @@ export default function NotificationsPage() {
             }}
             style={{
               padding: "10px 20px",
-              background: "#0f172a",
-              color: "#fff",
+              background: "var(--gh-text)",
+              color: "var(--gh-surface)",
               border: "none",
               borderRadius: "6px",
               fontWeight: "bold",
@@ -193,17 +193,17 @@ export default function NotificationsPage() {
   }
 
   return (
-    <main style={{ padding: "60px 0", minHeight: "calc(100vh - 80px)", background: "#f8fafc" }}>
+    <main style={{ padding: "60px 0", minHeight: "calc(100vh - 80px)", background: "var(--gh-page-bg)" }}>
       <div className="wrapper" style={{ maxWidth: "600px", margin: "0 auto", padding: "0 20px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-          <h1 style={{ fontSize: "24px", fontWeight: "bold", color: "#0f172a", margin: 0 }}>알림 내역</h1>
+          <h1 style={{ fontSize: "24px", fontWeight: "bold", color: "var(--gh-text)", margin: 0 }}>알림 내역</h1>
           {hasUnread && (
             <button
               onClick={handleMarkAllAsRead}
               style={{
                 background: "none",
                 border: "none",
-                color: "#2563eb",
+                color: "var(--gh-accent)",
                 fontSize: "14px",
                 fontWeight: "600",
                 cursor: "pointer",
@@ -217,15 +217,15 @@ export default function NotificationsPage() {
 
         {notifications.length === 0 ? (
           <div style={{
-            background: "#fff",
+            background: "var(--gh-surface)",
             borderRadius: "12px",
             padding: "60px 20px",
             textAlign: "center",
             boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-            border: "1px solid #e2e8f0"
+            border: "1px solid var(--gh-border)"
           }}>
             <p style={{ fontSize: "36px", margin: "0 0 16px 0" }}>🔔</p>
-            <p style={{ color: "#64748b", margin: 0, fontSize: "15px" }}>아직 도착한 알림이 없습니다.</p>
+            <p style={{ color: "var(--gh-text-muted)", margin: 0, fontSize: "15px" }}>아직 도착한 알림이 없습니다.</p>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
@@ -234,11 +234,11 @@ export default function NotificationsPage() {
                 <div
                   key={item.id}
                   style={{
-                    background: "#fff",
+                    background: "var(--gh-surface)",
                     borderRadius: "12px",
                     padding: "16px",
                     boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-                    border: "1px solid #e2e8f0",
+                    border: "1px solid var(--gh-border)",
                     display: "flex",
                     gap: "14px",
                     alignItems: "flex-start",
@@ -252,7 +252,7 @@ export default function NotificationsPage() {
                       width: "8px",
                       height: "8px",
                       borderRadius: "50%",
-                      background: "#ef4444",
+                      background: "var(--gh-alert)",
                       position: "absolute",
                       top: "20px",
                       right: "20px"
@@ -263,7 +263,7 @@ export default function NotificationsPage() {
                     width: "40px",
                     height: "40px",
                     borderRadius: "50%",
-                    background: "#f1f5f9",
+                    background: "var(--gh-surface-muted)",
                     overflow: "hidden",
                     display: "flex",
                     alignItems: "center",
@@ -286,13 +286,13 @@ export default function NotificationsPage() {
                       margin: "0 0 6px 0",
                       fontSize: "14px",
                       lineHeight: "1.5",
-                      color: item.is_read ? "#475569" : "#0f172a",
+                      color: item.is_read ? "var(--gh-text-muted)" : "var(--gh-text)",
                       fontWeight: item.is_read ? "normal" : "500"
                     }}>
                       {getNotificationMessage(item)}
                     </p>
                     <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                      <span style={{ fontSize: "12px", color: "#94a3b8" }}>
+                      <span style={{ fontSize: "12px", color: "var(--gh-text-subtle)" }}>
                         {formatDateTime(item.created_at)}
                       </span>
                       
@@ -301,7 +301,7 @@ export default function NotificationsPage() {
                         onClick={handleMarkAsRead.bind(null, item.id)}
                         style={{
                           fontSize: "12px",
-                          color: "#2563eb",
+                          color: "var(--gh-accent)",
                           fontWeight: "600",
                           textDecoration: "none"
                         }}

@@ -117,8 +117,8 @@ export default function MessagesPage() {
 
   if (isAuthChecking) {
     return (
-      <main style={{ minHeight: "75vh", padding: "80px 0", background: "#f8fafc", textAlign: "center" }}>
-        <p style={{ color: "#64748b", fontSize: "15px", fontWeight: "500" }}>
+      <main style={{ minHeight: "75vh", padding: "80px 0", background: "var(--gh-page-bg)", textAlign: "center" }}>
+        <p style={{ color: "var(--gh-text-muted)", fontSize: "15px", fontWeight: "500" }}>
           로그인 상태를 확인하고 있습니다. 잠시만 기다려 주세요...
         </p>
       </main>
@@ -126,14 +126,14 @@ export default function MessagesPage() {
   }
 
   return (
-    <main style={{ minHeight: "75vh", padding: "40px 0 80px", background: "#f8fafc" }}>
+    <main style={{ minHeight: "75vh", padding: "40px 0 80px", background: "var(--gh-page-bg)" }}>
       <div style={{ maxWidth: "860px", margin: "0 auto", padding: "0 20px" }}>
         {/* 상단 타이틀 */}
         <div style={{ marginBottom: "28px" }}>
-          <h1 style={{ fontSize: "24px", fontWeight: "bold", color: "#0f172a", margin: "0 0 8px" }}>
+          <h1 style={{ fontSize: "24px", fontWeight: "bold", color: "var(--gh-text)", margin: "0 0 8px" }}>
             ✉️ 쪽지함
           </h1>
-          <p style={{ color: "#64748b", fontSize: "14px", margin: 0 }}>
+          <p style={{ color: "var(--gh-text-muted)", fontSize: "14px", margin: 0 }}>
             회원들과 주고받은 1:1 쪽지 목록입니다.
           </p>
         </div>
@@ -142,9 +142,9 @@ export default function MessagesPage() {
         <div
           style={{
             display: "flex",
-            borderBottom: "2px solid #e2e8f0",
+            borderBottom: "2px solid var(--gh-border)",
             marginBottom: "24px",
-            background: "#ffffff",
+            background: "var(--gh-surface)",
             borderRadius: "8px 8px 0 0",
             overflow: "hidden",
           }}
@@ -155,10 +155,10 @@ export default function MessagesPage() {
             style={{
               flex: 1,
               padding: "16px 20px",
-              background: activeTab === "inbox" ? "#ffffff" : "#f8fafc",
+              background: activeTab === "inbox" ? "var(--gh-surface)" : "var(--gh-page-bg)",
               border: "none",
-              borderBottom: activeTab === "inbox" ? "3px solid #0f172a" : "3px solid transparent",
-              color: activeTab === "inbox" ? "#0f172a" : "#64748b",
+              borderBottom: activeTab === "inbox" ? "3px solid var(--gh-text)" : "3px solid transparent",
+              color: activeTab === "inbox" ? "var(--gh-text)" : "var(--gh-text-muted)",
               fontWeight: activeTab === "inbox" ? "700" : "500",
               fontSize: "15px",
               cursor: "pointer",
@@ -173,10 +173,10 @@ export default function MessagesPage() {
             style={{
               flex: 1,
               padding: "16px 20px",
-              background: activeTab === "sent" ? "#ffffff" : "#f8fafc",
+              background: activeTab === "sent" ? "var(--gh-surface)" : "var(--gh-page-bg)",
               border: "none",
-              borderBottom: activeTab === "sent" ? "3px solid #0f172a" : "3px solid transparent",
-              color: activeTab === "sent" ? "#0f172a" : "#64748b",
+              borderBottom: activeTab === "sent" ? "3px solid var(--gh-text)" : "3px solid transparent",
+              color: activeTab === "sent" ? "var(--gh-text)" : "var(--gh-text-muted)",
               fontWeight: activeTab === "sent" ? "700" : "500",
               fontSize: "15px",
               cursor: "pointer",
@@ -190,29 +190,29 @@ export default function MessagesPage() {
         {/* 쪽지 목록 컨테이너 */}
         <div
           style={{
-            background: "#ffffff",
-            border: "1px solid #e2e8f0",
+            background: "var(--gh-surface)",
+            border: "1px solid var(--gh-border)",
             borderRadius: "0 0 10px 10px",
             boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
             overflow: "hidden",
           }}
         >
           {loading ? (
-            <div style={{ padding: "60px 20px", textAlign: "center", color: "#64748b", fontSize: "14px" }}>
+            <div style={{ padding: "60px 20px", textAlign: "center", color: "var(--gh-text-muted)", fontSize: "14px" }}>
               쪽지를 불러오는 중입니다...
             </div>
           ) : error ? (
-            <div style={{ padding: "60px 20px", textAlign: "center", color: "#ef4444" }}>
+            <div style={{ padding: "60px 20px", textAlign: "center", color: "var(--gh-alert)" }}>
               <div style={{ fontSize: "36px", marginBottom: "12px" }}>⚠️</div>
-              <div style={{ fontSize: "14px", fontWeight: 500, color: "#b91c1c", marginBottom: "6px" }}>{error}</div>
+              <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--gh-alert)", marginBottom: "6px" }}>{error}</div>
               <button
                 type="button"
                 onClick={() => user && fetchMessages(user.id, activeTab)}
                 style={{
                   padding: "6px 14px",
-                  background: "#f1f5f9",
-                  color: "#475569",
-                  border: "1px solid #cbd5e1",
+                  background: "var(--gh-surface-muted)",
+                  color: "var(--gh-text-muted)",
+                  border: "1px solid var(--gh-border)",
                   borderRadius: "6px",
                   fontSize: "13px",
                   cursor: "pointer",
@@ -222,12 +222,12 @@ export default function MessagesPage() {
               </button>
             </div>
           ) : messages.length === 0 ? (
-            <div style={{ padding: "60px 20px", textAlign: "center", color: "#94a3b8" }}>
+            <div style={{ padding: "60px 20px", textAlign: "center", color: "var(--gh-text-subtle)" }}>
               <div style={{ fontSize: "36px", marginBottom: "12px" }}>{activeTab === "inbox" ? "📥" : "📤"}</div>
-              <div style={{ fontSize: "14px", fontWeight: 500, color: "#64748b", marginBottom: "4px" }}>
+              <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--gh-text-muted)", marginBottom: "4px" }}>
                 {activeTab === "inbox" ? "받은 쪽지가 없습니다." : "보낸 쪽지가 없습니다."}
               </div>
-              <p style={{ margin: 0, fontSize: "12px", color: "#94a3b8" }}>
+              <p style={{ margin: 0, fontSize: "12px", color: "var(--gh-text-subtle)" }}>
                 {activeTab === "inbox" ? "새로운 쪽지가 도착하면 여기에 표시됩니다." : "다른 회원에게 쪽지를 보내보세요!"}
               </p>
             </div>
@@ -247,10 +247,10 @@ export default function MessagesPage() {
                       alignItems: "center",
                       gap: "16px",
                       padding: "18px 22px",
-                      borderBottom: "1px solid #f1f5f9",
+                      borderBottom: "1px solid var(--gh-surface-muted)",
                       textDecoration: "none",
                       color: "inherit",
-                      background: isUnread ? "#f0f7ff" : "#ffffff",
+                      background: isUnread ? "color-mix(in srgb, var(--gh-accent) 10%, var(--gh-surface))" : "var(--gh-surface)",
                       transition: "background 0.15s ease",
                     }}
                   >
@@ -260,7 +260,7 @@ export default function MessagesPage() {
                         width: "42px",
                         height: "42px",
                         borderRadius: "50%",
-                        background: "#e2e8f0",
+                        background: "var(--gh-border)",
                         overflow: "hidden",
                         display: "flex",
                         alignItems: "center",
@@ -295,7 +295,7 @@ export default function MessagesPage() {
                             style={{
                               fontSize: "14px",
                               fontWeight: isUnread ? "700" : "600",
-                              color: "#0f172a",
+                              color: "var(--gh-text)",
                             }}
                           >
                             {activeTab === "inbox" ? `보낸사람: ${partnerName}` : `받는사람: ${partnerName}`}
@@ -305,8 +305,8 @@ export default function MessagesPage() {
                               style={{
                                 display: "inline-block",
                                 padding: "2px 8px",
-                                background: "#2563eb",
-                                color: "#ffffff",
+                                background: "var(--gh-accent)",
+                                color: "var(--gh-surface)",
                                 fontSize: "11px",
                                 fontWeight: "bold",
                                 borderRadius: "10px",
@@ -317,7 +317,7 @@ export default function MessagesPage() {
                           )}
                         </div>
 
-                        <span style={{ fontSize: "12px", color: "#94a3b8", flexShrink: 0 }}>
+                        <span style={{ fontSize: "12px", color: "var(--gh-text-subtle)", flexShrink: 0 }}>
                           {formatConciseDate(msg.created_at)}
                         </span>
                       </div>
@@ -327,7 +327,7 @@ export default function MessagesPage() {
                         style={{
                           margin: 0,
                           fontSize: "14px",
-                          color: isUnread ? "#1e293b" : "#64748b",
+                          color: isUnread ? "var(--gh-text)" : "var(--gh-text-muted)",
                           fontWeight: isUnread ? "500" : "normal",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
@@ -344,7 +344,7 @@ export default function MessagesPage() {
                         <span
                           style={{
                             fontSize: "12px",
-                            color: isUnread ? "#2563eb" : "#94a3b8",
+                            color: isUnread ? "var(--gh-accent)" : "var(--gh-text-subtle)",
                             fontWeight: isUnread ? "600" : "normal",
                           }}
                         >
@@ -354,7 +354,7 @@ export default function MessagesPage() {
                         <span
                           style={{
                             fontSize: "12px",
-                            color: msg.read_at ? "#64748b" : "#f59e0b",
+                            color: msg.read_at ? "var(--gh-text-muted)" : "var(--gh-warning)",
                             fontWeight: "500",
                           }}
                         >

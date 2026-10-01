@@ -165,7 +165,7 @@ export default function MessageDetailPage({
   if (loading) {
     return (
       <main style={{ minHeight: "70vh", padding: "60px 20px", textAlign: "center" }}>
-        <p style={{ color: "#64748b" }}>쪽지를 불러오는 중입니다...</p>
+        <p style={{ color: "var(--gh-text-muted)" }}>쪽지를 불러오는 중입니다...</p>
       </main>
     );
   }
@@ -175,10 +175,10 @@ export default function MessageDetailPage({
       <main style={{ minHeight: "70vh", padding: "60px 20px" }}>
         <div style={{ maxWidth: "500px", margin: "40px auto", textAlign: "center" }}>
           <div style={{ fontSize: "44px", marginBottom: "16px" }}>🔍</div>
-          <h2 style={{ fontSize: "20px", color: "#0f172a", marginBottom: "10px" }}>
+          <h2 style={{ fontSize: "20px", color: "var(--gh-text)", marginBottom: "10px" }}>
             쪽지를 찾을 수 없습니다
           </h2>
-          <p style={{ color: "#64748b", fontSize: "14px", lineHeight: "1.6", marginBottom: "24px" }}>
+          <p style={{ color: "var(--gh-text-muted)", fontSize: "14px", lineHeight: "1.6", marginBottom: "24px" }}>
             존재하지 않거나 열람 권한이 없는 쪽지입니다.
           </p>
           <Link
@@ -186,8 +186,8 @@ export default function MessageDetailPage({
             style={{
               display: "inline-block",
               padding: "10px 20px",
-              background: "#0f172a",
-              color: "#fff",
+              background: "var(--gh-text)",
+              color: "var(--gh-surface)",
               borderRadius: "6px",
               textDecoration: "none",
               fontSize: "14px",
@@ -207,7 +207,7 @@ export default function MessageDetailPage({
   const partnerName = partnerProfile?.display_name || "회원";
 
   return (
-    <main style={{ minHeight: "75vh", padding: "40px 0 80px", background: "#f8fafc" }}>
+    <main style={{ minHeight: "75vh", padding: "40px 0 80px", background: "var(--gh-page-bg)" }}>
       <div style={{ maxWidth: "760px", margin: "0 auto", padding: "0 20px" }}>
         {/* 상단 네비게이션 */}
         <Link
@@ -216,7 +216,7 @@ export default function MessageDetailPage({
             display: "inline-flex",
             alignItems: "center",
             gap: "6px",
-            color: "#64748b",
+            color: "var(--gh-text-muted)",
             textDecoration: "none",
             fontSize: "14px",
             fontWeight: 500,
@@ -229,8 +229,8 @@ export default function MessageDetailPage({
         {/* 쪽지 상세 카드 */}
         <div
           style={{
-            background: "#ffffff",
-            border: "1px solid #e2e8f0",
+            background: "var(--gh-surface)",
+            border: "1px solid var(--gh-border)",
             borderRadius: "12px",
             boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
             overflow: "hidden",
@@ -240,8 +240,8 @@ export default function MessageDetailPage({
           <div
             style={{
               padding: "24px 28px",
-              borderBottom: "1px solid #f1f5f9",
-              background: "#ffffff",
+              borderBottom: "1px solid var(--gh-surface-muted)",
+              background: "var(--gh-surface)",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
@@ -257,7 +257,7 @@ export default function MessageDetailPage({
                   width: "48px",
                   height: "48px",
                   borderRadius: "50%",
-                  background: "#e2e8f0",
+                  background: "var(--gh-border)",
                   overflow: "hidden",
                   display: "flex",
                   alignItems: "center",
@@ -279,27 +279,27 @@ export default function MessageDetailPage({
 
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                  <span style={{ fontSize: "13px", color: "#64748b" }}>{partnerLabel}:</span>
+                  <span style={{ fontSize: "13px", color: "var(--gh-text-muted)" }}>{partnerLabel}:</span>
                   <Link
                     href={`/profile/${partnerProfile?.id || (isReceiver ? message.sender_id : message.receiver_id)}`}
                     style={{
                       fontSize: "16px",
                       fontWeight: "bold",
-                      color: "#0f172a",
+                      color: "var(--gh-text)",
                       textDecoration: "none",
                     }}
                   >
                     {partnerName}
                   </Link>
                 </div>
-                <div style={{ fontSize: "12px", color: "#94a3b8", display: "flex", gap: "12px" }}>
+                <div style={{ fontSize: "12px", color: "var(--gh-text-subtle)", display: "flex", gap: "12px" }}>
                   <span>전송: {formatDateTime(message.created_at)}</span>
                   {message.read_at ? (
-                    <span style={{ color: "#16a34a" }}>
+                    <span style={{ color: "var(--gh-success)" }}>
                       읽음: {formatDateTime(message.read_at)}
                     </span>
                   ) : (
-                    <span style={{ color: "#f59e0b" }}>안읽음</span>
+                    <span style={{ color: "var(--gh-warning)" }}>안읽음</span>
                   )}
                 </div>
               </div>
@@ -319,8 +319,8 @@ export default function MessageDetailPage({
                   alignItems: "center",
                   gap: "6px",
                   padding: "8px 16px",
-                  background: "#0f172a",
-                  color: "#ffffff",
+                  background: "var(--gh-text)",
+                  color: "var(--gh-surface)",
                   border: "none",
                   borderRadius: "6px",
                   fontSize: "14px",
@@ -339,7 +339,7 @@ export default function MessageDetailPage({
               style={{
                 fontSize: "15px",
                 lineHeight: "1.8",
-                color: "#1e293b",
+                color: "var(--gh-text)",
                 whiteSpace: "pre-wrap",
                 wordBreak: "break-word",
               }}
@@ -371,7 +371,7 @@ export default function MessageDetailPage({
           >
             <div
               style={{
-                background: "#ffffff",
+                background: "var(--gh-surface)",
                 borderRadius: "12px",
                 width: "100%",
                 maxWidth: "500px",
@@ -387,7 +387,7 @@ export default function MessageDetailPage({
                   marginBottom: "20px",
                 }}
               >
-                <h3 style={{ margin: 0, fontSize: "16px", color: "#0f172a" }}>
+                <h3 style={{ margin: 0, fontSize: "16px", color: "var(--gh-text)" }}>
                   {senderProfile?.display_name || "회원"}님에게 답장 보내기
                 </h3>
                 <button
@@ -399,7 +399,7 @@ export default function MessageDetailPage({
                     border: "none",
                     fontSize: "20px",
                     cursor: sendingReply ? "not-allowed" : "pointer",
-                    color: "#94a3b8",
+                    color: "var(--gh-text-subtle)",
                   }}
                 >
                   ✕
@@ -421,7 +421,7 @@ export default function MessageDetailPage({
                       width: "100%",
                       padding: "14px",
                       borderRadius: "8px",
-                      border: "1px solid #cbd5e1",
+                      border: "1px solid var(--gh-border)",
                       fontSize: "14px",
                       resize: "vertical",
                       boxSizing: "border-box",
@@ -435,11 +435,11 @@ export default function MessageDetailPage({
                       justifyContent: "space-between",
                       marginTop: "6px",
                       fontSize: "12px",
-                      color: "#94a3b8",
+                      color: "var(--gh-text-subtle)",
                     }}
                   >
                     <span>최대 2,000자</span>
-                    <span style={{ color: replyBody.length >= 1900 ? "#ef4444" : "#94a3b8", fontWeight: replyBody.length >= 1900 ? "600" : "normal" }}>{replyBody.length} / 2,000자</span>
+                    <span style={{ color: replyBody.length >= 1900 ? "var(--gh-alert)" : "var(--gh-text-subtle)", fontWeight: replyBody.length >= 1900 ? "600" : "normal" }}>{replyBody.length} / 2,000자</span>
                   </div>
                 </div>
 
@@ -447,10 +447,10 @@ export default function MessageDetailPage({
                   <div
                     style={{
                       padding: "10px 14px",
-                      background: "#fef2f2",
-                      border: "1px solid #fecaca",
+                      background: "color-mix(in srgb, var(--gh-alert) 9%, var(--gh-surface))",
+                      border: "1px solid color-mix(in srgb, var(--gh-alert) 34%, var(--gh-border))",
                       borderRadius: "6px",
-                      color: "#b91c1c",
+                      color: "var(--gh-alert)",
                       fontSize: "13px",
                       marginBottom: "16px",
                     }}
@@ -466,9 +466,9 @@ export default function MessageDetailPage({
                     disabled={sendingReply}
                     style={{
                       padding: "8px 16px",
-                      background: "#f1f5f9",
-                      color: "#475569",
-                      border: "1px solid #cbd5e1",
+                      background: "var(--gh-surface-muted)",
+                      color: "var(--gh-text-muted)",
+                      border: "1px solid var(--gh-border)",
                       borderRadius: "6px",
                       fontSize: "14px",
                       fontWeight: 500,
@@ -482,8 +482,8 @@ export default function MessageDetailPage({
                     disabled={sendingReply || !replyBody.trim()}
                     style={{
                       padding: "8px 20px",
-                      background: sendingReply || !replyBody.trim() ? "#94a3b8" : "#0f172a",
-                      color: "#ffffff",
+                      background: sendingReply || !replyBody.trim() ? "var(--gh-text-subtle)" : "var(--gh-text)",
+                      color: "var(--gh-surface)",
                       border: "none",
                       borderRadius: "6px",
                       fontSize: "14px",
