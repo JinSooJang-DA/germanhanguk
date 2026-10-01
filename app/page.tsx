@@ -36,6 +36,7 @@ function HomeContent() {
   const [featuredArticles, setFeaturedArticles] = useState<Article[]>([]);
   const [articlesError, setArticlesError] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isHeroPaused, setIsHeroPaused] = useState(false);
 
   const selectedCategory = categoryParam || "all";
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -179,6 +180,21 @@ function HomeContent() {
     };
   }, [postsRetryKey, searchKeyword, selectedCategory]);
 
+  useEffect(function() {
+    const desktopMotion = window.matchMedia("(min-width: 769px) and (prefers-reduced-motion: no-preference)");
+    if (isCommunityView || isHeroPaused || featuredArticles.length < 2 || !desktopMotion.matches) return;
+
+    const timer = window.setInterval(function() {
+      setCurrentSlide(function(previous) {
+        return (previous + 1) % featuredArticles.length;
+      });
+    }, 6500);
+
+    return function() {
+      window.clearInterval(timer);
+    };
+  }, [featuredArticles.length, isCommunityView, isHeroPaused]);
+
   const retryPosts = function() {
     setPostsError(null);
     setLoadedCategory(null);
@@ -209,8 +225,20 @@ function HomeContent() {
               전체 기사 보기 →
             </Link>
           </div>
+          <div className="home-live-rail" aria-label="지금 올라온 독일 소식">
+            <span className="home-live-label"><i aria-hidden="true" /> LIVE</span>
+            <div className="home-live-window">
+              <div className="home-live-track">
+                {[...featuredArticles, ...featuredArticles].map(function(article, index) {
+                  return <span key={`${article.id}-${index}`}>{article.title}<b aria-hidden="true">•</b></span>;
+                })}
+              </div>
+            </div>
+          </div>
           <div
-            className="info-hero"
+            className="info-hero home-motion-hero"
+            onMouseEnter={function() { setIsHeroPaused(true); }}
+            onMouseLeave={function() { setIsHeroPaused(false); }}
             style={{
               position: "relative",
               borderRadius: "0",
@@ -220,6 +248,9 @@ function HomeContent() {
               height: "400px",
             }}
           >
+            {featuredArticles.length > 1 && !isHeroPaused && (
+              <div key={currentSlide} className="home-hero-progress" aria-hidden="true" />
+            )}
             <div
               style={{
                 display: "flex",
@@ -229,7 +260,7 @@ function HomeContent() {
                 transition: "transform 0.5s ease-in-out",
               }}
             >
-              {featuredArticles.map(function(article) {
+              {featuredArticles.map(function(article, index) {
                 return (
                   <Link
                     key={article.id}
@@ -244,6 +275,7 @@ function HomeContent() {
                   >
                     {article.image_url ? (
                       <img
+                        className={currentSlide === index ? "home-hero-image is-active" : "home-hero-image"}
                         src={article.image_url}
                         alt={article.title}
                         style={{
@@ -385,6 +417,9 @@ function HomeContent() {
             </Link>
             <Link className="info-hub-card" href="/messe" style={{ textDecoration: "none", color: "var(--gh-text)", padding: "22px", border: "1px solid var(--gh-border)", borderRadius: "0", background: "var(--gh-surface)" }}>
               <div style={{ fontSize: "24px", marginBottom: "10px" }}>🏢</div><strong style={{ fontSize: "17px" }}>독일 메세</strong><p style={{ margin: "7px 0 0", color: "var(--gh-text-muted)", fontSize: "13px", lineHeight: 1.6 }}>주요 전시회·박람회 일정과 출장·방문에 필요한 정보</p>
+            </Link>
+            <Link className="info-hub-card" href="/exchange" style={{ textDecoration: "none", color: "var(--gh-text)", padding: "22px", border: "1px solid var(--gh-border)", borderRadius: "0", background: "var(--gh-surface)" }}>
+              <div style={{ fontSize: "24px", marginBottom: "10px" }}>💶</div><strong style={{ fontSize: "17px" }}>환율 · 계산기</strong><p style={{ margin: "7px 0 0", color: "var(--gh-text-muted)", fontSize: "13px", lineHeight: 1.6 }}>ECB 기준 EUR↔KRW 환율과 양방향 환율 계산기</p>
             </Link>
           </div>
         </section>
