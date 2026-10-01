@@ -941,7 +941,8 @@ html[data-theme="dark"] main a[href^="/guide/"] > button[style*="background:#256
 }
 
 /* Portal navigation: information and community */
-.portal-nav { position: relative; }
+.site-header { position:relative; z-index:10000; overflow:visible; }
+.portal-nav { position: relative; z-index:10001; }
 .portal-menu { position: relative; }
 .portal-menu > summary { list-style:none; cursor:pointer; padding:10px 4px; color:var(--gh-text-muted); font-weight:600; font-size:15px; }
 .portal-menu > summary::-webkit-details-marker { display:none; }
@@ -2577,7 +2578,7 @@ html[data-theme="dark"] .site-header {
 }
 html[data-theme="dark"] .portal-mega-menu,
 html[data-theme="dark"] .profile-menu-shell [role="menu"] {
-  background:rgba(29,36,33,.97) !important;
+  background:#1d2421 !important;
   border-color:#3a4741 !important;
   box-shadow:0 20px 50px rgba(3,7,5,.34) !important;
 }
