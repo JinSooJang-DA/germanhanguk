@@ -135,13 +135,13 @@ function ArticlesContent() {
                     />
                   </div>
                 ) : (
-                  <div style={{ height: "180px", background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <div style={{ height: "180px", background: "linear-gradient(135deg, #26332e 0%, #151b18 100%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <span style={{ fontSize: "36px" }}>📰</span>
                   </div>
                 )}
                 <div style={{ padding: "20px", flex: 1, display: "flex", flexDirection: "column" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-                    <span style={{ fontSize: "12px", fontWeight: "bold", color: "#3b82f6", background: "rgba(59, 130, 246, 0.1)", padding: "2px 8px", borderRadius: "0" }}>
+                    <span style={{ fontSize: "12px", fontWeight: "bold", color: "var(--gh-accent)", background: "color-mix(in srgb, var(--gh-accent) 12%, transparent)", padding: "2px 8px", borderRadius: "0" }}>
                       {article.category}
                     </span>
                     <span style={{ fontSize: "12px", color: "var(--gh-text-subtle)" }}>

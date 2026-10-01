@@ -263,7 +263,7 @@ export default function AuthPage() {
           <p
             className="auth-message"
             style={{
-              color: message.includes("완료") ? "#16a34a" : "#dc2626",
+              color: message.includes("완료") ? "var(--gh-success)" : "var(--gh-alert)",
               fontWeight: 500,
             }}
           >

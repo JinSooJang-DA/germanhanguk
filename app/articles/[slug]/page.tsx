@@ -127,7 +127,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 
         {/* 기사 헤더 */}
         <div style={{ marginBottom: "24px" }}>
-          <span style={{ fontSize: "13px", fontWeight: "bold", color: "#3b82f6", background: "rgba(59, 130, 246, 0.1)", padding: "2px 8px", borderRadius: "4px", display: "inline-block", marginBottom: "12px" }}>
+          <span style={{ fontSize: "13px", fontWeight: "bold", color: "var(--gh-accent)", background: "color-mix(in srgb, var(--gh-accent) 12%, transparent)", padding: "2px 8px", borderRadius: "4px", display: "inline-block", marginBottom: "12px" }}>
             {article.category}
           </span>
           <h1 style={{ fontSize: "32px", fontWeight: "bold", color: "var(--gh-text)", margin: "0 0 12px 0", lineHeight: "1.3" }}>
@@ -185,7 +185,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
                         href={safeUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ color: "#3b82f6", textDecoration: "underline", fontSize: "14px", fontWeight: "500" }}
+                        style={{ color: "var(--gh-accent)", textDecoration: "underline", fontSize: "14px", fontWeight: "500" }}
                       >
                         {source.title ? `${source.title} · 원문 기사 보기 ↗` : "원문 기사 보기 ↗"}
                       </a>

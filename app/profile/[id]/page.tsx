@@ -381,7 +381,7 @@ export default function PublicProfilePage({
                         padding: "6px 14px",
                         background: "#f1f5f9",
                         color: "#334155",
-                        border: "1px solid #cbd5e1",
+                        border: "1px solid var(--gh-border)",
                         borderRadius: "6px",
                         fontSize: "13px",
                         fontWeight: 500,
@@ -625,7 +625,7 @@ export default function PublicProfilePage({
           >
             <div
               style={{
-                background: "#ffffff",
+                background: "var(--gh-surface)",
                 borderRadius: "12px",
                 width: "100%",
                 maxWidth: "500px",
@@ -647,7 +647,7 @@ export default function PublicProfilePage({
                       width: "36px",
                       height: "36px",
                       borderRadius: "50%",
-                      background: "#e2e8f0",
+                      background: "var(--gh-surface-muted)",
                       overflow: "hidden",
                       display: "flex",
                       alignItems: "center",
@@ -666,7 +666,7 @@ export default function PublicProfilePage({
                     )}
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, fontSize: "16px", color: "#0f172a" }}>
+                    <h3 style={{ margin: 0, fontSize: "16px", color: "var(--gh-text)" }}>
                       {profile.display_name || "회원"}님에게 쪽지 보내기
                     </h3>
                   </div>
@@ -680,7 +680,7 @@ export default function PublicProfilePage({
                     border: "none",
                     fontSize: "20px",
                     cursor: sendingMessage ? "not-allowed" : "pointer",
-                    color: "#94a3b8",
+                    color: "var(--gh-text-subtle)",
                     padding: "4px",
                   }}
                 >
@@ -703,7 +703,7 @@ export default function PublicProfilePage({
                       width: "100%",
                       padding: "14px",
                       borderRadius: "8px",
-                      border: "1px solid #cbd5e1",
+                      border: "1px solid var(--gh-border)",
                       fontSize: "14px",
                       resize: "vertical",
                       boxSizing: "border-box",
@@ -717,11 +717,11 @@ export default function PublicProfilePage({
                       justifyContent: "space-between",
                       marginTop: "6px",
                       fontSize: "12px",
-                      color: "#94a3b8",
+                      color: "var(--gh-text-subtle)",
                     }}
                   >
                     <span>최대 2,000자</span>
-                    <span style={{ color: messageBody.length >= 1900 ? "#ef4444" : "#94a3b8", fontWeight: messageBody.length >= 1900 ? "600" : "normal" }}>{messageBody.length} / 2,000자</span>
+                    <span style={{ color: messageBody.length >= 1900 ? "var(--gh-alert)" : "var(--gh-text-subtle)", fontWeight: messageBody.length >= 1900 ? "600" : "normal" }}>{messageBody.length} / 2,000자</span>
                   </div>
                 </div>
 
@@ -729,10 +729,10 @@ export default function PublicProfilePage({
                   <div
                     style={{
                       padding: "10px 14px",
-                      background: "#fef2f2",
-                      border: "1px solid #fecaca",
+                      background: "color-mix(in srgb, var(--gh-alert) 9%, var(--gh-surface))",
+                      border: "1px solid color-mix(in srgb, var(--gh-alert) 34%, var(--gh-border))",
                       borderRadius: "6px",
-                      color: "#b91c1c",
+                      color: "var(--gh-alert)",
                       fontSize: "13px",
                       marginBottom: "16px",
                     }}
@@ -748,9 +748,9 @@ export default function PublicProfilePage({
                     disabled={sendingMessage}
                     style={{
                       padding: "8px 16px",
-                      background: "#f1f5f9",
-                      color: "#475569",
-                      border: "1px solid #cbd5e1",
+                      background: "var(--gh-surface-muted)",
+                      color: "var(--gh-text-muted)",
+                      border: "1px solid var(--gh-border)",
                       borderRadius: "6px",
                       fontSize: "14px",
                       fontWeight: 500,
@@ -764,8 +764,8 @@ export default function PublicProfilePage({
                     disabled={sendingMessage || !messageBody.trim()}
                     style={{
                       padding: "8px 20px",
-                      background: sendingMessage || !messageBody.trim() ? "#94a3b8" : "#0f172a",
-                      color: "#ffffff",
+                      background: sendingMessage || !messageBody.trim() ? "var(--gh-text-subtle)" : "var(--gh-control-active)",
+                      color: "var(--gh-control-active-text)",
                       border: "none",
                       borderRadius: "6px",
                       fontSize: "14px",
