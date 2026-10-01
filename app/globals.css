@@ -2761,19 +2761,11 @@ html[data-theme="dark"] {
 .home-motion-hero:hover { transform:none !important; }
 
 
-/* Ambient Korean surface pattern: porcelain relief by day, quiet old-type page by night. */
+/* Ambient Korean surface pattern: subtle porcelain relief in light mode only. */
 :root { --gh-ambient-pattern:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22560%22%20height%3D%22420%22%20viewBox%3D%220%200%20560%20420%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%2355766b%22%20stroke-width%3D%221.2%22%20opacity%3D%22.16%22%3E%3Cpath%20d%3D%22M72%20125c38-48%2091-43%20112%200%2018%2037%2052%2042%2085%207%22%2F%3E%3Cpath%20d%3D%22M54%20144c47-27%2087-17%20112%2016%2025%2033%2062%2037%2099%2011%22%2F%3E%3Cpath%20d%3D%22M400%20282c-28-38-69-37-87-5-16%2028-43%2034-70%2014%22%2F%3E%3Cpath%20d%3D%22M419%20301c-38-22-72-13-92%2014-19%2025-49%2028-78%2010%22%2F%3E%3Cpath%20d%3D%22M310%2066c13%2018%2013%2036%200%2054-13-18-13-36%200-54zm0%2054c19-11%2037-10%2054%202-20%2010-38%209-54-2zm0%200c-19-11-37-10-54%202%2020%2010%2038%209%2054-2z%22%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%221%22%20opacity%3D%22.30%22%20transform%3D%22translate%281%20-1%29%22%3E%3Cpath%20d%3D%22M72%20125c38-48%2091-43%20112%200%2018%2037%2052%2042%2085%207%22%2F%3E%3Cpath%20d%3D%22M400%20282c-28-38-69-37-87-5-16%2028-43%2034-70%2014%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"); }
-html[data-theme="dark"] { --gh-ambient-pattern:url("/patterns/hunminjeongeum-haerye-tile.svg"); }
+html[data-theme="dark"] { --gh-ambient-pattern:none; }
 body { background-image:var(--gh-ambient-pattern) !important; background-attachment:fixed; }
 main, .main-page, .community-home { background-image:var(--gh-ambient-pattern) !important; background-attachment:fixed !important; }
-html[data-theme="dark"] body,
-html[data-theme="dark"] main,
-html[data-theme="dark"] .main-page,
-html[data-theme="dark"] .community-home {
-  background-image:var(--gh-ambient-pattern) !important;
-  background-size:900px 660px !important;
-  background-repeat:repeat !important;
-}
 /* Keep the pattern atmospheric: content surfaces remain clean and readable. */
 .post-card, .guide-card, .info-hub-card, .community-trending, .community-trending-card, .auth-box, input, textarea, select { background-image:none; }
-@media (max-width:700px) { body, main, .main-page, .community-home { background-size:420px 315px !important; } html[data-theme="dark"] body, html[data-theme="dark"] main, html[data-theme="dark"] .main-page, html[data-theme="dark"] .community-home { background-size:720px 520px !important; } }
+@media (max-width:700px) { body, main, .main-page, .community-home { background-size:420px 315px !important; } }
