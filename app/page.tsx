@@ -290,7 +290,7 @@ function HomeContent() {
                         style={{
                           width: "100%",
                           height: "100%",
-                          background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
+                          background: "linear-gradient(135deg, #26332e 0%, #151b18 100%)",
                         }}
                       />
                     )}
@@ -305,7 +305,7 @@ function HomeContent() {
                         textAlign: "left",
                       }}
                     >
-                      <div style={{ fontSize: "13px", fontWeight: "bold", color: "#60a5fa", textTransform: "uppercase", marginBottom: "8px", display: "inline-block", background: "rgba(0, 0, 0, 0.4)", padding: "2px 8px", borderRadius: "4px" }}>
+                      <div style={{ fontSize: "13px", fontWeight: "bold", color: "var(--gh-accent)", textTransform: "uppercase", marginBottom: "8px", display: "inline-block", background: "rgba(0, 0, 0, 0.4)", padding: "2px 8px", borderRadius: "4px" }}>
                         {article.category}
                       </div>
                       <h2 className="home-hero-title" style={{ fontSize: "32px", fontWeight: "bold", margin: "0 0 12px 0", lineHeight: "1.2" }}>
@@ -392,7 +392,7 @@ function HomeContent() {
                           height: "10px",
                           borderRadius: "5px",
                           border: "none",
-                          background: currentSlide === index ? "#2563eb" : "rgba(255, 255, 255, 0.5)",
+                          background: currentSlide === index ? "var(--gh-accent)" : "rgba(255, 255, 255, 0.5)",
                           cursor: "pointer",
                           transition: "width 0.3s ease",
                         }}

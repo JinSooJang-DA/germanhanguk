@@ -244,7 +244,7 @@ export default function Header() {
                       display: "inline-flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      background: "#ef4444",
+                      background: "var(--gh-alert)",
                       color: "#ffffff",
                       fontSize: "10px",
                       fontWeight: "bold",
@@ -273,7 +273,7 @@ export default function Header() {
                       display: "inline-flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      background: "#ef4444",
+                      background: "var(--gh-alert)",
                       color: "#ffffff",
                       fontSize: "10px",
                       fontWeight: "bold",
@@ -369,7 +369,7 @@ export default function Header() {
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <Link className="desktop-login" href="/auth">
-                <button style={{ padding: "6px 14px", cursor: "pointer", background: "#0f172a", color: "#fff", border: "none", borderRadius: "4px" }}>
+                <button style={{ padding: "6px 14px", cursor: "pointer", background: "var(--gh-control-active)", color: "var(--gh-control-active-text)", border: "none", borderRadius: "4px" }}>
                   로그인
                 </button>
               </Link>
@@ -406,7 +406,7 @@ export default function Header() {
                         display: "inline-flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        background: "#ef4444",
+                        background: "var(--gh-alert)",
                         color: "#ffffff",
                         fontSize: "9px",
                         fontWeight: "bold",
@@ -437,7 +437,7 @@ export default function Header() {
                         display: "inline-flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        background: "#ef4444",
+                        background: "var(--gh-alert)",
                         color: "#ffffff",
                         fontSize: "9px",
                         fontWeight: "bold",

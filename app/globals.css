@@ -2766,6 +2766,14 @@ html[data-theme="dark"] {
 html[data-theme="dark"] { --gh-ambient-pattern:url("/patterns/hunminjeongeum-haerye-tile.svg"); }
 body { background-image:var(--gh-ambient-pattern) !important; background-attachment:fixed; }
 main, .main-page, .community-home { background-image:var(--gh-ambient-pattern) !important; background-attachment:fixed !important; }
+html[data-theme="dark"] body,
+html[data-theme="dark"] main,
+html[data-theme="dark"] .main-page,
+html[data-theme="dark"] .community-home {
+  background-image:var(--gh-ambient-pattern) !important;
+  background-size:900px 660px !important;
+  background-repeat:repeat !important;
+}
 /* Keep the pattern atmospheric: content surfaces remain clean and readable. */
 .post-card, .guide-card, .info-hub-card, .community-trending, .community-trending-card, .auth-box, input, textarea, select { background-image:none; }
 @media (max-width:700px) { body, main, .main-page, .community-home { background-size:420px 315px !important; } html[data-theme="dark"] body, html[data-theme="dark"] main, html[data-theme="dark"] .main-page, html[data-theme="dark"] .community-home { background-size:720px 520px !important; } }

@@ -458,7 +458,7 @@ export default function ProfilePage() {
                 <span style={{ color: "#fff", fontSize: "28px" }}>👤</span>
               )}
             </div>
-            <label style={{ fontSize: "12px", background: "#4f9fa2", color: "#fff", padding: "6px 12px", borderRadius: "4px", cursor: "pointer" }}>
+            <label style={{ fontSize: "12px", background: "var(--gh-accent)", color: "var(--gh-text-white)", padding: "6px 12px", borderRadius: "4px", cursor: "pointer" }}>
               {uploading ? "업로드 중..." : "사진 변경"}
               <input type="file" accept="image/*" onChange={handleAvatarUpload} style={{ display: "none" }} disabled={uploading} />
             </label>
@@ -492,7 +492,7 @@ export default function ProfilePage() {
                 <h2 style={{ margin: "0 0 6px", fontSize: "20px" }}>관리자 작업실</h2>
                 <p style={{ margin: 0, fontSize: "13px", color: "var(--gh-text-muted)" }}>Gemini가 준비한 기사 초안을 검토하고 수정·승인·공개할 수 있습니다.</p>
               </div>
-              <Link href="/admin/articles" style={{ display: "inline-flex", alignItems: "center", gap: "7px", padding: "11px 16px", borderRadius: "7px", background: "#4f9fa2", color: "#fff", textDecoration: "none", fontWeight: 800 }}>
+              <Link href="/admin/articles" style={{ display: "inline-flex", alignItems: "center", gap: "7px", padding: "11px 16px", borderRadius: "7px", background: "var(--gh-accent)", color: "var(--gh-text-white)", textDecoration: "none", fontWeight: 800 }}>
                 기사 검토함 바로가기 →
               </Link>
             </div>
@@ -563,7 +563,7 @@ export default function ProfilePage() {
           </div>
 
           {message && (
-            <p className="form-message" style={{ color: message.includes("성공") ? "#16a34a" : "#dc2626" }}>
+            <p className="form-message" style={{ color: message.includes("성공") ? "var(--gh-success)" : "var(--gh-alert)" }}>
               {message}
             </p>
           )}
@@ -589,7 +589,7 @@ export default function ProfilePage() {
           </div>
 
           {passwordMessage && (
-            <p className="form-message" style={{ color: passwordMessage.includes("성공") ? "#16a34a" : "#dc2626" }}>
+            <p className="form-message" style={{ color: passwordMessage.includes("성공") ? "var(--gh-success)" : "var(--gh-alert)" }}>
               {passwordMessage}
             </p>
           )}
@@ -668,8 +668,8 @@ export default function ProfilePage() {
             onClick={handleLogout}
             style={{
               padding: "8px 16px",
-              background: "#ef4444",
-              color: "#fff",
+              background: "var(--gh-alert)",
+              color: "var(--gh-text-white)",
               border: "none",
               borderRadius: "6px",
               cursor: "pointer",
