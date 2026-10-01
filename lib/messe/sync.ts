@@ -1,9 +1,15 @@
 import { createClient } from "@supabase/supabase-js";
 import { fetchMesseDuesseldorfEvents } from "./sources/duesseldorf";
 
-function required(name: "SUPABASE_URL" | "SUPABASE_SERVICE_ROLE_KEY"): string {
-  const value = process.env[name]?.trim();
-  if (!value) throw new Error(`Missing ${name}`);
+function requiredSupabaseUrl(): string {
+  const value = (process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL)?.trim();
+  if (!value) throw new Error("Missing SUPABASE_URL");
+  return value;
+}
+
+function requiredSupabaseSecretKey(): string {
+  const value = (process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY)?.trim();
+  if (!value) throw new Error("Missing SUPABASE_SECRET_KEY");
   return value;
 }
 
@@ -37,7 +43,7 @@ export async function syncMesseDuesseldorf(): Promise<MesseSyncSummary> {
     last_synced_at: syncedAt,
   }));
 
-  const supabase = createClient(required("SUPABASE_URL"), required("SUPABASE_SERVICE_ROLE_KEY"), {
+  const supabase = createClient(requiredSupabaseUrl(), requiredSupabaseSecretKey(), {
     auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
   });
   const { error: upsertError } = await supabase
