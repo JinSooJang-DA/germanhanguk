@@ -174,7 +174,7 @@ export default function Header() {
   }
 
   return (
-    <header style={{ borderBottom: "1px solid var(--gh-border)", background: "var(--gh-surface)", padding: "16px 0" }}>
+    <header className="site-header" style={{ borderBottom: "1px solid var(--gh-border)", background: "var(--gh-surface)", padding: "16px 0" }}>
       <div className="wrapper" style={{ maxWidth: "1200px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 20px" }}>
         
         {/* ======================================================================
