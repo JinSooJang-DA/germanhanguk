@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getUpcomingMesseEvents } from "@/lib/messe/repository";
 import { fetchMesseDuesseldorfEvents } from "@/lib/messe/sources/duesseldorf";
 import type { MesseEventCandidate } from "@/lib/messe/types";
 
@@ -18,32 +19,72 @@ function formatRange(event: MesseEventCandidate): string {
   return `${formatDate(event.startsOn)} – ${formatDate(event.endsOn)}`;
 }
 
+function berlinToday(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Berlin", year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(new Date());
+}
+
+async function loadUpcomingEvents(): Promise<MesseEventCandidate[]> {
+  try {
+    return await getUpcomingMesseEvents(100);
+  } catch (error) {
+    console.error("Messe database read failed; using official calendar fallback:", error);
+    const fallback = await fetchMesseDuesseldorfEvents();
+    const today = berlinToday();
+    return fallback.events
+      .filter((event) => event.endsOn >= today)
+      .sort((a, b) => a.startsOn.localeCompare(b.startsOn));
+  }
+}
+
 export default async function MessePage() {
-  const result = await fetchMesseDuesseldorfEvents();
-  const today = new Date().toISOString().slice(0, 10);
-  const upcoming = result.events
-    .filter((event) => event.endsOn >= today)
-    .sort((a, b) => a.startsOn.localeCompare(b.startsOn))
-    .slice(0, 12);
+  const allUpcoming = await loadUpcomingEvents();
+  const upcoming = allUpcoming.slice(0, 12);
+  const nextEvent = upcoming[0];
 
   return (
     <main className="messe-page" style={{ maxWidth: "1200px", margin: "0 auto", padding: "48px 20px 80px" }}>
-      <div style={{ maxWidth: "760px", marginBottom: "34px" }}>
+      <div className="messe-hero" style={{ maxWidth: "820px", marginBottom: "34px" }}>
         <span className="messe-kicker" style={{ fontSize: "13px", fontWeight: 700 }}>GERMANHANGUK MESSE</span>
         <h1 style={{ margin: "10px 0 12px", fontSize: "34px", color: "var(--gh-text)", letterSpacing: "-0.03em" }}>
           독일 메세 · 박람회
         </h1>
         <p style={{ margin: 0, color: "var(--gh-text-muted)", lineHeight: 1.75, fontSize: "15px" }}>
-          독일 출장자와 현지 방문자를 위해 공식 주최사 일정을 기준으로 주요 전시회 정보를 정리합니다.
-          첫 연결 지역은 뒤셀도르프이며, 다른 주요 Messe 도시도 순차적으로 확장할 예정입니다.
+          독일 출장자와 현지 방문자를 위해 공식 주최사 일정을 모아 한눈에 확인할 수 있게 정리합니다.
+          현재는 뒤셀도르프를 시작으로 운영하며 주요 Messe 도시를 순차적으로 확장합니다.
         </p>
       </div>
 
+      {nextEvent ? (
+        <section className="messe-next-card" style={{ marginBottom: "36px", padding: "24px 26px" }}>
+          <div className="messe-next-layout">
+            <div>
+              <span className="messe-kicker" style={{ fontSize: "11px", fontWeight: 800 }}>NEXT IN DÜSSELDORF</span>
+              <h2 style={{ margin: "7px 0 6px", fontSize: "22px", color: "var(--gh-text)" }}>{nextEvent.title}</h2>
+              <p style={{ margin: 0, color: "var(--gh-text-muted)", fontSize: "13px" }}>
+                {formatRange(nextEvent)} · {nextEvent.venue}
+              </p>
+            </div>
+            {nextEvent.officialUrl ? (
+              <a className="messe-primary-link" href={nextEvent.officialUrl} target="_blank" rel="noreferrer">
+                공식 홈페이지 ↗
+              </a>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
+
       <section style={{ marginBottom: "42px" }}>
-        <div style={{ display: "flex", alignItems: "end", justifyContent: "space-between", gap: "16px", marginBottom: "16px", flexWrap: "wrap" }}>
+        <div className="messe-section-heading">
           <div>
             <span className="messe-kicker" style={{ fontSize: "12px", fontWeight: 700 }}>DÜSSELDORF</span>
             <h2 style={{ margin: "6px 0 0", color: "var(--gh-text)", fontSize: "22px" }}>다가오는 전시회</h2>
+            {allUpcoming.length > 0 ? (
+              <p style={{ margin: "5px 0 0", color: "var(--gh-text-subtle)", fontSize: "12px" }}>
+                현재 확인 가능한 예정 일정 {allUpcoming.length}개 · 가까운 일정부터 표시
+              </p>
+            ) : null}
           </div>
           <a
             className="messe-home-link"
@@ -56,27 +97,15 @@ export default async function MessePage() {
           </a>
         </div>
         {upcoming.length > 0 ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(270px, 1fr))", gap: "16px" }}>
+          <div className="messe-event-grid">
             {upcoming.map((event) => (
-              <article className="messe-feature-card" key={event.sourceEventId} style={{ padding: "22px", display: "flex", flexDirection: "column" }}>
-                <div style={{ color: "var(--gh-accent)", fontSize: "12px", fontWeight: 800, marginBottom: "9px" }}>
-                  {formatRange(event)}
-                </div>
-                <h3 style={{ margin: 0, color: "var(--gh-text)", fontSize: "17px", lineHeight: 1.4 }}>{event.title}</h3>
-                {event.summary ? (
-                  <p style={{ margin: "9px 0 0", color: "var(--gh-text-muted)", fontSize: "13px", lineHeight: 1.6 }}>{event.summary}</p>
-                ) : null}
-                <div style={{ marginTop: "auto", paddingTop: "18px", color: "var(--gh-text-muted)", fontSize: "12px" }}>
-                  {event.city} · {event.venue}
-                </div>
+              <article className="messe-feature-card" key={`${event.sourceProvider}:${event.sourceEventId}`}>
+                <div className="messe-event-date">{formatRange(event)}</div>
+                <h3>{event.title}</h3>
+                {event.summary ? <p>{event.summary}</p> : null}
+                <div className="messe-event-venue">{event.city} · {event.venue}</div>
                 {event.officialUrl ? (
-                  <a
-                    className="messe-home-link"
-                    href={event.officialUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ marginTop: "10px", textDecoration: "none", fontWeight: 700, fontSize: "13px" }}
-                  >
+                  <a className="messe-home-link" href={event.officialUrl} target="_blank" rel="noreferrer">
                     행사 공식 홈페이지 ↗
                   </a>
                 ) : null}
@@ -91,8 +120,8 @@ export default async function MessePage() {
             </p>
           </div>
         )}
-        <p style={{ margin: "14px 0 0", color: "var(--gh-text-muted)", fontSize: "11px", lineHeight: 1.6 }}>
-          출처: Messe Düsseldorf 공식 동기화 캘린더 · 일정은 주최사 사정에 따라 변경될 수 있습니다.
+        <p className="messe-source-note">
+          출처: Messe Düsseldorf 공식 캘린더 · GermanHanguk 동기화 데이터 · 일정은 주최사 사정에 따라 변경될 수 있습니다.
         </p>
       </section>
 

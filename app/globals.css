@@ -1861,3 +1861,27 @@ html[data-theme="dark"] .messe-status-card {
   border:1px solid var(--gh-border);
   border-radius:0;
 }
+
+.messe-section-heading { display:flex; align-items:end; justify-content:space-between; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
+.messe-event-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:16px; }
+.messe-feature-card { padding:22px; display:flex; flex-direction:column; min-height:205px; }
+.messe-feature-card h3 { margin:0; color:var(--gh-text); font-size:17px; line-height:1.4; }
+.messe-feature-card p { margin:9px 0 0; color:var(--gh-text-muted); font-size:13px; line-height:1.6; }
+.messe-event-date { color:var(--gh-accent); font-size:12px; font-weight:800; margin-bottom:9px; }
+.messe-event-venue { margin-top:auto; padding-top:18px; color:var(--gh-text-muted); font-size:12px; }
+.messe-feature-card .messe-home-link { margin-top:10px; font-weight:700; font-size:13px; }
+.messe-source-note { margin:14px 0 0; color:var(--gh-text-muted); font-size:11px; line-height:1.6; }
+.messe-next-card { border:1px solid var(--gh-border); background:var(--gh-surface); }
+.messe-next-layout { display:flex; align-items:center; justify-content:space-between; gap:24px; }
+.messe-primary-link { flex:0 0 auto; padding:10px 14px; background:#79b9c7; border:1px solid rgba(236,247,246,.72); color:#fff; font-size:13px; font-weight:750; text-decoration:none; }
+.messe-primary-link:hover { background:#68aeba; }
+html:not([data-theme="dark"]) .messe-next-card { background:rgba(207,220,213,.76); border:2px solid var(--gh-card-border); box-shadow:var(--gh-card-shadow); }
+
+@media (max-width: 640px) {
+  .messe-page { padding-top:34px !important; }
+  .messe-hero h1 { font-size:29px !important; }
+  .messe-next-layout { align-items:flex-start; flex-direction:column; gap:16px; }
+  .messe-primary-link { width:100%; text-align:center; }
+  .messe-section-heading { align-items:flex-start; flex-direction:column; }
+  .messe-event-grid { grid-template-columns:1fr; }
+}
