@@ -19,6 +19,13 @@ import {
   validateText,
 } from "@/lib/contentValidation";
 import type { Post } from "@/types/post";
+import PostImagePicker from "@/components/PostImagePicker";
+import {
+  deletePostImagesByUrl,
+  getStoredImageUrls,
+  PendingPostImage,
+  uploadPendingPostImages,
+} from "@/lib/postImages";
 
 type PostInsertPayload = Pick<
   Post,
@@ -38,6 +45,8 @@ function NewPostContent() {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [pendingImages, setPendingImages] = useState<PendingPostImage[]>([]);
+  const [submitting, setSubmitting] = useState(false);
   const [category, setCategory] = useState(initialCategory);
   const [region, setRegion] = useState("");
   
@@ -108,14 +117,17 @@ function NewPostContent() {
     }
 
     const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      data: { session },
+    } = await supabase.auth.getSession();
+    const user = session?.user;
 
-    if (!user) {
+    if (!user || !session.access_token) {
       alert("로그인 세션이 만료되었습니다.");
       router.push("/auth");
       return;
     }
+
+    setSubmitting(true);
 
     // profiles 테이블에서 내 닉네임(display_name) 가져오기
     const { data: profile } = await supabase
@@ -127,9 +139,27 @@ function NewPostContent() {
     const authorName = profile?.display_name || user.email?.split("@")[0] || "회원";
 
     // 데이터 저장 객체 구성 ('education'인 경우에만 상세 필드값 저장)
+    let finalContent = contentValidation.value;
+    try {
+      finalContent = await uploadPendingPostImages(
+        finalContent,
+        pendingImages,
+        session.access_token,
+      );
+    } catch (error) {
+      console.error("Post image upload error:", error);
+      setMessage(error instanceof Error ? error.message : "이미지 업로드에 실패했습니다.");
+      setSubmitting(false);
+      return;
+    }
+
+    const uploadedUrls = getStoredImageUrls(finalContent).filter(
+      (url) => !getStoredImageUrls(contentValidation.value).includes(url),
+    );
+
     const postData: PostInsertPayload = {
       title: titleValidation.value,
-      content: contentValidation.value,
+      content: finalContent,
       category,
       region: postRegion,
       author_id: user.id,
@@ -141,17 +171,24 @@ function NewPostContent() {
       postData.target_field = targetField;
     }
 
-    const { error } = await supabase.from("posts").insert(postData);
+    const { data: createdPost, error } = await supabase
+      .from("posts")
+      .insert(postData)
+      .select("id")
+      .single();
 
     if (error) {
       console.error("Post creation error:", error);
+      await deletePostImagesByUrl(uploadedUrls, session.access_token).catch(() => undefined);
       setMessage(
         getContentValidationDatabaseMessage(error, "post") ?? "글 작성 실패: " + error.message,
       );
+      setSubmitting(false);
       return;
     }
 
-    router.push("/");
+    pendingImages.forEach((image) => URL.revokeObjectURL(image.previewUrl));
+    router.push(`/posts/${createdPost.id}`);
     router.refresh();
   }
 
@@ -286,10 +323,18 @@ function NewPostContent() {
             </p>
           </div>
 
+          <PostImagePicker
+            content={content}
+            setContent={setContent}
+            pendingImages={pendingImages}
+            setPendingImages={setPendingImages}
+            disabled={submitting}
+          />
+
           {message && <p className="form-message">{message}</p>}
 
-          <button type="submit" className="submit-btn">
-            게시글 등록
+          <button type="submit" className="submit-btn" disabled={submitting}>
+            {submitting ? "등록 중..." : "게시글 등록"}
           </button>
         </form>
       </div>

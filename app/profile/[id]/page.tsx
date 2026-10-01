@@ -463,7 +463,7 @@ export default function PublicProfilePage({
         </div>
 
         {/* 2. 하단: 이 사용자가 작성한 글 섹션 */}
-        <section>
+        <section id="user-posts" style={{ scrollMarginTop: "96px" }}>
           <div
             style={{
               display: "flex",

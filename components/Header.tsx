@@ -393,19 +393,10 @@ export default function Header() {
                 {/* 모바일 전용 알림 배지 */}
                 <Link
                   href="/notifications"
+                  className={"header-square-action mobile-header-action" + (pathname === "/notifications" ? " is-active" : "")}
                   aria-label={"알림 확인, 수신된 알림 " + unreadNotificationsCount + "개"}
-                  style={{
-                    textDecoration: "none",
-                    color: "var(--gh-text)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: "44px",
-                    height: "44px",
-                    position: "relative",
-                  }}
                 >
-                  <span style={{ fontSize: "20px" }}>🔔</span>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></svg>
                   {unreadNotificationsCount > 0 && (
                     <span
                       style={{
@@ -433,19 +424,10 @@ export default function Header() {
                 {/* 모바일 전용 쪽지 배지 */}
                 <Link
                   href="/messages"
+                  className={"header-square-action mobile-header-action" + (pathname.startsWith("/messages") ? " is-active" : "")}
                   aria-label={"쪽지함 이동, 안읽은 쪽지 " + unreadCount + "개"}
-                  style={{
-                    textDecoration: "none",
-                    color: "var(--gh-text)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: "44px",
-                    height: "44px",
-                    position: "relative",
-                  }}
                 >
-                  <span style={{ fontSize: "20px" }}>✉️</span>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3zM3 6l9 7 9-7" /></svg>
                   {unreadCount > 0 && (
                     <span
                       style={{
@@ -492,7 +474,7 @@ export default function Header() {
                 color: "var(--gh-text)"
               }}
             >
-              ☰
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
             </button>
           </div>
         </div>
@@ -522,19 +504,19 @@ export default function Header() {
                 top: 0,
                 right: 0,
                 bottom: 0,
-                width: "280px",
+                width: "300px",
                 background: "var(--gh-surface)",
                 boxShadow: "-4px 0 24px rgba(0, 0, 0, 0.15)",
                 zIndex: 999,
                 display: "flex",
                 flexDirection: "column",
-                padding: "24px",
+                padding: "16px",
                 boxSizing: "border-box",
                 overflowY: "auto",
               }}
             >
               {/* 서랍 헤더 */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
                 <span style={{ fontWeight: "bold", fontSize: "16px", color: "var(--gh-text)" }}>GermanHanguk 메뉴</span>
                 <button
                   onClick={function() { setMenuOpen(false); }}

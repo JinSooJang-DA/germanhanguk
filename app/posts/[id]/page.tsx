@@ -3,9 +3,11 @@ import { supabase } from "@/lib/supabase";
 import PostDetailClient from "@/components/PostDetailClient";
 import { getCategoryLabel, shouldDisplayPostRegion } from "@/lib/constants";
 import { formatDate } from "@/lib/date";
-import { linkifyPlainText } from "@/lib/linkify";
 import { Post, Comment } from "@/types/post";
 import PostViewCount from "@/components/PostViewCount";
+import AuthorActionMenu from "@/components/AuthorActionMenu";
+import PostContent from "@/components/PostContent";
+import { stripPostImageTokens } from "@/lib/postImages";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -19,7 +21,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     return { title: "게시글을 찾을 수 없습니다 - GermanHanguk" };
   }
 
-  const snippet = post.content ? post.content.substring(0, 150) + "..." : "";
+  const plainContent = stripPostImageTokens(post.content || "");
+  const snippet = plainContent ? plainContent.substring(0, 150) + (plainContent.length > 150 ? "..." : "") : "";
   return {
     title: post.title + " - GermanHanguk",
     description: snippet,
@@ -166,7 +169,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           }}
         >
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-            <span style={{ fontWeight: "bold", color: "var(--gh-text)" }}>{post.author_name}</span>
+            {post.author_id ? (
+              <AuthorActionMenu authorId={post.author_id} authorName={post.author_name} avatarUrl={post.author_avatar} />
+            ) : (
+              <span style={{ fontWeight: "bold", color: "var(--gh-text)" }}>{post.author_name}</span>
+            )}
             <span style={{ marginLeft: "8px", color: "#94a3b8" }}>
               <PostViewCount postId={post.id} initialViews={post.views || 0} />
             </span>
@@ -174,9 +181,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         </div>
 
         {/* Static Post Content - 100% indexable by search engine crawlers */}
-        <div className="post-content" style={{ whiteSpace: "pre-wrap", fontSize: "16px", lineHeight: "1.8" }}>
-          {linkifyPlainText(post.content)}
-        </div>
+        <PostContent content={post.content} />
 
         {/* Client-side interactive layer (Optimistic likes, Replies list, submission forms, list navigation) */}
         <PostDetailClient

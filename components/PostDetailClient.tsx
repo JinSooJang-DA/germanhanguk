@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Post, Comment } from "@/types/post";
-import { getCategoryLabel, shouldDisplayPostRegion } from "@/lib/constants";
+import { getCategoryLabel, getPostRegionPolicy, shouldDisplayPostRegion } from "@/lib/constants";
 import { formatDate, formatDateTime } from "@/lib/date";
 import { linkifyPlainText } from "@/lib/linkify";
 import {
@@ -15,9 +15,19 @@ import {
   validateText,
 } from "@/lib/contentValidation";
 import { VIEW_INCREMENT_EVENT } from "@/components/PostViewCount";
+import AuthorActionMenu from "@/components/AuthorActionMenu";
+import { deletePostImagesByUrl, getStoredImageUrls } from "@/lib/postImages";
 
 const PAGE_SIZE = 10;
 const VIEW_COUNT_DEDUPLICATION_MS = 30 * 60 * 1000;
+
+interface EngagementCount {
+  count: number;
+}
+
+type RelatedPost = Post & {
+  post_likes?: EngagementCount[] | null;
+};
 
 interface PostDetailClientProps {
   id: string;
@@ -61,7 +71,7 @@ export default function PostDetailClient({
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
 
-  const [bottomPosts, setBottomPosts] = useState<Post[]>([]);
+  const [bottomPosts, setBottomPosts] = useState<RelatedPost[]>([]);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(1);
   const [relatedPostsLoading, setRelatedPostsLoading] = useState(true);
@@ -221,10 +231,11 @@ export default function PostDetailClient({
 
         const { data, error } = await supabase
           .from("posts")
-          .select("*")
+          .select("*, post_likes(count)")
           .eq("category", post.category)
           .order("created_at", { ascending: false })
-          .range(from, to);
+          .range(from, to)
+          .returns<RelatedPost[]>();
 
         if (error) {
           console.error("Related posts fetch error:", error);
@@ -235,8 +246,32 @@ export default function PostDetailClient({
           return;
         }
 
+        const relatedPosts = data || [];
+        const authorIds = Array.from(new Set(relatedPosts.map(function(p) { return p.author_id; }).filter(Boolean))) as string[];
+        const avatarMap: Record<string, string> = {};
+
+        if (authorIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from("profiles")
+            .select("id, avatar_url")
+            .in("id", authorIds);
+
+          if (profiles) {
+            profiles.forEach(function(profile) {
+              if (profile.avatar_url) avatarMap[profile.id] = profile.avatar_url;
+            });
+          }
+        }
+
+        const relatedPostsWithAvatar = relatedPosts.map(function(p) {
+          return {
+            ...p,
+            author_avatar: p.author_id ? avatarMap[p.author_id] || "" : "",
+          };
+        });
+
         if (isCurrent) {
-          setBottomPosts((data || []) as unknown as Post[]);
+          setBottomPosts(relatedPostsWithAvatar);
           setRelatedPostsError(null);
         }
       } catch (err) {
@@ -312,11 +347,27 @@ export default function PostDetailClient({
   async function handleDeletePost() {
     if (!confirm("정말로 이 게시글을 삭제하시겠습니까?")) return;
 
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      alert("로그인 세션이 만료되었습니다.");
+      return;
+    }
+
     const { error } = await supabase.from("posts").delete().eq("id", parseInt(id, 10));
     if (error) {
       alert("삭제 실패: " + error.message);
       return;
     }
+
+    await deletePostImagesByUrl(
+      getStoredImageUrls(initialPost.content),
+      session.access_token,
+    ).catch((cleanupError) => {
+      console.error("Deleted post image cleanup error:", cleanupError);
+    });
+
     alert("삭제되었습니다.");
     router.push("/");
     router.refresh();
@@ -517,6 +568,7 @@ export default function PostDetailClient({
 
   const isAuthor = currentUserId === post.author_id;
   const currentCategoryLabel = getCategoryLabel(post.category, "ko");
+  const relatedUsesRegion = getPostRegionPolicy(post.category).usesRegion;
 
   return (
     <div>
@@ -1035,71 +1087,68 @@ export default function PostDetailClient({
           <p style={{ color: "var(--gh-text-muted)", fontSize: "14px" }}>관련 게시글이 없습니다.</p>
         ) : (
           <>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
               <thead>
-                <tr style={{ borderBottom: "1px solid var(--gh-border)", background: "var(--gh-surface-muted)", textAlign: "left" }}>
-                  <th style={{ padding: "10px 12px", fontSize: "14px" }}>카테고리</th>
-                  <th style={{ padding: "10px 12px", fontSize: "14px" }}>제목</th>
-                  <th style={{ padding: "10px 12px", fontSize: "14px" }}>지역</th>
-                  <th style={{ padding: "10px 12px", fontSize: "14px" }}>작성자</th>
-                  <th style={{ padding: "10px 12px", fontSize: "14px" }}>작성일</th>
-                  <th style={{ padding: "10px 12px", fontSize: "14px", textAlign: "center" }}>조회</th>
+                <tr style={{ borderBottom: "2px solid var(--gh-border)", background: "var(--gh-surface-muted)", color: "var(--gh-text)", textAlign: "left" }}>
+                  <th style={{ padding: "14px" }}>카테고리</th>
+                  <th style={{ padding: "14px" }}>제목</th>
+                  {relatedUsesRegion && <th style={{ padding: "14px" }}>지역</th>}
+                  <th style={{ padding: "14px" }}>작성자</th>
+                  <th style={{ padding: "14px" }}>작성일</th>
+                  <th style={{ padding: "14px", textAlign: "center" }}>조회/추천</th>
                 </tr>
               </thead>
               <tbody>
                 {bottomPosts.map(function(p) {
-              const isCurrent = String(p.id) === String(post.id);
-              return (
-                <tr
-                  key={p.id}
-                  style={{
-                    borderBottom: "1px solid var(--gh-border)",
-                    background: isCurrent ? "var(--gh-surface-muted)" : "transparent",
-                  }}
-                >
-                  <td className="related-post-category" style={{ padding: "10px 12px", fontSize: "13px", color: "var(--gh-text-muted)" }}>
-                    {getCategoryLabel(p.category, "ko")}
-                  </td>
-                  <td className="related-post-title" style={{ padding: "10px 12px" }}>
-                    <Link
-                      href={"/posts/" + p.id + "?page=" + currentPage}
+                  const isCurrent = String(p.id) === String(post.id);
+                  const relatedLikesCount = p.post_likes?.[0]?.count || 0;
+                  return (
+                    <tr
+                      key={p.id}
                       style={{
-                        textDecoration: "none",
-                        color: isCurrent ? "var(--gh-accent)" : "var(--gh-text)",
-                        fontWeight: isCurrent ? "bold" : "normal",
-                        fontSize: "14px",
+                        borderBottom: "1px solid var(--gh-border)",
+                        background: isCurrent ? "var(--gh-surface-muted)" : "transparent",
                       }}
                     >
-                      {p.title} {isCurrent && "◀ (현재글)"}
-                    </Link>
-                  </td>
-                  <td className="related-post-region" style={{ padding: "10px 12px", fontSize: "13px", color: "var(--gh-text-muted)" }}>
-                    {shouldDisplayPostRegion(p.category, p.region) ? p.region : ""}
-                  </td>
-                  <td className="related-post-author" style={{ padding: "10px 12px", fontSize: "13px", color: "var(--gh-text-muted)" }}>
-                    {p.author_id ? (
-                      <Link
-                        href={"/profile/" + p.author_id}
-                        style={{
-                          textDecoration: "none",
-                          color: "var(--gh-text-muted)",
-                          fontWeight: 500,
-                        }}
-                      >
-                        {p.author_name}
-                      </Link>
-                    ) : (
-                      p.author_name
-                    )}
-                  </td>
-                  <td className="related-post-date" style={{ padding: "10px 12px", fontSize: "13px", color: "var(--gh-text-subtle)" }}>
-                    {formatDate(p.created_at)}
-                  </td>
-                  <td className="related-post-views" style={{ padding: "10px 12px", fontSize: "13px", color: "var(--gh-text-subtle)", textAlign: "center" }}>
-                    {p.views || 0}
-                  </td>
-                </tr>
-              );
+                      <td className="related-post-category" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
+                        {getCategoryLabel(p.category, "ko")}
+                      </td>
+                      <td className="related-post-title" style={{ padding: "14px" }}>
+                        <Link
+                          href={"/posts/" + p.id + "?page=" + currentPage}
+                          style={{
+                            textDecoration: "none",
+                            color: isCurrent ? "var(--gh-accent)" : "var(--gh-text)",
+                            fontWeight: isCurrent ? "bold" : "600",
+                          }}
+                        >
+                          {p.title} {isCurrent && "◀ (현재글)"}
+                        </Link>
+                      </td>
+                      {relatedUsesRegion && (
+                        <td className="related-post-region" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
+                          {shouldDisplayPostRegion(p.category, p.region) ? p.region : ""}
+                        </td>
+                      )}
+                      <td className="related-post-author" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
+                        {p.author_id ? (
+                          <AuthorActionMenu
+                            authorId={p.author_id}
+                            authorName={p.author_name}
+                            avatarUrl={p.author_avatar}
+                          />
+                        ) : (
+                          <span>{p.author_name}</span>
+                        )}
+                      </td>
+                      <td className="related-post-date" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-subtle)" }}>
+                        {formatDate(p.created_at)}
+                      </td>
+                      <td className="related-post-views" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)", textAlign: "center" }}>
+                        👁️ {p.views || 0} &nbsp;&nbsp; ❤️ {relatedLikesCount}
+                      </td>
+                    </tr>
+                  );
                 })}
               </tbody>
             </table>

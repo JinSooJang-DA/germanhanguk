@@ -13,6 +13,7 @@ import { formatDate } from "@/lib/date";
 import type { Post as BasePost } from "@/types/post";
 import type { Article } from "@/types/article";
 import AdSlot from "@/components/AdSlot";
+import AuthorActionMenu from "@/components/AuthorActionMenu";
 
 interface EngagementCount {
   count: number;
@@ -376,13 +377,13 @@ function HomeContent() {
       {!isCommunityView && (
         <section className="info-hub-section" style={{ maxWidth: "1200px", margin: "0 auto 44px", padding: "0 20px" }}>
           <div className="info-hub-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "16px" }}>
-            <Link className="info-hub-card" href="/articles" style={{ textDecoration: "none", color: "var(--gh-text)", padding: "22px", border: "1px solid var(--gh-border)", borderRadius: "14px", background: "var(--gh-surface)" }}>
+            <Link className="info-hub-card" href="/articles" style={{ textDecoration: "none", color: "var(--gh-text)", padding: "22px", border: "1px solid var(--gh-border)", borderRadius: "0", background: "var(--gh-surface)" }}>
               <div style={{ fontSize: "24px", marginBottom: "10px" }}>📰</div><strong style={{ fontSize: "17px" }}>독일 소식</strong><p style={{ margin: "7px 0 0", color: "var(--gh-text-muted)", fontSize: "13px", lineHeight: 1.6 }}>독일 생활에 직접 영향을 주는 주요 변화와 공식 발표</p>
             </Link>
-            <Link className="info-hub-card" href="/guide" style={{ textDecoration: "none", color: "var(--gh-text)", padding: "22px", border: "1px solid var(--gh-border)", borderRadius: "14px", background: "var(--gh-surface)" }}>
+            <Link className="info-hub-card" href="/guide" style={{ textDecoration: "none", color: "var(--gh-text)", padding: "22px", border: "1px solid var(--gh-border)", borderRadius: "0", background: "var(--gh-surface)" }}>
               <div style={{ fontSize: "24px", marginBottom: "10px" }}>📘</div><strong style={{ fontSize: "17px" }}>생활 가이드</strong><p style={{ margin: "7px 0 0", color: "var(--gh-text-muted)", fontSize: "13px", lineHeight: 1.6 }}>비자·세금·보험·주거·교육 등 독일 생활 핵심 정보</p>
             </Link>
-            <Link className="info-hub-card" href="/messe" style={{ textDecoration: "none", color: "var(--gh-text)", padding: "22px", border: "1px solid var(--gh-border)", borderRadius: "14px", background: "var(--gh-surface)" }}>
+            <Link className="info-hub-card" href="/messe" style={{ textDecoration: "none", color: "var(--gh-text)", padding: "22px", border: "1px solid var(--gh-border)", borderRadius: "0", background: "var(--gh-surface)" }}>
               <div style={{ fontSize: "24px", marginBottom: "10px" }}>🏢</div><strong style={{ fontSize: "17px" }}>독일 메세</strong><p style={{ margin: "7px 0 0", color: "var(--gh-text-muted)", fontSize: "13px", lineHeight: 1.6 }}>주요 전시회·박람회 일정과 출장·방문에 필요한 정보</p>
             </Link>
           </div>
@@ -403,16 +404,17 @@ function HomeContent() {
         
         {/* 실시간 인기 게시글 목록 */}
         {selectedCategory === "all" && trendingPosts.length > 0 && (
-          <div style={{ marginBottom: "40px", background: "var(--gh-surface-muted)", borderRadius: "12px", padding: "24px", border: "1px solid var(--gh-border)" }}>
-            <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "var(--gh-text)", margin: "0 0 16px 0", display: "flex", alignItems: "center", gap: "6px" }}>
+          <div className="community-trending" style={{ marginBottom: "40px", background: "var(--gh-surface-muted)", borderRadius: "12px", padding: "24px", border: "1px solid var(--gh-border)" }}>
+            <h3 className="community-trending-title" style={{ fontSize: "16px", fontWeight: "bold", color: "var(--gh-text)", margin: "0 0 16px 0", display: "flex", alignItems: "center", gap: "6px" }}>
               🔥 지금 가장 많이 읽은 인기 글
             </h3>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
+            <div className="community-trending-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
               {trendingPosts.map(function(tp) {
                 const commentCount = tp.comments?.[0]?.count || 0;
                 const likeCount = tp.post_likes?.[0]?.count || 0;
                 return (
                   <Link
+                    className="community-trending-card"
                     key={tp.id}
                     href={"/posts/" + tp.id}
                     style={{
@@ -579,41 +581,11 @@ function HomeContent() {
                       )}
                       <td className="main-post-author" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
                         {post.author_id ? (
-                          <Link
-                            href={"/profile/" + post.author_id}
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "8px",
-                              textDecoration: "none",
-                              color: "var(--gh-text)",
-                            }}
-                          >
-                            <div
-                              style={{
-                                width: "24px",
-                                height: "24px",
-                                borderRadius: "50%",
-                                background: "var(--gh-surface-muted)",
-                                overflow: "hidden",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                flexShrink: 0,
-                              }}
-                            >
-                              {post.author_avatar ? (
-                                <img
-                                  src={post.author_avatar}
-                                  alt={post.author_name}
-                                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                                />
-                              ) : (
-                                <span style={{ fontSize: "12px" }}>👤</span>
-                              )}
-                            </div>
-                            <span style={{ fontWeight: 500 }}>{post.author_name}</span>
-                          </Link>
+                          <AuthorActionMenu
+                            authorId={post.author_id}
+                            authorName={post.author_name}
+                            avatarUrl={post.author_avatar}
+                          />
                         ) : (
                           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                             <div

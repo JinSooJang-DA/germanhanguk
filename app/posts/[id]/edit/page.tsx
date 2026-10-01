@@ -4,6 +4,16 @@ import { FormEvent, useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import PostImagePicker from "@/components/PostImagePicker";
+import {
+  createEditablePostContent,
+  deletePostImagesByUrl,
+  getStoredImageUrls,
+  PendingPostImage,
+  restoreStoredImageTokens,
+  StoredPostImageAlias,
+  uploadPendingPostImages,
+} from "@/lib/postImages";
 import {
   CATEGORIES,
   EDUCATION_SUB_CATEGORY_OPTIONS,
@@ -30,6 +40,9 @@ export default function EditPostPage({
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [originalContent, setOriginalContent] = useState("");
+  const [storedImages, setStoredImages] = useState<StoredPostImageAlias[]>([]);
+  const [pendingImages, setPendingImages] = useState<PendingPostImage[]>([]);
   const [category, setCategory] = useState("community");
   const [region, setRegion] = useState("");
   const [subCategory, setSubCategory] = useState("visa");
@@ -81,8 +94,11 @@ export default function EditPostPage({
           return;
         }
 
+        const editablePost = createEditablePostContent(post.content);
         setTitle(post.title);
-        setContent(post.content);
+        setContent(editablePost.content);
+        setOriginalContent(post.content);
+        setStoredImages(editablePost.storedImages);
         setCategory(post.category);
         setRegion(post.region || "");
         setSubCategory(post.sub_category || "visa");
@@ -113,17 +129,44 @@ export default function EditPostPage({
     }
 
     const postRegion = getPostRegionValue(category, region);
-
     if (regionPolicy.required && !postRegion) {
       alert(`${regionPolicy.label}을 입력해 주세요.`);
       return;
     }
 
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session?.user || !session.access_token) {
+      alert("로그인 세션이 만료되었습니다.");
+      router.push("/auth");
+      return;
+    }
+
     setSaving(true);
+
+    let finalContent = restoreStoredImageTokens(contentValidation.value, storedImages);
+    try {
+      finalContent = await uploadPendingPostImages(
+        finalContent,
+        pendingImages,
+        session.access_token,
+      );
+    } catch (error) {
+      console.error("Post image upload error:", error);
+      alert(error instanceof Error ? error.message : "이미지 업로드에 실패했습니다.");
+      setSaving(false);
+      return;
+    }
+
+    const originalUrls = getStoredImageUrls(originalContent);
+    const finalUrls = getStoredImageUrls(finalContent);
+    const newlyUploadedUrls = finalUrls.filter((url) => !originalUrls.includes(url));
+    const removedUrls = originalUrls.filter((url) => !finalUrls.includes(url));
 
     const updatePayload = {
       title: titleValidation.value,
-      content: contentValidation.value,
+      content: finalContent,
       category,
       region: postRegion,
     };
@@ -140,15 +183,20 @@ export default function EditPostPage({
       .update(updatePayload)
       .eq("id", id);
 
-    setSaving(false);
-
     if (error) {
       console.error("Post update error:", error);
+      await deletePostImagesByUrl(newlyUploadedUrls, session.access_token).catch(() => undefined);
       alert(
         getContentValidationDatabaseMessage(error, "post") ?? "수정 실패: " + error.message,
       );
+      setSaving(false);
       return;
     }
+
+    await deletePostImagesByUrl(removedUrls, session.access_token).catch((cleanupError) => {
+      console.error("Removed post image cleanup error:", cleanupError);
+    });
+    pendingImages.forEach((image) => URL.revokeObjectURL(image.previewUrl));
 
     alert("게시글이 수정되었습니다.");
     router.push(`/posts/${id}`);
@@ -283,6 +331,14 @@ export default function EditPostPage({
               {contentCharacterCount}
             </p>
           </div>
+
+          <PostImagePicker
+            content={content}
+            setContent={setContent}
+            pendingImages={pendingImages}
+            setPendingImages={setPendingImages}
+            disabled={saving}
+          />
 
           <button type="submit" className="submit-btn" disabled={saving}>
             {saving ? "수정 중..." : "수정 완료"}
