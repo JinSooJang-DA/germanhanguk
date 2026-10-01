@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import PostDetailClient from "@/components/PostDetailClient";
-import { getCategoryLabel, shouldDisplayPostRegion } from "@/lib/constants";
+import { getCategoryLabel, getEducationSubCategoryLabel, shouldDisplayPostRegion } from "@/lib/constants";
 import { formatDate } from "@/lib/date";
 import { Post, Comment } from "@/types/post";
 import PostViewCount from "@/components/PostViewCount";
@@ -138,7 +138,9 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const { data: { session } } = await supabase.auth.getSession();
   const userId = session?.user?.id || null;
 
-  const currentCategoryLabel = getCategoryLabel(post.category, "ko");
+  const currentCategoryLabel = post.category === "education"
+    ? getEducationSubCategoryLabel(post.sub_category)
+    : getCategoryLabel(post.category, "ko");
 
   return (
     <main className="post-detail">

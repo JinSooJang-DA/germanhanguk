@@ -51,8 +51,12 @@ function NewPostContent() {
   const [region, setRegion] = useState("");
   
   // 유학·교육 카테고리 전용 상세 상태값
-  const [subCategory, setSubCategory] = useState("visa");
-  const [targetField, setTargetField] = useState("engineering");
+  const subCategoryParam = searchParams.get("sub_category");
+  const initialSubCategory = EDUCATION_SUB_CATEGORY_OPTIONS.some((option) => option.value === subCategoryParam)
+    ? subCategoryParam!
+    : "study-prep";
+  const [subCategory, setSubCategory] = useState(initialSubCategory);
+  const [targetField, setTargetField] = useState("general");
 
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);

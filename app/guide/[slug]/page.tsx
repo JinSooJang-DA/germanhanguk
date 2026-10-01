@@ -12,6 +12,8 @@ import GuideEmployeeSteps from "@/components/GuideEmployeeSteps";
 import GuideStudentSituations from "@/components/GuideStudentSituations";
 import GuideInsuranceComparison from "@/components/GuideInsuranceComparison";
 import { GUIDE_CONTENT } from "@/lib/guide-content";
+import { GUIDE_SUPPLEMENTS } from "@/lib/guide-supplements";
+import GuideSupplement from "@/components/GuideSupplement";
 import { formatDate } from "@/lib/date";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -255,6 +257,10 @@ export default async function GuideDetailPage({ params }: { params: Promise<{ sl
         <div className="guide-body">
           {renderStructuredContent(guide.content)}
         </div>
+
+        {GUIDE_SUPPLEMENTS[slug] && (
+          <GuideSupplement supplement={GUIDE_SUPPLEMENTS[slug]} />
+        )}
 
         {/* 광고 영역 (중간 슬롯) */}
         <AdSlot position="guide-middle" />

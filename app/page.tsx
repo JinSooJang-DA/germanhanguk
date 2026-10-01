@@ -6,7 +6,9 @@ import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import {
   CATEGORIES,
+  EDUCATION_SUB_CATEGORY_OPTIONS,
   getCategoryLabel,
+  getEducationSubCategoryLabel,
   shouldDisplayPostRegion,
 } from "@/lib/constants";
 import { formatDate } from "@/lib/date";
@@ -39,11 +41,16 @@ function HomeContent() {
   const [isHeroPaused, setIsHeroPaused] = useState(false);
 
   const selectedCategory = categoryParam || "all";
+  const educationSubCategoryParam = searchParams.get("sub_category");
+  const selectedEducationSubCategory = selectedCategory === "education" && EDUCATION_SUB_CATEGORY_OPTIONS.some((option) => option.value === educationSubCategoryParam)
+    ? educationSubCategoryParam
+    : null;
   const [searchKeyword, setSearchKeyword] = useState("");
+  const selectedFeedKey = selectedCategory + ":" + (selectedEducationSubCategory || "all");
   const [loadedCategory, setLoadedCategory] = useState<string | null>(null);
   const [postsError, setPostsError] = useState<string | null>(null);
   const [postsRetryKey, setPostsRetryKey] = useState(0);
-  const loading = loadedCategory !== selectedCategory;
+  const loading = loadedCategory !== selectedFeedKey;
 
   useEffect(function() {
     let isCurrent = true;
@@ -117,6 +124,10 @@ function HomeContent() {
         query = query.eq("category", selectedCategory);
       }
 
+      if (selectedCategory === "education" && selectedEducationSubCategory) {
+        query = query.eq("sub_category", selectedEducationSubCategory);
+      }
+
       if (searchKeyword.trim()) {
         const keyword = searchKeyword.trim();
         query = query.or("title.ilike.%" + keyword + "%,content.ilike.%" + keyword + "%");
@@ -167,7 +178,7 @@ function HomeContent() {
           setPostsError("게시글을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
         }
       } finally {
-        if (isCurrent) setLoadedCategory(selectedCategory);
+        if (isCurrent) setLoadedCategory(selectedFeedKey);
       }
     }
 
@@ -178,7 +189,7 @@ function HomeContent() {
     return function() {
       isCurrent = false;
     };
-  }, [postsRetryKey, searchKeyword, selectedCategory]);
+  }, [postsRetryKey, searchKeyword, selectedCategory, selectedEducationSubCategory, selectedFeedKey]);
 
   useEffect(function() {
     const desktopMotion = window.matchMedia("(min-width: 769px) and (prefers-reduced-motion: no-preference)");
@@ -554,6 +565,30 @@ function HomeContent() {
           </Link>
         </div>
 
+        {selectedCategory === "education" && (
+          <div className="education-community-topics" style={{ margin: "-4px 0 22px", padding: "16px 18px", border: "1px solid var(--gh-border)", background: "var(--gh-surface)", borderRadius: "8px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap", marginBottom: "10px" }}>
+              <div>
+                <strong style={{ color: "var(--gh-text)", fontSize: "14px" }}>🎓 유학생 코너</strong>
+                <span style={{ marginLeft: "8px", color: "var(--gh-text-subtle)", fontSize: "12px" }}>준비부터 학교생활·졸업까지, 같은 상황의 경험을 모아보세요.</span>
+              </div>
+              <Link href="/posts/new?category=education&sub_category=student-diary" style={{ color: "var(--gh-accent)", fontSize: "12px", fontWeight: 700, textDecoration: "none" }}>
+                유학생 일기 쓰기 →
+              </Link>
+            </div>
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              <Link href="/?section=community&category=education" style={{ padding: "6px 10px", borderRadius: "14px", textDecoration: "none", fontSize: "12px", background: !selectedEducationSubCategory ? "var(--gh-control-active)" : "var(--gh-surface-muted)", color: !selectedEducationSubCategory ? "var(--gh-control-active-text)" : "var(--gh-text-muted)" }}>전체</Link>
+              {EDUCATION_SUB_CATEGORY_OPTIONS.map(function(option) {
+                return (
+                  <Link key={option.value} href={"/?section=community&category=education&sub_category=" + option.value} style={{ padding: "6px 10px", borderRadius: "14px", textDecoration: "none", fontSize: "12px", background: selectedEducationSubCategory === option.value ? "var(--gh-control-active)" : "var(--gh-surface-muted)", color: selectedEducationSubCategory === option.value ? "var(--gh-control-active-text)" : "var(--gh-text-muted)" }}>
+                    {option.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <p style={{ textAlign: "center", padding: "40px 0", color: "#64748b" }}>게시글을 불러오는 중입니다...</p>
         ) : postsError ? (
@@ -597,7 +632,7 @@ function HomeContent() {
                   return (
                     <tr key={post.id} style={{ borderBottom: "1px solid var(--gh-border)" }}>
                       <td className="main-post-category" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
-                        {getCategoryLabel(post.category, "ko")}
+                        {post.category === "education" ? getEducationSubCategoryLabel(post.sub_category) : getCategoryLabel(post.category, "ko")}
                       </td>
                       <td className="main-post-title" style={{ padding: "14px" }}>
                         <Link href={"/posts/" + post.id} style={{ textDecoration: "none", color: "var(--gh-text)", fontWeight: "600" }}>

@@ -101,8 +101,8 @@ export default function EditPostPage({
         setStoredImages(editablePost.storedImages);
         setCategory(post.category);
         setRegion(post.region || "");
-        setSubCategory(post.sub_category || "visa");
-        setTargetField(post.target_field || "engineering");
+        setSubCategory(post.sub_category || "study-prep");
+        setTargetField(post.target_field || "general");
         setLoading(false);
       } catch (err) {
         console.error("Post edit load error:", err);

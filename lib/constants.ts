@@ -35,13 +35,23 @@ export interface EducationPostOption {
 }
 
 export const EDUCATION_SUB_CATEGORY_OPTIONS: readonly EducationPostOption[] = [
+  { value: "study-prep", label: "독일 유학생 되기 / 유학 준비" },
+  { value: "admission", label: "입학 / 어학 / 지원서류" },
+  { value: "student-diary", label: "유학생 일기 / 경험 공유" },
+  { value: "campus-life", label: "학교생활 / 수업 / 시험" },
   { value: "visa", label: "비자 / 외국인청" },
-  { value: "housing", label: "집구하기 / WG" },
-  { value: "insurance", label: "보험 / 폐쇄계좌" },
-  { value: "admission", label: "입학 / 어학 / 서류" },
+  { value: "housing", label: "집구하기 / WG / 기숙사" },
+  { value: "insurance", label: "보험 / 재정증명 / 생활비" },
+  { value: "student-work", label: "알바 / Werkstudent / 인턴" },
+  { value: "graduation-career", label: "졸업 / 취업 / 진로" },
 ] as const;
 
+export function getEducationSubCategoryLabel(value: string | null | undefined): string {
+  if (!value) return "유학·교육";
+  return EDUCATION_SUB_CATEGORY_OPTIONS.find((option) => option.value === value)?.label || "유학·교육";
+}
 export const EDUCATION_TARGET_FIELD_OPTIONS: readonly EducationPostOption[] = [
+  { value: "general", label: "전공 공통 / 미정" },
   { value: "music", label: "음대 / 음악" },
   { value: "art", label: "미대 / 미술·디자인" },
   { value: "engineering", label: "공대 / IT / 과학" },
