@@ -441,7 +441,7 @@ function HomeContent() {
         {selectedCategory === "all" && trendingPosts.length > 0 && (
           <div className="community-trending" style={{ marginBottom: "40px", background: "var(--gh-surface-muted)", borderRadius: "12px", padding: "24px", border: "1px solid var(--gh-border)" }}>
             <h3 className="community-trending-title" style={{ fontSize: "16px", fontWeight: "bold", color: "var(--gh-text)", margin: "0 0 16px 0", display: "flex", alignItems: "center", gap: "6px" }}>
-              🔥 지금 가장 많이 읽은 인기 글
+              <span className="community-trending-flame">🔥</span> 지금 가장 많이 읽은 인기 글
             </h3>
             <div className="community-trending-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
               {trendingPosts.map(function(tp) {
@@ -468,7 +468,7 @@ function HomeContent() {
                     }}
                   >
                     <div>
-                      <span style={{ fontSize: "11px", color: "#2563eb", fontWeight: "bold", textTransform: "uppercase" }}>
+                      <span className="community-category-accent" style={{ fontSize: "11px", color: "var(--gh-accent)", fontWeight: "bold", textTransform: "uppercase" }}>
                         {getCategoryLabel(tp.category, "ko")}
                       </span>
                       <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: "4px 0 8px 0", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", lineHeight: "1.4" }}>
@@ -476,10 +476,10 @@ function HomeContent() {
                       </h4>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "var(--gh-text-subtle)" }}>
-                      <span>👁️ {tp.views || 0}</span>
+                      <span><span className="community-metric-emoji">👁️</span> {tp.views || 0}</span>
                       <div style={{ display: "flex", gap: "8px" }}>
-                        {commentCount > 0 && <span>💬 {commentCount}</span>}
-                        {likeCount > 0 && <span>❤️ {likeCount}</span>}
+                        {commentCount > 0 && <span><span className="community-metric-emoji">💬</span> {commentCount}</span>}
+                        {likeCount > 0 && <span><span className="community-metric-emoji">♥</span> {likeCount}</span>}
                       </div>
                     </div>
                   </Link>
@@ -604,7 +604,7 @@ function HomeContent() {
                           {post.title}
                         </Link>
                         {commentsCount > 0 && (
-                          <span style={{ fontSize: "13px", color: "#ef4444", fontWeight: "bold", marginLeft: "6px" }}>
+                          <span className="community-comment-count" style={{ fontSize: "13px", color: "var(--gh-alert, #a86f68)", fontWeight: "bold", marginLeft: "6px" }}>
                             [{commentsCount}]
                           </span>
                         )}

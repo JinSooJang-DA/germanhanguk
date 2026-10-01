@@ -639,13 +639,13 @@ export default function PostDetailClient({
             transition: "all 0.2s",
           }}
         >
-          <span>{isLiked ? "❤️" : "🤍"}</span>
+          <span className="gh-like-icon">{isLiked ? "♥" : "♡"}</span>
           <span>좋아요 {likesCount}</span>
         </button>
       </div>
 
       {/* 댓글 섹션 */}
-      <div style={{ marginTop: "60px", paddingTop: "30px", borderTop: "1px solid #eee" }}>
+      <div style={{ marginTop: "60px", paddingTop: "30px", borderTop: "1px solid var(--gh-border)" }}>
         <h3>댓글 ({comments.reduce(function(acc, c) { return acc + 1 + (c.replies?.length || 0); }, 0)})</h3>
 
         <form onSubmit={handleCommentSubmit} style={{ marginTop: "20px", marginBottom: "30px" }} noValidate>
@@ -812,7 +812,7 @@ export default function PostDetailClient({
                                 style={{
                                   background: "none",
                                   border: "none",
-                                  color: "#2563eb",
+                                  color: "var(--gh-accent)",
                                   fontSize: "12px",
                                   cursor: "pointer",
                                   padding: 0,
@@ -825,7 +825,7 @@ export default function PostDetailClient({
                                 style={{
                                   background: "none",
                                   border: "none",
-                                  color: "#e53e3e",
+                                  color: "var(--gh-alert, #a86f68)",
                                   fontSize: "12px",
                                   cursor: "pointer",
                                   padding: 0,
@@ -864,7 +864,7 @@ export default function PostDetailClient({
                               disabled={updatingComment}
                               style={{
                                 padding: "4px 10px",
-                                background: "#94a3b8",
+                                background: "var(--gh-surface-muted)",
                                 color: "#fff",
                                 border: "none",
                                 borderRadius: "4px",
@@ -879,7 +879,7 @@ export default function PostDetailClient({
                               disabled={updatingComment}
                               style={{
                                 padding: "4px 10px",
-                                background: "#2563eb",
+                                background: "var(--gh-accent)",
                                 color: "#fff",
                                 border: "none",
                                 borderRadius: "4px",
@@ -1007,13 +1007,13 @@ export default function PostDetailClient({
                                     <div style={{ display: "flex", gap: "8px" }}>
                                       <button
                                         onClick={handleStartEditComment.bind(null, reply)}
-                                        style={{ background: "none", border: "none", color: "#2563eb", fontSize: "11px", cursor: "pointer", padding: 0 }}
+                                        style={{ background: "none", border: "none", color: "var(--gh-accent)", fontSize: "11px", cursor: "pointer", padding: 0 }}
                                       >
                                         수정
                                       </button>
                                       <button
                                         onClick={handleDeleteComment.bind(null, reply.id)}
-                                        style={{ background: "none", border: "none", color: "#e53e3e", fontSize: "11px", cursor: "pointer", padding: 0 }}
+                                        style={{ background: "none", border: "none", color: "var(--gh-alert, #a86f68)", fontSize: "11px", cursor: "pointer", padding: 0 }}
                                       >
                                         삭제
                                       </button>
@@ -1043,13 +1043,13 @@ export default function PostDetailClient({
                                   <div style={{ display: "flex", justifyContent: "flex-end", gap: "6px", marginTop: "4px" }}>
                                     <button
                                       onClick={handleCancelEditComment}
-                                      style={{ padding: "2px 8px", background: "#cbd5e1", color: "#334155", border: "none", borderRadius: "4px", fontSize: "11px", cursor: "pointer" }}
+                                      style={{ padding: "2px 8px", background: "var(--gh-surface-muted)", color: "var(--gh-text)", border: "none", borderRadius: "4px", fontSize: "11px", cursor: "pointer" }}
                                     >
                                       취소
                                     </button>
                                     <button
                                       onClick={handleSaveEditComment.bind(null, reply.id)}
-                                      style={{ padding: "2px 8px", background: "#2563eb", color: "#fff", border: "none", borderRadius: "4px", fontSize: "11px", cursor: "pointer" }}
+                                      style={{ padding: "2px 8px", background: "var(--gh-accent)", color: "#fff", border: "none", borderRadius: "4px", fontSize: "11px", cursor: "pointer" }}
                                     >
                                       저장
                                     </button>
