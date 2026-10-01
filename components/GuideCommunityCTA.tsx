@@ -16,8 +16,8 @@ export default function GuideCommunityCTA({
       style={{
         margin: "50px 0 30px 0",
         padding: "30px 24px",
-        background: "var(--gh-cta-surface)",
-        border: "1px solid var(--gh-cta-border)",
+        background: "var(--gh-guide-cta-surface)",
+        border: "1px solid var(--gh-guide-cta-border)",
         borderRadius: "12px",
         boxSizing: "border-box",
       }}
@@ -26,7 +26,7 @@ export default function GuideCommunityCTA({
         style={{
           margin: "0 0 10px 0",
           fontSize: "18px",
-          color: "var(--gh-cta-text)",
+          color: "var(--gh-guide-cta-heading)",
           fontWeight: "bold",
         }}
       >
@@ -36,7 +36,7 @@ export default function GuideCommunityCTA({
         style={{
           margin: "0 0 20px 0",
           fontSize: "14px",
-          color: "var(--gh-cta-muted)",
+          color: "var(--gh-guide-cta-body)",
           lineHeight: "1.6",
         }}
       >
@@ -49,14 +49,14 @@ export default function GuideCommunityCTA({
           <button
             style={{
               padding: "10px 20px",
-              background: "var(--gh-cta-primary)",
-              color: "var(--gh-control-active-text)",
+              background: "var(--gh-guide-cta-primary-bg)",
+              color: "var(--gh-guide-cta-primary-text)",
               border: "none",
               borderRadius: "6px",
               fontWeight: "bold",
               fontSize: "14px",
               cursor: "pointer",
-              boxShadow: "0 2px 4px rgba(29, 78, 216, 0.15)",
+              boxShadow: "var(--gh-guide-cta-primary-shadow)",
             }}
           >
             🙋‍♀️ 커뮤니티에 질문 글 올리기
@@ -67,9 +67,9 @@ export default function GuideCommunityCTA({
           <button
             style={{
               padding: "10px 20px",
-              background: "var(--gh-surface)",
-              color: "var(--gh-accent)",
-              border: "1px solid var(--gh-cta-border)",
+              background: "var(--gh-guide-cta-secondary-bg)",
+              color: "var(--gh-guide-cta-secondary-text)",
+              border: "1px solid var(--gh-guide-cta-border)",
               borderRadius: "6px",
               fontWeight: "bold",
               fontSize: "14px",

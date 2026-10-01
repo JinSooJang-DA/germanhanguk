@@ -144,6 +144,7 @@ export default function AuthPage() {
 
           <button
             type="button"
+            className="auth-primary-action"
             onClick={() => {
               setIsEmailConfirmationPending(false);
               setIsSignup(false);
@@ -253,7 +254,7 @@ export default function AuthPage() {
             </label>
           )}
 
-          <button type="submit" disabled={loading}>
+          <button className="auth-primary-action" type="submit" disabled={loading}>
             {loading ? "처리 중..." : isSignup ? "회원가입" : "로그인"}
           </button>
         </form>

@@ -63,7 +63,7 @@ export default async function EducationHubPage() {
           const isPublished = !!matchedDb;
 
           return (
-            <div key={i} style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", boxSizing: "border-box" }}>
+            <div key={i} style={{ background: "var(--gh-card-surface)", border: "2px solid var(--gh-card-border)", borderRadius: "0", boxShadow: "var(--gh-card-shadow)", padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", boxSizing: "border-box" }}>
               <div style={{ flex: "1 1 300px", minWidth: "260px" }}>
                 <h3 style={{ fontSize: "15px", fontWeight: "bold", margin: "0 0 6px 0", color: isPublished ? "#0f172a" : "#64748b", wordBreak: "keep-all" }}>
                   {isPublished ? matchedDb.title : topic.title}
@@ -90,7 +90,7 @@ export default async function EducationHubPage() {
   }
 
   return (
-    <main style={{ minHeight: "80vh", padding: "40px 0 80px", background: "#f8fafc" }}>
+    <main style={{ minHeight: "80vh", padding: "40px 0 80px", background: "var(--gh-page-bg)" }}>
       <div className="wrapper" style={{ maxWidth: "800px", margin: "0 auto", padding: "0 20px" }}>
         <div style={{ marginBottom: "20px", fontSize: "14px" }}>
           <Link href="/guide" style={{ textDecoration: "none", color: "#64748b" }}>생활정보 가이드</Link>

@@ -36,5 +36,11 @@ export interface GeneratedArticleDraft {
   summary: string;
   content: string;
   category: ArticleDraftCategory;
-  sourceUrls: Array<{ title: string; url: string }>;
+  sourceUrls: Array<{
+    title: string;
+    url: string;
+    kind?: "article" | "image";
+    photographer?: string;
+    photographerUrl?: string;
+  }>;
 }

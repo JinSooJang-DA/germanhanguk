@@ -10,9 +10,10 @@ export default function GuideQuickSummary({
       style={{
         margin: "24px 0",
         padding: "18px 20px",
-        background: "#ffffff",
-        border: "1px solid #e2e8f0",
-        borderRadius: "12px",
+        background: "var(--gh-card-surface)",
+        border: "2px solid var(--gh-card-border)",
+        borderRadius: "0",
+        boxShadow: "var(--gh-card-shadow)",
       }}
     >
       <h2

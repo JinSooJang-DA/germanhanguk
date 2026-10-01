@@ -47,9 +47,10 @@ export default function GuideAudienceCards({
               flexDirection: "column",
               padding: "14px",
               minHeight: "132px",
-              background: "#ffffff",
-              border: "1px solid #e2e8f0",
-              borderRadius: "10px",
+              background: "var(--gh-card-surface)",
+              border: "2px solid var(--gh-card-border)",
+              borderRadius: "0",
+              boxShadow: "var(--gh-card-shadow)",
               textDecoration: "none",
               color: "inherit",
             }}

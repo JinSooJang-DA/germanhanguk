@@ -6,7 +6,7 @@ import Script from "next/script";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
-const themeInitScript = `(()=>{try{const key='germanhanguk-theme';const saved=localStorage.getItem(key);const preference=saved==='light'||saved==='dark'||saved==='system'?saved:'system';const resolved=preference==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):preference;const root=document.documentElement;root.dataset.theme=resolved;root.dataset.themePreference=preference;root.style.colorScheme=resolved}catch(_){}})()`;
+const themeInitScript = `(()=>{try{const key='germanhanguk-theme';const saved=localStorage.getItem(key);const preference=saved==='light'||saved==='dark'||saved==='system'?saved:'system';const resolved=preference==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):preference;const root=document.documentElement;root.dataset.theme=resolved;root.dataset.themePreference=preference;root.style.colorScheme=resolved==='light'?'only light':'dark'}catch(_){}})()`;
 
 export const metadata: Metadata = {
   title: "German Hanguk",

@@ -61,7 +61,7 @@ export default async function CultureTravelHubPage() {
         const matchedDb = activeGuides.find((guide) => guide.slug === topic.slug);
         const isPublished = !!matchedDb;
 
-        return <div key={topic.slug} style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", boxSizing: "border-box" }}>
+        return <div key={topic.slug} style={{ background: "var(--gh-card-surface)", border: "2px solid var(--gh-card-border)", borderRadius: "0", boxShadow: "var(--gh-card-shadow)", padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", boxSizing: "border-box" }}>
           <div style={{ flex: "1 1 300px", minWidth: "260px" }}>
             <h3 style={{ fontSize: "15px", fontWeight: "bold", margin: "0 0 6px", color: isPublished ? "#0f172a" : "#64748b", wordBreak: "keep-all" }}>{isPublished ? matchedDb.title : topic.title}</h3>
             <p style={{ fontSize: "13px", color: "#64748b", lineHeight: "1.5", margin: "0 0 6px", wordBreak: "keep-all" }}>{isPublished ? matchedDb.description : topic.defaultDesc}</p>
@@ -80,7 +80,7 @@ export default async function CultureTravelHubPage() {
     ["🧭 지역·자연·문화여행", "Regionen & Kulturreisen", travelTopics],
   ] as const;
 
-  return <main style={{ minHeight: "80vh", padding: "40px 0 80px", background: "#f8fafc" }}><div className="wrapper" style={{ maxWidth: "800px", margin: "0 auto", padding: "0 20px" }}>
+  return <main style={{ minHeight: "80vh", padding: "40px 0 80px", background: "var(--gh-page-bg)" }}><div className="wrapper" style={{ maxWidth: "800px", margin: "0 auto", padding: "0 20px" }}>
     <div style={{ marginBottom: "20px", fontSize: "14px" }}><Link href="/guide" style={{ textDecoration: "none", color: "#64748b" }}>생활정보 가이드</Link><span style={{ color: "#94a3b8", margin: "0 8px" }}>&gt;</span><span style={{ color: "#0f172a", fontWeight: "bold" }}>문화·여행 (Kultur & Reisen)</span></div>
     <div style={{ marginBottom: "40px" }}><h1 style={{ fontSize: "clamp(22px, 5vw, 32px)", fontWeight: "bold", color: "#0f172a", margin: "0 0 12px", lineHeight: "1.3" }}><span style={{ display: "inline-block" }}>✈️ 한독 문화·여행 가이드</span>{" "}<span style={{ display: "inline-block" }}>Kultur & Reisen</span></h1><p style={{ fontSize: "15px", color: "#64748b", lineHeight: "1.6", margin: 0 }}>한국과 독일의 소통·관계·음식·계절문화를 이해하고, 두 나라의 지역과 자연·전통·도시문화를 고정관념 없이 직접 경험하는 방법을 확인하세요.</p></div>
     {sections.map(([title, subtitle, topics], index) => <section key={subtitle} style={{ marginBottom: index === sections.length - 1 ? 0 : "40px" }}><h2 style={{ fontSize: "20px", fontWeight: "bold", color: "#0f172a", borderBottom: "2px solid #0f172a", paddingBottom: "10px", marginBottom: "20px" }}><span style={{ display: "inline-block" }}>{title}</span>{" "}<span className="german-sub-title" style={{ fontWeight: "normal", color: "#64748b" }}>({subtitle})</span></h2>{renderTopicList(topics)}</section>)}

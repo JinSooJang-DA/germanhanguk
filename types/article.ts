@@ -1,6 +1,9 @@
 export interface ArticleSource {
   title: string;
   url: string;
+  kind?: "article" | "image";
+  photographer?: string;
+  photographerUrl?: string;
 }
 
 export interface Article {

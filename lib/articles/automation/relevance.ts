@@ -25,13 +25,31 @@ const POSITIVE_TOPIC_SIGNALS: TopicSignal[] = [
       "visum",
       "visa",
       "anmeldung",
+      "integrationskurs",
+      "sprachkurs",
+      "fachkräfteeinwanderung",
+      "fachkraefteeinwanderung",
+      "ausländerbehörde",
+      "auslaenderbehoerde",
+      "staatsangehörigkeit",
+      "staatsangehoerigkeit",
+      "anerkennung ausländischer",
     ],
   },
   {
     topic: "tax-work",
     strength: "strong",
     keywords: [
-      "steuer",
+      "einkommensteuer",
+      "lohnsteuer",
+      "energiesteuer",
+      "mehrwertsteuer",
+      "umsatzsteuer",
+      "steuererklärung",
+      "steuererklaerung",
+      "steuerfreibetrag",
+      "grundfreibetrag",
+      "pendlerpauschale",
       "mindestlohn",
       "arbeitsrecht",
       "arbeitszeit",
@@ -54,12 +72,19 @@ const POSITIVE_TOPIC_SIGNALS: TopicSignal[] = [
       "sozialversicherung",
       "rente",
       "rentner",
+      "beitragssatz",
+      "pflegegeld",
+      "e-rezept",
+      "elektronische patientenakte",
+      "apothekenversorgung",
+      "gesetzliche krankenversicherung",
+      "zuzahlung",
     ],
   },
   {
     topic: "family-support",
     strength: "strong",
-    keywords: ["kindergeld", "elterngeld", "kinderzuschlag", "familienleistung", "kita"],
+    keywords: ["kindergeld", "elterngeld", "kinderzuschlag", "familienleistung", "kita", "kinderbetreuung", "ganztag", "elternzeit", "mutterschutz"],
   },
   {
     topic: "housing-living-costs",
@@ -75,6 +100,11 @@ const POSITIVE_TOPIC_SIGNALS: TopicSignal[] = [
       "energiekosten",
       "strompreis",
       "gaspreis",
+      "mietvertrag",
+      "mieter",
+      "wohnraum",
+      "sozialer wohnungsbau",
+      "nebenkosten",
     ],
   },
   {
@@ -92,7 +122,7 @@ const POSITIVE_TOPIC_SIGNALS: TopicSignal[] = [
   {
     topic: "driving-license",
     strength: "strong",
-    keywords: ["führerschein", "fuehrerschein", "fahrerlaubnis"],
+    keywords: ["führerschein", "fuehrerschein", "fahrerlaubnis", "fahrzeugschein", "kfz-zulassung", "hauptuntersuchung"],
   },
   {
     topic: "transport-general",
@@ -110,7 +140,7 @@ const POSITIVE_TOPIC_SIGNALS: TopicSignal[] = [
   {
     topic: "education",
     strength: "strong",
-    keywords: ["universität", "universitaet", "hochschule", "studium", "bafög", "bafoeg", "student"],
+    keywords: ["universität", "universitaet", "hochschule", "studium", "bafög", "bafoeg", "student", "schule", "schulabschluss", "berufsabschluss", "anerkennung von abschlüssen", "anerkennung von abschluessen"],
   },
   {
     topic: "consumer-finance-infrastructure",
@@ -125,6 +155,13 @@ const POSITIVE_TOPIC_SIGNALS: TopicSignal[] = [
       "telekommunikation",
       "internetanschluss",
       "postdienst",
+      "verbraucherrecht",
+      "gewährleistung",
+      "gewaehrleistung",
+      "fluggast",
+      "inkasso",
+      "onlinekauf",
+      "vorsorgeregister",
     ],
   },
   {
@@ -148,7 +185,9 @@ const NEGATIVE_SIGNALS: TopicSignal[] = [
 ];
 
 function normalizedCandidateText(candidate: ArticleCandidate): string {
-  return [candidate.title, candidate.summary, candidate.sourceName]
+  // Do not include sourceName: provider names such as "Verbraucherschutz" or
+  // "Migration" would otherwise make every item from that source look relevant.
+  return [candidate.title, candidate.summary]
     .filter(Boolean)
     .join(" ")
     .toLocaleLowerCase("de-DE");
@@ -164,6 +203,15 @@ function matchSignals(text: string, signals: TopicSignal[]): TopicSignal[] {
  */
 export function classifyArticleRelevance(candidate: ArticleCandidate): ArticleRelevanceResult {
   const text = normalizedCandidateText(candidate);
+  const bmfProfessionalOnly = candidate.sourceProvider === "bmf-tax" && [
+    "umsatzsteuer-umrechnungskurse", "körperschaftsteuer-handbuch", "koerperschaftsteuer-handbuch",
+    "ao-handbuch", "kassenmäßige steuereinnahmen", "kassenmaessige steuereinnahmen",
+    "bfh-entscheidungen", "bmf-schreiben", "pensionsrückstellungen", "pensionsrueckstellungen",
+    "netzwerk empirische steuerforschung",
+  ].some((keyword) => text.includes(keyword));
+  if (bmfProfessionalOnly) {
+    return { classification: "irrelevant", matchedTopics: ["tax-professional-material"], reasons: ["negative:tax-professional-material"] };
+  }
   const positiveSignals = matchSignals(text, POSITIVE_TOPIC_SIGNALS);
   const negativeSignals = matchSignals(text, NEGATIVE_SIGNALS);
   const strongPositiveSignals = positiveSignals.filter((signal) => signal.strength === "strong");

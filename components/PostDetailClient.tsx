@@ -570,6 +570,7 @@ export default function PostDetailClient({
       {/* 좋아요 버튼 영역 */}
       <div style={{ display: "flex", justifyContent: "center", margin: "40px 0" }}>
         <button
+          className={"gh-cta-action gh-like-action" + (isLiked ? " is-active" : "")}
           onClick={handleLikeToggle}
           style={{
             display: "flex",

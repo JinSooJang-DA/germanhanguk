@@ -10,22 +10,26 @@ import ThemeSelector from "@/components/ThemeSelector";
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
+  const isCommunityRoute = pathname.startsWith("/posts");
   const [user, setUser] = useState<User | null>(null);
   const [displayName, setDisplayName] = useState<string>("");
+  const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState<number>(0);
 
   // 모바일 메뉴 서랍 열림 상태
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [portalMenuOpen, setPortalMenuOpen] = useState<"info" | "community" | null>(null);
 
   async function loadUserProfile(userId: string, defaultEmail?: string) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("display_name")
+      .select("display_name, avatar_url")
       .eq("id", userId)
       .single();
 
+    setAvatarUrl(profile?.avatar_url || "");
     if (profile?.display_name) {
       setDisplayName(profile.display_name);
     } else if (defaultEmail) {
@@ -86,6 +90,7 @@ export default function Header() {
         loadUnreadNotificationsCount(currentUser.id);
       } else {
         setDisplayName("");
+        setAvatarUrl("");
         setUnreadCount(0);
         setUnreadNotificationsCount(0);
       }
@@ -118,16 +123,41 @@ export default function Header() {
     };
   }, []);
 
-  // 모바일 메뉴 서랍 ESC 키로 닫기 핸들러 연동 (Strict Mode 정리 대응)
+  // 열린 메뉴는 ESC 또는 메뉴 바깥 영역을 클릭하면 닫는다.
   useEffect(function() {
     const handleKeyDown = function(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setMenuOpen(false);
+        setPortalMenuOpen(null);
+        setProfileMenuOpen(false);
       }
     };
+    const handlePointerDown = function(e: PointerEvent) {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      if (!target.closest(".portal-nav")) setPortalMenuOpen(null);
+      if (!target.closest(".profile-menu-shell")) setProfileMenuOpen(false);
+    };
     window.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("pointerdown", handlePointerDown);
     return function() {
       window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, []);
+
+  // 반응형 모드에서 모바일 메뉴를 연 채 데스크톱 폭으로 전환하면
+  // 남아 있는 백드롭/드로어가 화면을 가리지 않도록 자동으로 닫는다.
+  useEffect(function() {
+    const handleResize = function() {
+      if (window.innerWidth >= 1180) {
+        setMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return function() {
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 
@@ -135,6 +165,7 @@ export default function Header() {
     await supabase.auth.signOut();
     setUser(null);
     setDisplayName("");
+    setAvatarUrl("");
     setUnreadCount(0);
     setUnreadNotificationsCount(0);
     setProfileMenuOpen(false);
@@ -154,63 +185,59 @@ export default function Header() {
             <h1 style={{ fontSize: "20px", fontWeight: "bold", margin: 0 }}>German Hanguk</h1>
           </Link>
 
-          <nav className="desktop-nav" style={{ display: "flex", gap: "24px", alignItems: "center", marginRight: "auto" }}>
-            <Link href="/?category=community" style={{ textDecoration: "none", color: "#475569", fontWeight: "500" }}>커뮤니티</Link>
-            <Link href="/?category=education" style={{ textDecoration: "none", color: "#475569", fontWeight: "500" }}>유학·교육</Link>
-            <Link href="/?category=life" style={{ textDecoration: "none", color: "#475569", fontWeight: "500" }}>생활정보</Link>
-            <Link href="/?category=market" style={{ textDecoration: "none", color: "#475569", fontWeight: "500" }}>중고장터</Link>
-            <Link href="/?category=jobs" style={{ textDecoration: "none", color: "#475569", fontWeight: "500" }}>구인구직</Link>
-            <Link
-              href="/articles"
-              style={{
-                textDecoration: "none",
-                color: pathname.startsWith("/articles") ? "#0f172a" : "#475569",
-                fontWeight: pathname.startsWith("/articles") ? "700" : "500",
-              }}
-            >
-              독일 소식
-            </Link>
-            <Link
-              href="/guide"
-              style={{
-                textDecoration: "none",
-                color: pathname.startsWith("/guide") ? "#0f172a" : "#475569",
-                fontWeight: pathname.startsWith("/guide") ? "700" : "500",
-              }}
-            >
-              생활 가이드
-            </Link>
-            {/* 임시 비활성화: K-Spot 지도는 서비스 활성화 시 복구 예정 */}
-            {false && (
-              <Link
-                href="/map"
-                style={{
-                  textDecoration: "none",
-                  color: pathname === "/map" ? "#0f172a" : "#475569",
-                  fontWeight: pathname === "/map" ? "700" : "500",
-                }}
-              >
-                K-Spot 지도
-              </Link>
-            )}
+          <nav className="desktop-nav portal-nav" aria-label="주요 메뉴">
+            <details className="portal-menu" open={portalMenuOpen === "info"}>
+              <summary
+                onClick={function(e) { e.preventDefault(); setPortalMenuOpen(portalMenuOpen === "info" ? null : "info"); }}
+                className={portalMenuOpen ? (portalMenuOpen === "info" ? "is-active" : "") : ((!isCommunityRoute && pathname === "/") || pathname.startsWith("/articles") || pathname.startsWith("/guide") || pathname.startsWith("/messe") ? "is-active" : "")}
+              >정보</summary>
+              <div className="portal-mega-menu portal-info-menu" onClick={function() { setPortalMenuOpen(null); }}>
+                <div className="portal-menu-column">
+                  <span className="portal-menu-label">뉴스 · 가이드</span>
+                  <Link href="/articles"><strong>독일 소식</strong><small>오늘 알아야 할 독일 주요 변화</small></Link>
+                  <Link href="/guide"><strong>생활 가이드</strong><small>독일 생활 핵심 정보를 한곳에</small></Link>
+                  <Link href="/messe"><strong>독일 메세</strong><small>전시회·박람회 일정과 출장 정보</small></Link>
+                </div>
+                <div className="portal-menu-column portal-topic-grid">
+                  <span className="portal-menu-label">주제별 정보</span>
+                  <Link href="/guide/visa-residence">비자·체류</Link>
+                  <Link href="/guide/taxes">세금</Link>
+                  <Link href="/guide/jobs">노동·취업</Link>
+                  <Link href="/guide/insurance">건강·보험</Link>
+                  <Link href="/guide/housing">주거</Link>
+                  <Link href="/guide/education">가족·교육</Link>
+                  <Link href="/guide/driving">교통·운전</Link>
+                  <Link href="/guide/german-life">독일 생활</Link>
+                </div>
+              </div>
+            </details>
+            <details className="portal-menu" open={portalMenuOpen === "community"}>
+              <summary
+                onClick={function(e) { e.preventDefault(); setPortalMenuOpen(portalMenuOpen === "community" ? null : "community"); }}
+                className={portalMenuOpen ? (portalMenuOpen === "community" ? "is-active" : "") : (isCommunityRoute ? "is-active" : "")}
+              >커뮤니티</summary>
+              <div className="portal-mega-menu portal-community-menu" onClick={function() { setPortalMenuOpen(null); }}>
+                <div className="portal-menu-column">
+                  <span className="portal-menu-label">함께 나누는 이야기</span>
+                  <Link href="/?section=community"><strong>커뮤니티 홈</strong><small>최신 글과 인기 글을 한눈에</small></Link>
+                  <Link href="/?section=community&category=community"><strong>자유 커뮤니티</strong><small>독일 생활 이야기와 질문</small></Link>
+                  <Link href="/?section=community&category=education">유학·교육</Link>
+                  <Link href="/?section=community&category=life">생활정보</Link>
+                  <Link href="/?section=community&category=market">중고장터</Link>
+                  <Link href="/?section=community&category=jobs">구인구직</Link>
+                </div>
+              </div>
+            </details>
           </nav>
-
           {user ? (
-            <div className="desktop-user-actions" style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-              {/* 알림 배지 */}
+            <div className="desktop-user-actions header-account-zone" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              {/* 레퍼런스처럼 얇은 프레임 안에 아이콘만 두는 알림 컨트롤 */}
               <Link
                 href="/notifications"
-                style={{
-                  textDecoration: "none",
-                  color: pathname === "/notifications" ? "#0f172a" : "#475569",
-                  fontWeight: pathname === "/notifications" ? "700" : "500",
-                  fontSize: "14px",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "4px",
-                }}
+                className={"header-square-action" + (pathname === "/notifications" ? " is-active" : "")}
+                aria-label="알림"
               >
-                🔔 알림
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></svg>
                 {unreadNotificationsCount > 0 && (
                   <span
                     style={{
@@ -233,20 +260,13 @@ export default function Header() {
                 )}
               </Link>
 
-              {/* 쪽지 배지 */}
+              {/* 쪽지도 동일한 정사각형 컨트롤 */}
               <Link
                 href="/messages"
-                style={{
-                  textDecoration: "none",
-                  color: pathname.startsWith("/messages") ? "#0f172a" : "#475569",
-                  fontWeight: pathname.startsWith("/messages") ? "700" : "500",
-                  fontSize: "14px",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "4px",
-                }}
+                className={"header-square-action" + (pathname.startsWith("/messages") ? " is-active" : "")}
+                aria-label="쪽지"
               >
-                ✉️ 쪽지
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3zM3 6l9 7 9-7" /></svg>
                 {unreadCount > 0 && (
                   <span
                     style={{
@@ -269,24 +289,22 @@ export default function Header() {
                 )}
               </Link>
 
-              <div style={{ position: "relative" }}>
+              <div className="profile-menu-shell" style={{ position: "relative" }}>
                 <button
                   type="button"
+                  className="header-profile-trigger"
                   onClick={function() { setProfileMenuOpen(!profileMenuOpen); }}
                   aria-haspopup="menu"
                   aria-expanded={profileMenuOpen}
-                  style={{
-                    padding: "6px 0",
-                    cursor: "pointer",
-                    border: "none",
-                    background: "transparent",
-                    color: "var(--gh-text)",
-                    fontWeight: "bold",
-                    fontSize: "14px",
-                    whiteSpace: "nowrap",
-                  }}
                 >
-                  {displayName || user.email?.split("@")[0]}님
+                  <span className="header-profile-name">{displayName || user.email?.split("@")[0]}님</span>
+                  <span className="header-avatar" aria-hidden="true">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="" />
+                    ) : (
+                      <span>{(displayName || user.email?.split("@")[0] || "U").slice(0, 1).toUpperCase()}</span>
+                    )}
+                  </span>
                 </button>
 
                 {profileMenuOpen && (
@@ -456,6 +474,7 @@ export default function Header() {
 
             {/* 햄버거 메뉴 트리거 */}
             <button
+              className="mobile-menu-trigger"
               onClick={function() { setMenuOpen(!menuOpen); }}
               aria-label="전체 메뉴 열기"
               aria-expanded={menuOpen}
@@ -497,6 +516,7 @@ export default function Header() {
 
             {/* 본문 서랍 (Right-to-Left 슬라이드 구조) */}
             <div
+              className="mobile-menu-drawer"
               style={{
                 position: "fixed",
                 top: 0,
@@ -538,18 +558,32 @@ export default function Header() {
               </div>
 
               {/* 드로어 내비게이션 리스트 (최소 44px 높이 터치 타겟) */}
-              <nav style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1 }}>
-                <Link href="/?category=community" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>커뮤니티</Link>
-                <Link href="/?category=education" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>유학·교육</Link>
-                <Link href="/?category=life" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>생활정보</Link>
-                <Link href="/?category=market" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>중고장터</Link>
-                <Link href="/?category=jobs" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>구인구직</Link>
-                <Link href="/articles" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>📰 독일 소식</Link>
-                <Link href="/guide" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-accent)", fontWeight: "bold", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>📘 생활 가이드</Link>
-                {/* 임시 비활성화: K-Spot 지도는 서비스 활성화 시 복구 예정 */}
-                {false && (
-                  <Link href="/map" onClick={function() { setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "var(--gh-text)", fontWeight: "500", minHeight: "44px", borderBottom: "1px solid var(--gh-border)", fontSize: "14px" }}>📍 K-Spot 지도</Link>
-                )}
+              <nav className="mobile-portal-nav" style={{ display: "flex", flexDirection: "column", gap: "18px", flex: 1 }}>
+                <section className="mobile-menu-section">
+                  <div className="mobile-menu-heading"><span>정보</span><small>뉴스와 독일 생활 가이드</small></div>
+                  <Link href="/articles" onClick={function() { setMenuOpen(false); }}>📰 독일 소식</Link>
+                  <Link href="/guide" onClick={function() { setMenuOpen(false); }}>📘 생활 가이드</Link>
+                  <Link href="/messe" onClick={function() { setMenuOpen(false); }}>🏢 독일 메세</Link>
+                  <div className="mobile-topic-links">
+                    <Link href="/guide/visa-residence" onClick={function() { setMenuOpen(false); }}>비자·체류</Link>
+                    <Link href="/guide/taxes" onClick={function() { setMenuOpen(false); }}>세금</Link>
+                    <Link href="/guide/jobs" onClick={function() { setMenuOpen(false); }}>노동·취업</Link>
+                    <Link href="/guide/insurance" onClick={function() { setMenuOpen(false); }}>건강·보험</Link>
+                    <Link href="/guide/housing" onClick={function() { setMenuOpen(false); }}>주거</Link>
+                    <Link href="/guide/education" onClick={function() { setMenuOpen(false); }}>가족·교육</Link>
+                    <Link href="/guide/driving" onClick={function() { setMenuOpen(false); }}>교통·운전</Link>
+                    <Link href="/guide/german-life" onClick={function() { setMenuOpen(false); }}>독일 생활</Link>
+                  </div>
+                </section>
+                <section className="mobile-menu-section">
+                  <div className="mobile-menu-heading"><span>커뮤니티</span><small>교민들의 질문과 경험</small></div>
+                  <Link href="/?section=community" onClick={function() { setMenuOpen(false); }}>커뮤니티 홈</Link>
+                  <Link href="/?section=community&category=community" onClick={function() { setMenuOpen(false); }}>자유 커뮤니티</Link>
+                  <Link href="/?section=community&category=education" onClick={function() { setMenuOpen(false); }}>유학·교육</Link>
+                  <Link href="/?section=community&category=life" onClick={function() { setMenuOpen(false); }}>생활정보</Link>
+                  <Link href="/?section=community&category=market" onClick={function() { setMenuOpen(false); }}>중고장터</Link>
+                  <Link href="/?section=community&category=jobs" onClick={function() { setMenuOpen(false); }}>구인구직</Link>
+                </section>
               </nav>
 
               <ThemeSelector mobile />

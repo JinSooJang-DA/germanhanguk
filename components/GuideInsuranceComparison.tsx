@@ -56,9 +56,10 @@ export default function GuideInsuranceComparison() {
       <div
         style={{
           overflow: "hidden",
-          background: "#ffffff",
-          border: "1px solid #e2e8f0",
-          borderRadius: "12px",
+          background: "var(--gh-card-surface)",
+          border: "2px solid var(--gh-card-border)",
+          borderRadius: "0",
+          boxShadow: "var(--gh-card-shadow)",
         }}
       >
         <div

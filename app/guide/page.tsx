@@ -81,8 +81,8 @@ export default function GuideLandingPage() {
                       {isReady && (
                         <span style={{
                           fontSize: "10px",
-                          color: "var(--gh-cta-text)",
-                          background: "var(--gh-cta-surface)",
+                          color: "var(--gh-guide-cta-heading)",
+                          background: "var(--gh-guide-cta-surface)",
                           padding: "2px 8px",
                           borderRadius: "10px",
                           fontWeight: "bold"

@@ -108,6 +108,7 @@ export default function ProfilePage() {
   const [bio, setBio] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [myPosts, setMyPosts] = useState<Post[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const [message, setMessage] = useState("");
   const [passwordMessage, setPasswordMessage] = useState("");
@@ -186,7 +187,7 @@ export default function ProfilePage() {
         // 1. profiles 테이블에서 정보 가져오기
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
-          .select("display_name, avatar_url, region, bio")
+          .select("display_name, avatar_url, region, bio, role")
           .eq("id", user.id)
           .single();
 
@@ -205,6 +206,7 @@ export default function ProfilePage() {
             setAvatarUrl(profile.avatar_url || "");
             setRegion(profile.region || "");
             setBio(profile.bio || "");
+            setIsAdmin(profile.role === "admin");
           } else {
             setDisplayName(user.email?.split("@")[0] || "");
           }
@@ -456,7 +458,7 @@ export default function ProfilePage() {
                 <span style={{ color: "#fff", fontSize: "28px" }}>👤</span>
               )}
             </div>
-            <label style={{ fontSize: "12px", background: "#2563eb", color: "#fff", padding: "6px 12px", borderRadius: "4px", cursor: "pointer" }}>
+            <label style={{ fontSize: "12px", background: "#4f9fa2", color: "#fff", padding: "6px 12px", borderRadius: "4px", cursor: "pointer" }}>
               {uploading ? "업로드 중..." : "사진 변경"}
               <input type="file" accept="image/*" onChange={handleAvatarUpload} style={{ display: "none" }} disabled={uploading} />
             </label>
@@ -467,11 +469,35 @@ export default function ProfilePage() {
               로그인 계정 <span style={{ fontSize: "12px", color: "var(--gh-text-subtle)" }}>(이메일 변경 불가)</span>
             </p>
             <p style={{ margin: "0 0 15px 0", fontSize: "16px", fontWeight: "bold" }}>{email}</p>
-            <p style={{ margin: 0, fontSize: "13px", color: "var(--gh-text-muted)" }}>
-              독일 거주 한인 커뮤니티 German Hanguk에서 활동 중이신 회원님입니다.
-            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+              <p style={{ margin: 0, fontSize: "13px", color: "var(--gh-text-muted)" }}>
+                {isAdmin
+                  ? "German Hanguk의 기사와 커뮤니티를 관리하는 관리자 계정입니다."
+                  : "독일 거주 한인 커뮤니티 German Hanguk에서 활동 중이신 회원님입니다."}
+              </p>
+              {isAdmin && (
+                <span style={{ fontSize: "11px", fontWeight: 800, color: "#fff", background: "#4f9fa2", padding: "3px 8px", borderRadius: "999px" }}>
+                  ADMIN
+                </span>
+              )}
+            </div>
           </div>
         </div>
+
+        {isAdmin && (
+          <section aria-label="관리자 바로가기" style={{ marginBottom: "30px", padding: "22px", border: "1px solid #9bc8c7", borderRadius: "10px", background: "color-mix(in srgb, #4f9fa2 8%, var(--gh-surface))" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: "18px", alignItems: "center", flexWrap: "wrap" }}>
+              <div>
+                <p style={{ margin: "0 0 5px", fontSize: "12px", fontWeight: 800, color: "#4f9fa2", letterSpacing: "0.04em" }}>ADMIN WORKSPACE</p>
+                <h2 style={{ margin: "0 0 6px", fontSize: "20px" }}>관리자 작업실</h2>
+                <p style={{ margin: 0, fontSize: "13px", color: "var(--gh-text-muted)" }}>Gemini가 준비한 기사 초안을 검토하고 수정·승인·공개할 수 있습니다.</p>
+              </div>
+              <Link href="/admin/articles" style={{ display: "inline-flex", alignItems: "center", gap: "7px", padding: "11px 16px", borderRadius: "7px", background: "#4f9fa2", color: "#fff", textDecoration: "none", fontWeight: 800 }}>
+                기사 검토함 바로가기 →
+              </Link>
+            </div>
+          </section>
+        )}
 
         {/* 2. 기본 정보 (닉네임, 거주지역, 자기소개) 수정 폼 */}
         <form className="post-form" onSubmit={handleProfileSubmit} style={{ marginBottom: "40px" }}>

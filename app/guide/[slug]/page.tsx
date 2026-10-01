@@ -265,12 +265,14 @@ export default async function GuideDetailPage({ params }: { params: Promise<{ sl
             style={{
               marginTop: "40px",
               padding: "20px 24px",
-              background: "var(--gh-surface-muted)",
-              borderRadius: "8px",
+              background: "var(--gh-guide-source-surface)",
+              border: "1px solid var(--gh-guide-source-border)",
+              borderRadius: "0",
+              boxShadow: "var(--gh-guide-source-shadow)",
               boxSizing: "border-box",
             }}
           >
-            <h3 style={{ fontSize: "15px", fontWeight: "bold", color: "var(--gh-text)", margin: "0 0 12px 0", display: "flex", alignItems: "center", gap: "6px" }}>
+            <h3 style={{ fontSize: "15px", fontWeight: "bold", color: "var(--gh-guide-source-text)", margin: "0 0 12px 0", display: "flex", alignItems: "center", gap: "6px" }}>
               🌐 공식 공공 출처 & 참고자료 (Authoritative Sources)
             </h3>
             <ul style={{ margin: 0, paddingLeft: "20px", fontSize: "14px", lineHeight: "1.6" }}>
@@ -281,7 +283,7 @@ export default async function GuideDetailPage({ params }: { params: Promise<{ sl
                       href={src.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ color: "var(--gh-accent)", textDecoration: "underline", fontWeight: "500" }}
+                      style={{ color: "var(--gh-guide-source-link)", textDecoration: "underline", fontWeight: "500" }}
                     >
                       {src.title}
                     </a>

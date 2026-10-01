@@ -126,9 +126,10 @@ export default async function VisaHubPage() {
             <div
               key={i}
               style={{
-                background: "#ffffff",
-                border: "1px solid #e2e8f0",
-                borderRadius: "8px",
+                background: "var(--gh-card-surface)",
+                border: "2px solid var(--gh-card-border)",
+                borderRadius: "0",
+                boxShadow: "var(--gh-card-shadow)",
                 padding: "16px 20px",
                 display: "flex",
                 justifyContent: "space-between",
@@ -168,7 +169,7 @@ export default async function VisaHubPage() {
   }
 
   return (
-    <main style={{ minHeight: "80vh", padding: "40px 0 80px", background: "#f8fafc" }}>
+    <main style={{ minHeight: "80vh", padding: "40px 0 80px", background: "var(--gh-page-bg)" }}>
       <div className="wrapper" style={{ maxWidth: "800px", margin: "0 auto", padding: "0 20px" }}>
 
         {/* 상단 브레드크럼 */}

@@ -27,7 +27,8 @@ type Post = BasePost & {
 
 function HomeContent() {
   const searchParams = useSearchParams();
-  const categoryParam = searchParams.get("category") || "all";
+  const categoryParam = searchParams.get("category");
+  const isCommunityView = searchParams.get("section") === "community" || categoryParam !== null;
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [trendingPosts, setTrendingPosts] = useState<Post[]>([]);
@@ -35,8 +36,8 @@ function HomeContent() {
   const [articlesError, setArticlesError] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const selectedCategory = categoryParam;
-  const [searchKeyword] = useState("");
+  const selectedCategory = categoryParam || "all";
+  const [searchKeyword, setSearchKeyword] = useState("");
   const [loadedCategory, setLoadedCategory] = useState<string | null>(null);
   const [postsError, setPostsError] = useState<string | null>(null);
   const [postsRetryKey, setPostsRetryKey] = useState(0);
@@ -199,18 +200,19 @@ function HomeContent() {
 
   return (
     <main className="main-page">
-      {selectedCategory === "all" && !articlesError && featuredArticles.length > 0 && (
-        <section style={{ maxWidth: "1200px", margin: "30px auto", padding: "0 20px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+      {!isCommunityView && !articlesError && featuredArticles.length > 0 && (
+        <section className="info-news-section" style={{ maxWidth: "1200px", margin: "30px auto", padding: "0 20px" }}>
+          <div className="info-section-heading" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
             <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "var(--gh-text)", margin: 0 }}>독일 주요 소식</h2>
-            <Link href="/articles" style={{ color: "var(--gh-text-muted)", fontSize: "14px", textDecoration: "none", fontWeight: "500" }}>
+            <Link href="/articles" style={{ color: "var(--gh-text-muted)", fontSize: "14px", textDecoration: "none", fontWeight: "500", borderRadius: "0" }}>
               전체 기사 보기 →
             </Link>
           </div>
           <div
+            className="info-hero"
             style={{
               position: "relative",
-              borderRadius: "12px",
+              borderRadius: "0",
               overflow: "hidden",
               background: "#0f172a",
               boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
@@ -260,6 +262,7 @@ function HomeContent() {
                       />
                     )}
                     <div
+                      className="info-hero-copy"
                       style={{
                         position: "absolute",
                         bottom: "50px",
@@ -287,6 +290,7 @@ function HomeContent() {
             {featuredArticles.length > 1 && (
               <>
                 <button
+                  className="info-hero-arrow info-hero-arrow-prev"
                   onClick={prevSlide}
                   style={{
                     position: "absolute",
@@ -310,6 +314,7 @@ function HomeContent() {
                   ❮
                 </button>
                 <button
+                  className="info-hero-arrow info-hero-arrow-next"
                   onClick={nextSlide}
                   style={{
                     position: "absolute",
@@ -368,7 +373,33 @@ function HomeContent() {
         </section>
       )}
 
-      <div className="wrapper" style={{ padding: "0 20px 60px 20px", maxWidth: "1200px", margin: "0 auto" }}>
+      {!isCommunityView && (
+        <section className="info-hub-section" style={{ maxWidth: "1200px", margin: "0 auto 44px", padding: "0 20px" }}>
+          <div className="info-hub-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "16px" }}>
+            <Link className="info-hub-card" href="/articles" style={{ textDecoration: "none", color: "var(--gh-text)", padding: "22px", border: "1px solid var(--gh-border)", borderRadius: "14px", background: "var(--gh-surface)" }}>
+              <div style={{ fontSize: "24px", marginBottom: "10px" }}>📰</div><strong style={{ fontSize: "17px" }}>독일 소식</strong><p style={{ margin: "7px 0 0", color: "var(--gh-text-muted)", fontSize: "13px", lineHeight: 1.6 }}>독일 생활에 직접 영향을 주는 주요 변화와 공식 발표</p>
+            </Link>
+            <Link className="info-hub-card" href="/guide" style={{ textDecoration: "none", color: "var(--gh-text)", padding: "22px", border: "1px solid var(--gh-border)", borderRadius: "14px", background: "var(--gh-surface)" }}>
+              <div style={{ fontSize: "24px", marginBottom: "10px" }}>📘</div><strong style={{ fontSize: "17px" }}>생활 가이드</strong><p style={{ margin: "7px 0 0", color: "var(--gh-text-muted)", fontSize: "13px", lineHeight: 1.6 }}>비자·세금·보험·주거·교육 등 독일 생활 핵심 정보</p>
+            </Link>
+            <Link className="info-hub-card" href="/messe" style={{ textDecoration: "none", color: "var(--gh-text)", padding: "22px", border: "1px solid var(--gh-border)", borderRadius: "14px", background: "var(--gh-surface)" }}>
+              <div style={{ fontSize: "24px", marginBottom: "10px" }}>🏢</div><strong style={{ fontSize: "17px" }}>독일 메세</strong><p style={{ margin: "7px 0 0", color: "var(--gh-text-muted)", fontSize: "13px", lineHeight: 1.6 }}>주요 전시회·박람회 일정과 출장·방문에 필요한 정보</p>
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {isCommunityView && (
+      <div className="wrapper community-home" style={{ padding: "30px 20px 60px 20px", maxWidth: "1200px", margin: "0 auto" }}>
+        <section className="community-intro">
+          <span className="community-kicker">GERMAN HANGUK COMMUNITY</span>
+          <h1>독일에서 함께 사는 사람들의 이야기</h1>
+          <p>질문하고, 경험을 나누고, 필요한 정보를 서로 찾아보세요.</p>
+          <label className="community-search">
+            <span aria-hidden="true">⌕</span>
+            <input value={searchKeyword} onChange={function(e) { setSearchKeyword(e.target.value); }} placeholder="커뮤니티 글 검색" aria-label="커뮤니티 글 검색" />
+          </label>
+        </section>
         
         {/* 실시간 인기 게시글 목록 */}
         {selectedCategory === "all" && trendingPosts.length > 0 && (
@@ -425,7 +456,7 @@ function HomeContent() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
             <Link
-              href="/"
+              href="/?section=community"
               style={{
                 padding: "8px 18px",
                 border: "none",
@@ -446,7 +477,7 @@ function HomeContent() {
               return (
                 <Link
                   key={cat.value}
-                  href={"/?category=" + cat.value}
+                  href={"/?section=community&category=" + cat.value}
                   style={{
                     padding: "8px 18px",
                     border: "none",
@@ -629,6 +660,7 @@ function HomeContent() {
         {/* 게시글 목록 하단 광고 영역 */}
         <AdSlot position="board-bottom" />
       </div>
+      )}
     </main>
   );
 }

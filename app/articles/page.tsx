@@ -105,7 +105,7 @@ function ArticlesContent() {
         </div>
 
         {articles.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "60px 20px", border: "1px dashed var(--gh-border)", borderRadius: "12px", background: "var(--gh-surface-muted)" }}>
+          <div style={{ textAlign: "center", padding: "60px 20px", border: "1px dashed var(--gh-border)", borderRadius: "0", background: "var(--gh-surface-muted)" }}>
             <p style={{ color: "var(--gh-text-muted)", margin: 0, fontSize: "14px" }}>등록된 최신 소식이 아직 없습니다.</p>
           </div>
         ) : (
@@ -119,7 +119,7 @@ function ArticlesContent() {
                   flexDirection: "column",
                   background: "var(--gh-surface-muted)",
                   border: "1px solid var(--gh-border)",
-                  borderRadius: "12px",
+                  borderRadius: "0",
                   overflow: "hidden",
                   textDecoration: "none",
                   transition: "transform 0.2s, box-shadow 0.2s",
@@ -141,7 +141,7 @@ function ArticlesContent() {
                 )}
                 <div style={{ padding: "20px", flex: 1, display: "flex", flexDirection: "column" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-                    <span style={{ fontSize: "12px", fontWeight: "bold", color: "#3b82f6", background: "rgba(59, 130, 246, 0.1)", padding: "2px 8px", borderRadius: "4px" }}>
+                    <span style={{ fontSize: "12px", fontWeight: "bold", color: "#3b82f6", background: "rgba(59, 130, 246, 0.1)", padding: "2px 8px", borderRadius: "0" }}>
                       {article.category}
                     </span>
                     <span style={{ fontSize: "12px", color: "var(--gh-text-subtle)" }}>

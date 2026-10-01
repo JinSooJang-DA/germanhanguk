@@ -3,7 +3,7 @@
  * This intentionally differs from the public `Article` database model.
  */
 export interface ArticleCandidate {
-  sourceProvider: "bundesregierung";
+  sourceProvider: "bundesregierung" | "bmf-tax" | "bmas" | "bamf" | "bmg" | "bmbfsfj" | "bmwsb" | "bmjv" | "bmv";
   sourceName: string;
   sourceUrl: string;
   externalId?: string;

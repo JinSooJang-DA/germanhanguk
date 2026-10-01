@@ -5,6 +5,16 @@ const ALLOWED_BUNDESREGIERUNG_HOSTS = new Set([
   "www.bundesregierung.de",
 ]);
 
+const ALLOWED_BMF_HOSTS = new Set([
+  "bundesfinanzministerium.de",
+  "www.bundesfinanzministerium.de",
+]);
+
+const ALLOWED_BMAS_HOSTS = new Set([
+  "bmas.de",
+  "www.bmas.de",
+]);
+
 function isAllowedBundesregierungHost(hostname: string): boolean {
   const normalizedHost = hostname.toLowerCase().replace(/\.$/, "");
 
@@ -33,6 +43,30 @@ export function normalizeBundesregierungUrl(value: string): string | null {
       return null;
     }
 
+    url.hash = "";
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+export function normalizeBmfUrl(value: string): string | null {
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase().replace(/\.$/, "");
+    if (url.protocol !== "https:" || isIP(host) !== 0 || !ALLOWED_BMF_HOSTS.has(host) || url.username || url.password || (url.port && url.port !== "443")) return null;
+    url.hash = "";
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+export function normalizeBmasUrl(value: string): string | null {
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase().replace(/\.$/, "");
+    if (url.protocol !== "https:" || isIP(host) !== 0 || !ALLOWED_BMAS_HOSTS.has(host) || url.username || url.password || (url.port && url.port !== "443")) return null;
     url.hash = "";
     return url.toString();
   } catch {
@@ -121,6 +155,11 @@ export function normalizePublishedAt(value: string | undefined): string | undefi
     return undefined;
   }
 
-  const date = new Date(value);
+  // Some official German feeds still emit legacy CET/CEST abbreviations,
+  // which JavaScript does not parse consistently across runtimes.
+  const normalized = value
+    .replace(/\sCEST$/i, " +0200")
+    .replace(/\sCET$/i, " +0100");
+  const date = new Date(normalized);
   return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
 }

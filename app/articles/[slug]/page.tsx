@@ -112,6 +112,9 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
     notFound();
   }
 
+  const imageSource = article.source_urls?.find((source) => source.kind === "image");
+  const articleSources = article.source_urls?.filter((source) => source.kind !== "image") ?? [];
+
   return (
     <main style={{ minHeight: "80vh", padding: "40px 20px var(--gh-footer-height) 20px" }}>
       <div style={{ maxWidth: "800px", margin: "0 auto" }}>
@@ -147,13 +150,20 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 
         {/* 대표 이미지 */}
         {article.image_url && (
-          <div style={{ borderRadius: "12px", overflow: "hidden", marginBottom: "30px", maxHeight: "450px" }}>
-            <img
-              src={article.image_url}
-              alt={article.title}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-          </div>
+          <figure style={{ margin: "0 0 30px 0" }}>
+            <div style={{ borderRadius: "12px", overflow: "hidden", maxHeight: "450px" }}>
+              <img src={article.image_url} alt={article.title}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </div>
+            {article.source_urls.find((source) => source.kind === "image") && (
+              <figcaption style={{ marginTop: 8, fontSize: 12, color: "var(--gh-text-muted)" }}>
+                <a href={article.source_urls.find((source) => source.kind === "image")?.url}
+                  target="_blank" rel="noopener noreferrer" style={{ color: "inherit" }}>
+                  {article.source_urls.find((source) => source.kind === "image")?.title}
+                </a>
+              </figcaption>
+            )}
+          </figure>
         )}
 
         {/* 본문 */}
@@ -162,11 +172,11 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
         </div>
 
         {/* 관련 출처 */}
-        {article.source_urls && article.source_urls.length > 0 && (
+        {articleSources.length > 0 && (
           <div style={{ borderTop: "1px solid var(--gh-border)", paddingTop: "24px" }}>
-            <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "var(--gh-text)", margin: "0 0 12px 0" }}>🔗 관련 공식 출처</h3>
+            <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "var(--gh-text)", margin: "0 0 12px 0" }}>🔗 원문 출처</h3>
             <ul style={{ paddingLeft: "20px", margin: 0 }}>
-              {article.source_urls.map((source, sIdx) => {
+              {articleSources.map((source, sIdx) => {
                 const safeUrl = parseSafeUrl(source.url);
                 return (
                   <li key={sIdx} style={{ marginBottom: "8px" }}>
@@ -177,7 +187,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
                         rel="noopener noreferrer"
                         style={{ color: "#3b82f6", textDecoration: "underline", fontSize: "14px", fontWeight: "500" }}
                       >
-                        {source.title || source.url}
+                        {source.title ? `${source.title} · 원문 기사 보기 ↗` : "원문 기사 보기 ↗"}
                       </a>
                     ) : (
                       <span style={{ fontSize: "14px", color: "var(--gh-text-muted)" }}>
