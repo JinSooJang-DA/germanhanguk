@@ -51,7 +51,7 @@ function HomeContent() {
   const isCommunityView = searchParams.get("section") === "community" || categoryParam !== null;
 
   const [posts, setPosts] = useState<Post[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [pageState, setPageState] = useState({ scope: "", page: 1 });
   const [totalPages, setTotalPages] = useState(1);
   const [communityIdentities, setCommunityIdentities] = useState<PublicCommunityIdentityMap>({});
   const [trendingPosts, setTrendingPosts] = useState<Post[]>([]);
@@ -72,15 +72,20 @@ function HomeContent() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [debouncedSearchKeyword, setDebouncedSearchKeyword] = useState("");
   const staticFeedLoadedRef = useRef(false);
-  const selectedFeedKey = selectedCategory + ":" + (selectedEducationSubCategory || "all") + ":" + currentPage;
+  const paginationScope = selectedCategory + ":" + (selectedEducationSubCategory || "all") + ":" + debouncedSearchKeyword;
+  const currentPage = pageState.scope === paginationScope ? pageState.page : 1;
+  const setCurrentPage = function(nextPage: number | ((page: number) => number)) {
+    setPageState(function(previous) {
+      const scopedPage = previous.scope === paginationScope ? previous.page : 1;
+      const page = typeof nextPage === "function" ? nextPage(scopedPage) : nextPage;
+      return { scope: paginationScope, page };
+    });
+  };
+  const selectedFeedKey = paginationScope + ":" + currentPage;
   const [loadedCategory, setLoadedCategory] = useState<string | null>(null);
   const [postsError, setPostsError] = useState<string | null>(null);
   const [postsRetryKey, setPostsRetryKey] = useState(0);
   const loading = loadedCategory !== selectedFeedKey;
-
-  useEffect(function() {
-    setCurrentPage(1);
-  }, [selectedCategory, selectedEducationSubCategory, debouncedSearchKeyword]);
 
   useEffect(function() {
     const timer = window.setTimeout(function() {
@@ -185,7 +190,7 @@ function HomeContent() {
       const pageCount = Math.max(1, Math.ceil((count || 0) / POSTS_PER_PAGE));
       if (isCurrent) setTotalPages(pageCount);
       if (currentPage > pageCount) {
-        if (isCurrent) setCurrentPage(pageCount);
+        if (isCurrent) setPageState({ scope: paginationScope, page: pageCount });
         return;
       }
 
@@ -241,7 +246,7 @@ function HomeContent() {
     return function() {
       isCurrent = false;
     };
-  }, [postsRetryKey, debouncedSearchKeyword, selectedCategory, selectedEducationSubCategory, selectedFeedKey, currentPage]);
+  }, [postsRetryKey, debouncedSearchKeyword, selectedCategory, selectedEducationSubCategory, selectedFeedKey, currentPage, paginationScope]);
 
   useEffect(function() {
     const desktopMotion = window.matchMedia("(min-width: 769px) and (prefers-reduced-motion: no-preference)");
