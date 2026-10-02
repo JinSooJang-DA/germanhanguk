@@ -3552,3 +3552,22 @@ html[data-theme="dark"] .brand-mark-dark { display:block !important; }
     padding-right:5px !important;
   }
 }
+
+/* 2026-10 mobile board row v4: author starts left, region locks to the right. */
+@media (max-width:768px) {
+  .community-home--category .main-post-author,
+  .related-posts .related-post-author {
+    grid-column:1 !important;
+    grid-row:2 !important;
+    justify-self:start !important;
+    width:auto !important;
+  }
+  .community-home--category .main-post-region,
+  .related-posts .related-post-region {
+    grid-column:2 !important;
+    grid-row:2 !important;
+    justify-self:end !important;
+    width:auto !important;
+    text-align:right !important;
+  }
+}
