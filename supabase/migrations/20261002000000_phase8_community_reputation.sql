@@ -4,7 +4,7 @@
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS show_community_level boolean NOT NULL DEFAULT true,
   ADD COLUMN IF NOT EXISTS show_germany_tenure boolean NOT NULL DEFAULT false,
-  ADD COLUMN IF NOT EXISTS show_reputation_stats boolean NOT NULL DEFAULT true;
+  ADD COLUMN IF NOT EXISTS show_reputation_stats boolean NOT NULL DEFAULT false;
 
 CREATE TABLE IF NOT EXISTS public.profile_private_details (
   user_id uuid PRIMARY KEY REFERENCES public.profiles(id) ON DELETE CASCADE,
@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS public.profile_private_details (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.profile_private_details ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users manage own private profile details" ON public.profile_private_details;
 CREATE POLICY "Users manage own private profile details" ON public.profile_private_details
   FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
@@ -25,6 +26,7 @@ CREATE TABLE IF NOT EXISTS public.community_reputation (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.community_reputation ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users read own reputation totals" ON public.community_reputation;
 CREATE POLICY "Users read own reputation totals" ON public.community_reputation
   FOR SELECT TO authenticated USING (auth.uid() = user_id);
 REVOKE INSERT, UPDATE, DELETE ON public.community_reputation FROM anon, authenticated;
@@ -179,20 +181,23 @@ CREATE OR REPLACE FUNCTION public.reward_guide_read(p_guide_slug text)
 RETURNS boolean AS $$
 DECLARE
   v_user_id uuid := auth.uid();
-  v_inserted_count integer := 0;
+  v_rewarded boolean := false;
 BEGIN
   IF v_user_id IS NULL OR nullif(trim(p_guide_slug), '') IS NULL THEN RETURN false; END IF;
 
-  INSERT INTO public.guide_read_rewards (user_id, guide_slug)
-  VALUES (v_user_id, trim(p_guide_slug))
-  ON CONFLICT (user_id, guide_slug) DO NOTHING;
-  GET DIAGNOSTICS v_inserted_count = ROW_COUNT;
+  -- The reputation ledger is the source of truth. Only mark the guide as rewarded
+  -- after the event is accepted, so hitting the daily cap never burns a future reward.
+  v_rewarded := public.apply_reputation_event(
+    v_user_id, 'GUIDE_FIRST_READ', trim(p_guide_slug), 1, 0, 1, 0, 0
+  );
 
-  IF v_inserted_count > 0 THEN
-    PERFORM public.apply_reputation_event(v_user_id, 'GUIDE_FIRST_READ', trim(p_guide_slug), 1, 0, 1, 0, 0);
-    RETURN true;
+  IF v_rewarded THEN
+    INSERT INTO public.guide_read_rewards (user_id, guide_slug)
+    VALUES (v_user_id, trim(p_guide_slug))
+    ON CONFLICT (user_id, guide_slug) DO NOTHING;
   END IF;
-  RETURN false;
+
+  RETURN v_rewarded;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 

@@ -15,6 +15,20 @@ interface Post {
   created_at: string;
 }
 
+interface ReputationEvent {
+  id: number;
+  event_type: string;
+  xp_delta: number;
+  created_at: string;
+}
+
+const REPUTATION_EVENT_LABELS: Record<string, string> = {
+  POST_CREATED: "\uAC8C\uC2DC\uAE00 \uC791\uC131",
+  COMMENT_CREATED: "\uB313\uAE00 \uC791\uC131",
+  POST_LIKE_RECEIVED: "\uB0B4 \uAE00 \uCD94\uCC9C\uBC1B\uC74C",
+  GUIDE_FIRST_READ: "\uC0DD\uD65C\uAC00\uC774\uB4DC \uC77D\uAE30",
+};
+
 const GERMAN_REGIONS = [
   "Berlin (베를린)",
   "Frankfurt am Main (프랑크푸르트)",
@@ -113,6 +127,7 @@ export default function ProfilePage() {
   const [showReputationStats, setShowReputationStats] = useState(false);
   const [reputationXp, setReputationXp] = useState(0);
   const [reputationScores, setReputationScores] = useState({ activity: 0, knowledge: 0, communication: 0, helpful: 0 });
+  const [recentReputationEvents, setRecentReputationEvents] = useState<ReputationEvent[]>([]);
   const [newPassword, setNewPassword] = useState("");
   const [myPosts, setMyPosts] = useState<Post[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -215,10 +230,11 @@ export default function ProfilePage() {
             setBio(profile.bio || "");
             setIsAdmin(profile.role === "admin");
             if (COMMUNITY_REPUTATION_ENABLED) {
-              const [{ data: settings }, { data: privateDetails }, { data: reputation }] = await Promise.all([
+              const [{ data: settings }, { data: privateDetails }, { data: reputation }, { data: recentEvents }] = await Promise.all([
                 supabase.from("profiles").select("show_community_level, show_germany_tenure, show_reputation_stats").eq("id", user.id).single(),
                 supabase.from("profile_private_details").select("germany_since").eq("user_id", user.id).maybeSingle(),
                 supabase.from("community_reputation").select("reputation_xp, activity_score, knowledge_score, communication_score, helpful_score").eq("user_id", user.id).maybeSingle(),
+                supabase.from("reputation_events").select("id, event_type, xp_delta, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5),
               ]);
               setGermanySince(privateDetails?.germany_since || "");
               setReputationXp(reputation?.reputation_xp || 0);
@@ -228,6 +244,7 @@ export default function ProfilePage() {
                 communication: reputation?.communication_score || 0,
                 helpful: reputation?.helpful_score || 0,
               });
+              setRecentReputationEvents((recentEvents as ReputationEvent[] | null) || []);
               if (settings) {
                 setShowCommunityLevel(settings.show_community_level !== false);
                 setShowGermanyTenure(settings.show_germany_tenure === true);
@@ -637,6 +654,19 @@ export default function ProfilePage() {
                 <span>{"\uB3C4\uC6C0"} <b>{reputationScores.helpful}</b></span>
               </div>
               <small>{"\uC774 \uC0C1\uC138 \uC810\uC218\uB294 \uBCF8\uC778\uC5D0\uAC8C\uB9CC \uD56D\uC0C1 \uBCF4\uC774\uBA70, \uB2E4\uB978 \uC0AC\uB78C\uC5D0\uAC8C\uB294 \uACF5\uAC1C \uC124\uC815\uC744 \uB530\uB985\uB2C8\uB2E4."}</small>
+              {recentReputationEvents.length > 0 && (
+                <div className="profile-growth-card__recent">
+                  <strong>{"\uCD5C\uADFC \uC131\uC7A5 \uAE30\uB85D"}</strong>
+                  <ul>
+                    {recentReputationEvents.map((event) => (
+                      <li key={event.id}>
+                        <span>{REPUTATION_EVENT_LABELS[event.event_type] || event.event_type}</span>
+                        <span><b>+{event.xp_delta} XP</b> Â· {formatDate(event.created_at)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </section>
           )}
 

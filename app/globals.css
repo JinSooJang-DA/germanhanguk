@@ -3054,3 +3054,12 @@ html:not([data-theme="dark"]) body .info-news-section .info-hero img {
   .profile-growth-card__scores { gap: 8px 12px; }
   .profile-growth-card__scores span { font-size: 10px; }
 }
+.profile-growth-card__recent { margin-top: 12px; padding-top: 11px; border-top: 1px solid var(--gh-border); }
+.profile-growth-card__recent > strong { display: block; margin-bottom: 6px; font-size: 11px; }
+.profile-growth-card__recent ul { margin: 0; padding: 0; list-style: none; }
+.profile-growth-card__recent li { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; color: var(--gh-text-muted); font-size: 10px; }
+.profile-growth-card__recent li span:last-child { flex: 0 0 auto; }
+.profile-growth-card__recent li b { color: var(--gh-text); font-weight: 700; }
+@media (max-width: 430px) {
+  .profile-growth-card__recent li { gap: 8px; font-size: 9.5px; }
+}
