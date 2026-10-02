@@ -2885,18 +2885,21 @@ html:not([data-theme="dark"]) body .info-news-section .info-hero img {
 
 /* 2026-10 mobile community compact typography pass. */
 @media (max-width:768px) {
-  .community-home .main-post-list tbody tr { row-gap:1px; padding:5px 4px !important; }
-  .community-home .main-post-category { font-size:11px !important; font-weight:500 !important; line-height:1.15; }
-  .community-home .main-post-title { font-size:14px !important; line-height:1.2; }
+  .community-home .main-post-list tbody tr { grid-template-columns:repeat(4,max-content); column-gap:7px; row-gap:1px; padding:5px 4px !important; }
+  .community-home .main-post-category,
+  .community-home .main-post-title { grid-column:1 / -1; }
+  .community-home .main-post-category { font-size:10px !important; font-weight:500 !important; line-height:1.1; margin-bottom:3px; }
+  .community-home .main-post-title { font-size:14px !important; line-height:1.2; margin-bottom:4px; }
   .community-home .main-post-title a { font-weight:500 !important; }
   .community-home .main-post-region,
   .community-home .main-post-author,
   .community-home .main-post-date,
-  .community-home .main-post-views { font-size:11px !important; font-weight:400 !important; line-height:1.15; }
-  .community-home .author-action-trigger { gap:4px; padding:0 2px; font-weight:400; }
+  .community-home .main-post-views { grid-column:auto; width:auto !important; font-size:10px !important; font-weight:400 !important; line-height:1.1; white-space:nowrap; }
+  .community-home .author-action-trigger { gap:2px; padding:0; font-size:10px; font-weight:400; }
   .community-home .author-action-avatar,
-  .community-home .main-post-author div[style*="width"] { width:16px !important; height:16px !important; }
-  .community-home .author-action-chevron { font-size:9px; }
+  .community-home .main-post-author div[style*="width"] { width:14px !important; height:14px !important; }
+  .community-home .author-action-chevron { font-size:8px; }
+  .community-home .main-post-views::before { content:none; }
   .community-home .community-comment-count { font-size:11px !important; font-weight:500 !important; margin-left:4px !important; }
   .community-home .board-notice-row .main-post-category,
   .community-home .board-notice-row .main-post-title a,
