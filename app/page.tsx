@@ -662,7 +662,7 @@ function HomeContent() {
                     </td>
                     {selectedCategory !== "community" && <td className="main-post-region" style={{ padding: "14px" }} />}
                     <td className="main-post-author" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)", fontWeight: 700 }}>관리자</td>
-                    <td className="main-post-date" style={{ padding: "14px", fontSize: "13px", color: "var(--gh-text-subtle)" }}>상단 고정</td>
+                    <td className="main-post-date" style={{ padding: "14px", fontSize: "13px", color: "var(--gh-text-subtle)" }}>2026. 10. 2.</td>
                     <td className="main-post-views" style={{ padding: "14px", fontSize: "13px", color: "var(--gh-text-subtle)", textAlign: "center" }}>—</td>
                   </tr>
                 )}
