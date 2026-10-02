@@ -145,6 +145,30 @@ export default function AdminArticlesPage() {
     await loadDrafts();
   }
 
+  async function unpublishArticle() {
+    if (!selected || !confirm("이 기사의 공개를 취소하고 검토 대기로 되돌릴까요?\n메인 LIVE와 기사 목록에서도 즉시 숨겨집니다.")) return;
+    setSaving(true);
+    const { error } = await supabase.from("articles")
+      .update({ status: "draft", review_status: "pending", is_featured: false, published_at: null })
+      .eq("id", selected.id);
+    setSaving(false);
+    if (error) return setMessage("공개 취소 실패: " + error.message);
+    setSelected(null); setEditor(null); setTab("pending");
+    setMessage("기사 공개를 취소하고 검토 대기로 되돌렸습니다.");
+    await loadDrafts();
+  }
+
+  async function deleteArticle() {
+    if (!selected || !confirm(`\"${selected.title}\"\n\n이 기사를 완전히 삭제할까요? 공개된 기사라면 메인 LIVE와 기사 목록에서도 사라집니다.`)) return;
+    setSaving(true);
+    const { error } = await supabase.from("articles").delete().eq("id", selected.id);
+    setSaving(false);
+    if (error) return setMessage("기사 삭제 실패: " + error.message);
+    setSelected(null); setEditor(null);
+    setMessage("기사를 삭제했습니다.");
+    await loadDrafts();
+  }
+
   const pendingArticles = articles.filter((article) => article.status === "draft" && article.review_status === "pending");
   const publishedArticles = articles.filter((article) => article.status === "published");
   const rejectedArticles = articles.filter((article) => article.status === "draft" && article.review_status === "rejected");
@@ -269,8 +293,12 @@ export default function AdminArticlesPage() {
                   <button disabled={saving} onClick={restoreDraft} style={{ ...buttonStyle, background: "#166534" }}>검토 대기로 복구</button>
                 )}
                 {tab === "published" && (
-                  <a href={`/articles/${selected.slug}`} target="_blank" rel="noreferrer" style={{ ...buttonStyle, textDecoration: "none" }}>공개 페이지 보기 ↗</a>
+                  <>
+                    <a href={`/articles/${selected.slug}`} target="_blank" rel="noreferrer" style={{ ...buttonStyle, textDecoration: "none" }}>공개 페이지 보기 ↗</a>
+                    <button disabled={saving} onClick={unpublishArticle} style={{ ...buttonStyle, background: "#92400e" }}>공개 취소</button>
+                  </>
                 )}
+                <button disabled={saving} onClick={deleteArticle} style={{ ...buttonStyle, background: "#991b1b" }}>기사 삭제</button>
               </div>
             </div>
           )}
