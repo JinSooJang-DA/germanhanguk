@@ -1,0 +1,15 @@
+export const GERMAN_REGIONS = [
+  "Berlin (베를린)",
+  "Frankfurt am Main (프랑크푸르트)",
+  "München (뮬헨)",
+  "Düsseldorf (뒤셀도르프)",
+  "Hamburg (함부르크)",
+  "Köln (콰른)",
+  "Stuttgart (슈투트가르트)",
+  "Münster (뮬스터)",
+  "Nürnberg (뉘른베르크)",
+  "Leipzig (라이프치히)",
+  "Dresden (드레스덴)",
+  "Bonn (본)",
+  "기타 독일 지역",
+] as const;

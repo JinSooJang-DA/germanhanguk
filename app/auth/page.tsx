@@ -3,22 +3,8 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { GERMAN_REGIONS } from "@/lib/germanRegions";
 
-const GERMAN_REGIONS = [
-  "Berlin (베를린)",
-  "Frankfurt am Main (프랑크푸르트)",
-  "München (뮌헨)",
-  "Düsseldorf (뒤셀도르프)",
-  "Hamburg (함부르크)",
-  "Köln (쾰른)",
-  "Stuttgart (슈투트가르트)",
-  "Münster (뮌스터)",
-  "Nürnberg (뉘른베르크)",
-  "Leipzig (라이프치히)",
-  "Dresden (드레스덴)",
-  "Bonn (본)",
-  "기타 독일 지역",
-];
 
 export default function AuthPage() {
   const router = useRouter();
@@ -33,6 +19,11 @@ export default function AuthPage() {
   const [registeredEmail, setRegisteredEmail] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState<"google" | "kakao" | null>(null);
+
+  const googleAuthEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true";
+  const kakaoAuthEnabled = process.env.NEXT_PUBLIC_KAKAO_AUTH_ENABLED === "true";
+  const socialAuthEnabled = googleAuthEnabled || kakaoAuthEnabled;
 
   function resetForm() {
     setEmail("");
@@ -43,6 +34,23 @@ export default function AuthPage() {
     setMessage("");
     setIsEmailConfirmationPending(false);
     setRegisteredEmail("");
+  }
+
+  async function handleSocialLogin(provider: "google" | "kakao") {
+    setMessage("");
+    setSocialLoading(provider);
+
+    const redirectTo = `${window.location.origin}/auth/social-callback`;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo },
+    });
+
+    if (error) {
+      setSocialLoading(null);
+      const providerName = provider === "google" ? "Google" : "\uce74\uce74\uc624";
+      setMessage(`${providerName} \ub85c\uadf8\uc778\uc5d0 \uc2e4\ud328\ud588\uc2b5\ub2c8\ub2e4. \uc7a0\uc2dc \ud6c4 \ub2e4\uc2dc \uc2dc\ub3c4\ud574 \uc8fc\uc138\uc694.`);
+    }
   }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -175,6 +183,26 @@ export default function AuthPage() {
         <h1>German Hanguk</h1>
 
         <h2>{isSignup ? "회원가입" : "로그인"}</h2>
+
+        {socialAuthEnabled && (
+          <>
+            <div className="auth-social-actions" aria-label="소셜 계정으로 계속하기">
+              {googleAuthEnabled && (
+                <button type="button" className="auth-social-button auth-social-button--google" onClick={() => handleSocialLogin("google")} disabled={socialLoading !== null || loading}>
+                  <span className="auth-social-icon" aria-hidden="true">G</span>
+                  {socialLoading === "google" ? "Google 연결 중..." : "Google로 계속하기"}
+                </button>
+              )}
+              {kakaoAuthEnabled && (
+                <button type="button" className="auth-social-button auth-social-button--kakao" onClick={() => handleSocialLogin("kakao")} disabled={socialLoading !== null || loading}>
+                  <span className="auth-social-icon" aria-hidden="true">K</span>
+                  {socialLoading === "kakao" ? "카카오 연결 중..." : "카카오로 계속하기"}
+                </button>
+              )}
+            </div>
+            <div className="auth-divider"><span>또는 이메일로</span></div>
+          </>
+        )}
 
         <form onSubmit={handleSubmit}>
           <label>
