@@ -21,7 +21,7 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<"google" | "kakao" | null>(null);
 
-  const googleAuthEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true";
+  const googleAuthEnabled = true;
   const kakaoAuthEnabled = process.env.NEXT_PUBLIC_KAKAO_AUTH_ENABLED === "true";
   const socialAuthEnabled = googleAuthEnabled || kakaoAuthEnabled;
 
