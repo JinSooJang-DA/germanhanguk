@@ -12,6 +12,7 @@ import {
   shouldDisplayPostRegion,
 } from "@/lib/constants";
 import { formatDate } from "@/lib/date";
+import { getBoardNotice } from "@/lib/board-notices";
 import type { Post as BasePost } from "@/types/post";
 import type { Article } from "@/types/article";
 import AdSlot from "@/components/AdSlot";
@@ -42,6 +43,7 @@ function HomeContent() {
   const [isHeroPaused, setIsHeroPaused] = useState(false);
 
   const selectedCategory = categoryParam || "all";
+  const boardNotice = getBoardNotice(selectedCategory);
   const educationSubCategoryParam = searchParams.get("sub_category");
   const selectedEducationSubCategory = selectedCategory === "education" && EDUCATION_SUB_CATEGORY_OPTIONS.some((option) => option.value === educationSubCategoryParam)
     ? educationSubCategoryParam
@@ -634,7 +636,7 @@ function HomeContent() {
               다시 시도
             </button>
           </div>
-        ) : posts.length === 0 ? (
+        ) : posts.length === 0 && !isCommunityView ? (
           <p style={{ color: "#64748b", padding: "60px 0", textAlign: "center" }}>등록된 게시글이 없습니다.</p>
         ) : (
           <div className="main-post-list" style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
@@ -650,6 +652,20 @@ function HomeContent() {
                 </tr>
               </thead>
               <tbody>
+                {isCommunityView && (
+                  <tr className="board-notice-row" style={{ borderBottom: "1px solid var(--gh-border)", background: "var(--gh-surface-muted)" }}>
+                    <td className="main-post-category" style={{ padding: "14px", fontSize: "13px", fontWeight: 800, color: "var(--gh-accent)" }}>[공지]</td>
+                    <td className="main-post-title" style={{ padding: "14px" }}>
+                      <Link href={"/notices/" + boardNotice.category} style={{ textDecoration: "none", color: "var(--gh-text)", fontWeight: 800 }}>
+                        {boardNotice.title}
+                      </Link>
+                    </td>
+                    {selectedCategory !== "community" && <td className="main-post-region" style={{ padding: "14px" }} />}
+                    <td className="main-post-author" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)", fontWeight: 700 }}>관리자</td>
+                    <td className="main-post-date" style={{ padding: "14px", fontSize: "13px", color: "var(--gh-text-subtle)" }}>상단 고정</td>
+                    <td className="main-post-views" style={{ padding: "14px", fontSize: "13px", color: "var(--gh-text-subtle)", textAlign: "center" }}>—</td>
+                  </tr>
+                )}
                 {posts.map(function(post) {
                   const commentsCount = post.comments?.[0]?.count || 0;
                   const likesCount = post.post_likes?.[0]?.count || 0;
