@@ -3141,3 +3141,10 @@ html:not([data-theme="dark"]) body .info-news-section .info-hero img {
   .brand-mark-mobile { width:29px; height:29px; }
   .brand-lockup-mobile h1 { font-size:17px !important; }
 }
+
+/* Theme-aware GermanHanguk logo */
+.brand-mark-shell { position:relative; display:inline-block; flex:0 0 auto; }
+.brand-mark-shell .brand-mark { position:absolute; inset:0; width:100%; height:100%; }
+.brand-mark-dark { display:none !important; }
+html[data-theme="dark"] .brand-mark-light { display:none !important; }
+html[data-theme="dark"] .brand-mark-dark { display:block !important; }

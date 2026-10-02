@@ -23,7 +23,7 @@ export default function Footer() {
         }}
       >
         <div className="footer-brand">
-          <Image className="footer-brand-mark" src="/assets/brand/germanhanguk-logo-m.png" alt="" width={48} height={48} />
+          <span className="brand-mark-shell footer-brand-mark" aria-hidden="true"><Image className="brand-mark brand-mark-light" src="/assets/brand/germanhanguk-logo-m.png" alt="" width={48} height={48} /><Image className="brand-mark brand-mark-dark" src="/assets/brand/germanhanguk-logo-m-dark.png" alt="" width={48} height={48} /></span>
           <div style={{ fontWeight: "bold", color: "var(--gh-footer-title)", fontSize: "15px" }}>
             German Hanguk (독일 한인 커뮤니티)
           </div>

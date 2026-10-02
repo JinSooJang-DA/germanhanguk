@@ -190,7 +190,7 @@ export default function Header() {
            ====================================================================== */}
         <div className="desktop-header">
           <Link className="desktop-logo brand-lockup" href="/" style={{ textDecoration: "none", color: "var(--gh-text)", marginRight: "24px" }}>
-            <Image className="brand-mark brand-mark-desktop" src="/assets/brand/germanhanguk-logo-m.png" alt="" width={38} height={38} priority />
+            <span className="brand-mark-shell brand-mark-desktop" aria-hidden="true"><Image className="brand-mark brand-mark-light" src="/assets/brand/germanhanguk-logo-m.png" alt="" width={38} height={38} priority /><Image className="brand-mark brand-mark-dark" src="/assets/brand/germanhanguk-logo-m-dark.png" alt="" width={38} height={38} priority /></span>
             <h1 style={{ fontSize: "20px", fontWeight: "bold", margin: 0 }}>German Hanguk</h1>
           </Link>
 
@@ -392,7 +392,7 @@ export default function Header() {
            ====================================================================== */}
         <div className="mobile-header">
           <Link className="brand-lockup brand-lockup-mobile" href="/" style={{ textDecoration: "none", color: "var(--gh-text)" }}>
-            <Image className="brand-mark brand-mark-mobile" src="/assets/brand/germanhanguk-logo-m.png" alt="" width={32} height={32} priority />
+            <span className="brand-mark-shell brand-mark-mobile" aria-hidden="true"><Image className="brand-mark brand-mark-light" src="/assets/brand/germanhanguk-logo-m.png" alt="" width={32} height={32} priority /><Image className="brand-mark brand-mark-dark" src="/assets/brand/germanhanguk-logo-m-dark.png" alt="" width={32} height={32} priority /></span>
             <h1 style={{ fontSize: "18px", fontWeight: "bold", margin: 0, letterSpacing: "-0.02em" }}>German Hanguk</h1>
           </Link>
 
