@@ -1,4 +1,5 @@
-export const COMMUNITY_REPUTATION_ENABLED = process.env.NEXT_PUBLIC_COMMUNITY_REPUTATION_V1 === "true";
+// Phase 8 is live. Keep an explicit environment kill switch for emergency rollback.
+export const COMMUNITY_REPUTATION_ENABLED = process.env.NEXT_PUBLIC_COMMUNITY_REPUTATION_V1 !== "false";
 
 export type CommunityLevel = {
   key: string;
