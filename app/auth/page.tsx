@@ -43,10 +43,7 @@ export default function AuthPage() {
     const redirectTo = `${window.location.origin}/auth/social-callback`;
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: {
-        redirectTo,
-        ...(provider === "kakao" ? { scopes: "profile_nickname" } : {}),
-      },
+      options: { redirectTo },
     });
 
     if (error) {
