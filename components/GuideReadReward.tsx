@@ -34,7 +34,8 @@ export default function GuideReadReward({ slug }: { slug: string }) {
         authenticated = Boolean(authData.user);
       }
       if (!authenticated) { submitting = false; return; }
-      const { error } = await supabase.rpc("reward_guide_read", { p_guide_slug: slug });      if (!error) {
+      const { error } = await supabase.rpc("reward_guide_read", { p_guide_slug: slug });
+      if (!error) {
         try { sessionStorage.setItem(storageKey, "1"); } catch {}
       }
       submitting = false;

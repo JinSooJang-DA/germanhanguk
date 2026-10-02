@@ -80,6 +80,9 @@ DECLARE
     ELSE NULL
   END;
 BEGIN
+  -- Serialize score writes per user/event type so parallel requests cannot bypass daily caps.
+  PERFORM pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(p_user_id::text || ':' || p_event_type, 0));
+
   IF v_daily_limit IS NOT NULL THEN
     SELECT count(*) INTO v_daily_count
     FROM public.reputation_events
@@ -184,6 +187,12 @@ DECLARE
   v_rewarded boolean := false;
 BEGIN
   IF v_user_id IS NULL OR nullif(trim(p_guide_slug), '') IS NULL THEN RETURN false; END IF;
+
+  -- Never reward arbitrary client-provided slugs: only an actually published guide is eligible.
+  IF NOT EXISTS (
+    SELECT 1 FROM public.guides
+    WHERE slug = trim(p_guide_slug) AND status = 'published'
+  ) THEN RETURN false; END IF;
 
   -- The reputation ledger is the source of truth. Only mark the guide as rewarded
   -- after the event is accepted, so hitting the daily cap never burns a future reward.
