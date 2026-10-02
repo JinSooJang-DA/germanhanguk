@@ -6,6 +6,8 @@ import { supabase } from "@/lib/supabase";
 import { formatDate } from "@/lib/date";
 import { shouldDisplayPostRegion } from "@/lib/constants";
 import { PublicProfile } from "@/types/profile";
+import CommunityIdentity from "@/components/CommunityIdentity";
+import { COMMUNITY_REPUTATION_ENABLED } from "@/lib/communityReputation";
 
 interface UserPost {
   id: string | number;
@@ -136,7 +138,12 @@ export default function PublicProfilePage({
         }
 
         if (isCurrent) {
-          setProfile(profileData);
+          if (COMMUNITY_REPUTATION_ENABLED) {
+            const { data: reputation } = await supabase.from("profiles").select("germany_since, show_community_level, show_germany_tenure, show_reputation_stats, reputation_xp, activity_score, knowledge_score, communication_score, helpful_score").eq("id", id).single();
+            setProfile({ ...profileData, ...(reputation || {}) });
+          } else {
+            setProfile(profileData);
+          }
           setLoading(false);
         }
 
@@ -430,6 +437,12 @@ export default function PublicProfilePage({
               </div>
 
               {/* 거주지역 및 가입일 */}
+              {COMMUNITY_REPUTATION_ENABLED && (profile.show_community_level || profile.show_germany_tenure) && (
+                <div style={{ marginBottom: "10px" }}>
+                  <CommunityIdentity xp={profile.reputation_xp} germanySince={profile.germany_since} showLevel={profile.show_community_level !== false} showTenure={profile.show_germany_tenure === true} />
+                </div>
+              )}
+
               <div
                 style={{
                   display: "flex",
@@ -468,6 +481,14 @@ export default function PublicProfilePage({
             </div>
           </div>
         </div>
+
+        {COMMUNITY_REPUTATION_ENABLED && profile.show_reputation_stats && (
+          <section aria-label="community reputation" className="community-stats">
+            {[ ["\uD65C\uB3D9", profile.activity_score || 0], ["\uC9C0\uC2DD", profile.knowledge_score || 0], ["\uC18C\uD1B5", profile.communication_score || 0], ["\uB3C4\uC6C0", profile.helpful_score || 0] ].map(([label, value]) => (
+              <div key={String(label)} className="community-stats__item"><strong>{value}</strong><span>{label}</span></div>
+            ))}
+          </section>
+        )}
 
         {/* 2. 하단: 이 사용자가 작성한 글 섹션 */}
         <section id="user-posts" style={{ scrollMarginTop: "96px" }}>

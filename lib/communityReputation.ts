@@ -1,3 +1,5 @@
+export const COMMUNITY_REPUTATION_ENABLED = process.env.NEXT_PUBLIC_COMMUNITY_REPUTATION_V1 === "true";
+
 export type CommunityLevel = {
   key: string;
   label: string;

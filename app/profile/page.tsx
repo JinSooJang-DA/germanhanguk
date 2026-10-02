@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { formatDate } from "@/lib/date";
+import { COMMUNITY_REPUTATION_ENABLED } from "@/lib/communityReputation";
 
 interface Post {
   id: number;
@@ -106,6 +107,10 @@ export default function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [region, setRegion] = useState("");
   const [bio, setBio] = useState("");
+  const [germanySince, setGermanySince] = useState("");
+  const [showCommunityLevel, setShowCommunityLevel] = useState(true);
+  const [showGermanyTenure, setShowGermanyTenure] = useState(false);
+  const [showReputationStats, setShowReputationStats] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [myPosts, setMyPosts] = useState<Post[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -207,6 +212,15 @@ export default function ProfilePage() {
             setRegion(profile.region || "");
             setBio(profile.bio || "");
             setIsAdmin(profile.role === "admin");
+            if (COMMUNITY_REPUTATION_ENABLED) {
+              const { data: reputation } = await supabase.from("profiles").select("germany_since, show_community_level, show_germany_tenure, show_reputation_stats").eq("id", user.id).single();
+              if (reputation) {
+                setGermanySince(reputation.germany_since || "");
+                setShowCommunityLevel(reputation.show_community_level !== false);
+                setShowGermanyTenure(reputation.show_germany_tenure === true);
+                setShowReputationStats(reputation.show_reputation_stats === true);
+              }
+            }
           } else {
             setDisplayName(user.email?.split("@")[0] || "");
           }
@@ -250,14 +264,22 @@ export default function ProfilePage() {
         return;
       }
 
+      const profileUpdates: Record<string, string | boolean | null> = {
+        display_name: displayName.trim(),
+        region: region.trim(),
+        bio: bio.trim(),
+        updated_at: new Date().toISOString(),
+      };
+      if (COMMUNITY_REPUTATION_ENABLED) {
+        profileUpdates.germany_since = germanySince || null;
+        profileUpdates.show_community_level = showCommunityLevel;
+        profileUpdates.show_germany_tenure = showGermanyTenure;
+        profileUpdates.show_reputation_stats = showReputationStats;
+      }
+
       const { error } = await supabase
         .from("profiles")
-        .update({
-          display_name: displayName.trim(),
-          region: region.trim(),
-          bio: bio.trim(),
-          updated_at: new Date().toISOString(),
-        })
+        .update(profileUpdates)
         .eq("id", user.id);
 
       if (error) {
@@ -561,6 +583,22 @@ export default function ProfilePage() {
               }}
             />
           </div>
+
+          {COMMUNITY_REPUTATION_ENABLED && (
+            <div className="profile-reputation-settings">
+              <div className="form-group">
+                <label htmlFor="germanySince">{"\uB3C5\uC77C \uAC70\uC8FC \uC2DC\uC791\uC77C"}</label>
+                <input id="germanySince" type="date" value={germanySince} max={new Date().toISOString().slice(0, 10)} onChange={(e) => setGermanySince(e.target.value)} />
+                <small>{"\uC2E4\uC81C \uB0A0\uC9DC\uB294 \uACF5\uAC1C\uD558\uC9C0 \uC54A\uACE0, \uC120\uD0DD\uD558\uBA74 \uC5F0\uCC28\uB9CC \uD45C\uC2DC\uD569\uB2C8\uB2E4."}</small>
+              </div>
+              <fieldset>
+                <legend>{"\uACF5\uAC1C \uC124\uC815"}</legend>
+                <label><input type="checkbox" checked={showCommunityLevel} onChange={(e) => setShowCommunityLevel(e.target.checked)} /> {"\uB4F1\uAE09 \uD45C\uC2DC"}</label>
+                <label><input type="checkbox" checked={showGermanyTenure} onChange={(e) => setShowGermanyTenure(e.target.checked)} /> {"\uB3C5\uC77C\uC0DD\uD65C \uAE30\uAC04 \uD45C\uC2DC"}</label>
+                <label><input type="checkbox" checked={showReputationStats} onChange={(e) => setShowReputationStats(e.target.checked)} /> {"\uD65C\uB3D9 \uC218\uCE58 \uACF5\uAC1C"}</label>
+              </fieldset>
+            </div>
+          )}
 
           {message && (
             <p className="form-message" style={{ color: message.includes("성공") ? "var(--gh-success)" : "var(--gh-alert)" }}>

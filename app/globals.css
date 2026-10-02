@@ -2942,3 +2942,91 @@ html:not([data-theme="dark"]) body .info-news-section .info-hero img {
   .post-gif-grid img { height:110px; }
   .post-inline-gif { margin:18px 0; }
 }
+
+/* Community identity badges (reputation v1) */
+.community-identity {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  color: var(--gh-text-muted);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+.community-identity__level,
+.community-identity__tenure {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.community-identity__dot { opacity: .55; }
+.community-identity--compact { font-size: 10px; gap: 3px; font-weight: 600; }
+@media (max-width: 768px) {
+  .community-identity { font-size: 11px; }
+  .community-identity--compact { font-size: 9.5px; }
+}
+.community-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: -20px 0 40px;
+}
+.community-stats__item {
+  padding: 12px 8px;
+  text-align: center;
+  border: 1px solid var(--gh-border);
+  border-radius: 8px;
+  background: var(--gh-surface);
+}
+.community-stats__item strong { display: block; font-size: 18px; }
+.community-stats__item span { font-size: 11px; color: var(--gh-text-muted); }
+@media (max-width: 430px) {
+  .community-stats { gap: 5px; }
+  .community-stats__item { padding: 9px 4px; }
+  .community-stats__item strong { font-size: 16px; }
+  .community-stats__item span { font-size: 10px; }
+}
+.profile-reputation-settings {
+  margin: 20px 0;
+  padding: 16px;
+  border: 1px solid var(--gh-border);
+  border-radius: 8px;
+  background: var(--gh-surface-muted);
+}
+.profile-reputation-settings small {
+  display: block;
+  margin-top: 6px;
+  color: var(--gh-text-muted);
+  font-size: 11px;
+}
+.profile-reputation-settings fieldset {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 14px 0 0;
+  padding: 12px 0 0;
+  border: 0;
+  border-top: 1px solid var(--gh-border);
+}
+.profile-reputation-settings legend {
+  padding-right: 8px;
+  font-size: 12px;
+  font-weight: 800;
+}
+.profile-reputation-settings fieldset label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.profile-reputation-settings input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+@media (max-width: 430px) {
+  .profile-reputation-settings fieldset { gap: 10px 14px; }
+  .profile-reputation-settings fieldset label { font-size: 11px; }
+}
