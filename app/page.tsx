@@ -20,6 +20,20 @@ import AuthorActionMenu from "@/components/AuthorActionMenu";
 import CommunityIdentity from "@/components/CommunityIdentity";
 import { fetchPublicCommunityIdentities, type PublicCommunityIdentityMap } from "@/lib/publicCommunityIdentity";
 
+const POSTS_PER_PAGE = 20;
+
+function getPaginationItems(currentPage: number, totalPages: number): Array<number | string> {
+  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
+  const items: Array<number | string> = [1];
+  const start = Math.max(2, currentPage - 1);
+  const end = Math.min(totalPages - 1, currentPage + 1);
+  if (start > 2) items.push("ellipsis-start");
+  for (let page = start; page <= end; page += 1) items.push(page);
+  if (end < totalPages - 1) items.push("ellipsis-end");
+  items.push(totalPages);
+  return items;
+}
+
 interface EngagementCount {
   count: number;
 }
@@ -37,6 +51,8 @@ function HomeContent() {
   const isCommunityView = searchParams.get("section") === "community" || categoryParam !== null;
 
   const [posts, setPosts] = useState<Post[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [communityIdentities, setCommunityIdentities] = useState<PublicCommunityIdentityMap>({});
   const [trendingPosts, setTrendingPosts] = useState<Post[]>([]);
   const [featuredArticles, setFeaturedArticles] = useState<Article[]>([]);
@@ -56,11 +72,15 @@ function HomeContent() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [debouncedSearchKeyword, setDebouncedSearchKeyword] = useState("");
   const staticFeedLoadedRef = useRef(false);
-  const selectedFeedKey = selectedCategory + ":" + (selectedEducationSubCategory || "all");
+  const selectedFeedKey = selectedCategory + ":" + (selectedEducationSubCategory || "all") + ":" + currentPage;
   const [loadedCategory, setLoadedCategory] = useState<string | null>(null);
   const [postsError, setPostsError] = useState<string | null>(null);
   const [postsRetryKey, setPostsRetryKey] = useState(0);
   const loading = loadedCategory !== selectedFeedKey;
+
+  useEffect(function() {
+    setCurrentPage(1);
+  }, [selectedCategory, selectedEducationSubCategory, debouncedSearchKeyword]);
 
   useEffect(function() {
     const timer = window.setTimeout(function() {
@@ -134,7 +154,7 @@ function HomeContent() {
       // N+1 방지를 위해 댓글 수(comments) 및 좋아요 수(post_likes) 조인하여 한 번에 페칭
       let query = supabase
         .from("posts")
-        .select("*, comments(count), post_likes(count)")
+        .select("*, comments(count), post_likes(count)", { count: "exact" })
         .order("created_at", { ascending: false });
 
       if (selectedCategory !== "all") {
@@ -150,13 +170,22 @@ function HomeContent() {
         query = query.or("title.ilike.%" + keyword + "%,content.ilike.%" + keyword + "%");
       }
 
-      const { data, error } = await query.returns<Post[]>();
+      const from = (currentPage - 1) * POSTS_PER_PAGE;
+      const to = from + POSTS_PER_PAGE - 1;
+      const { data, error, count } = await query.range(from, to).returns<Post[]>();
       if (error) {
         console.error("Posts fetch error:", error);
         if (isCurrent) {
           setPosts([]);
           setPostsError("게시글을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
         }
+        return;
+      }
+
+      const pageCount = Math.max(1, Math.ceil((count || 0) / POSTS_PER_PAGE));
+      if (isCurrent) setTotalPages(pageCount);
+      if (currentPage > pageCount) {
+        if (isCurrent) setCurrentPage(pageCount);
         return;
       }
 
@@ -212,7 +241,7 @@ function HomeContent() {
     return function() {
       isCurrent = false;
     };
-  }, [postsRetryKey, debouncedSearchKeyword, selectedCategory, selectedEducationSubCategory, selectedFeedKey]);
+  }, [postsRetryKey, debouncedSearchKeyword, selectedCategory, selectedEducationSubCategory, selectedFeedKey, currentPage]);
 
   useEffect(function() {
     const desktopMotion = window.matchMedia("(min-width: 769px) and (prefers-reduced-motion: no-preference)");
@@ -793,6 +822,20 @@ function HomeContent() {
                 })}
               </tbody>
             </table>
+            {totalPages > 1 && (
+              <nav className="board-pagination" aria-label="게시글 페이지 이동">
+                <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage((page) => Math.max(1, page - 1))} aria-label="이전 페이지">‹</button>
+                {getPaginationItems(currentPage, totalPages).map(function(item) {
+                  if (typeof item === "string") return <span key={item} className="board-pagination-ellipsis">…</span>;
+                  return (
+                    <button key={item} type="button" className={item === currentPage ? "is-active" : ""} aria-current={item === currentPage ? "page" : undefined} onClick={() => setCurrentPage(item)}>
+                      {item}
+                    </button>
+                  );
+                })}
+                <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))} aria-label="다음 페이지">›</button>
+              </nav>
+            )}
           </div>
         )}
         

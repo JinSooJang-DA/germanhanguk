@@ -3148,3 +3148,12 @@ html:not([data-theme="dark"]) body .info-news-section .info-hero img {
 .brand-mark-dark { display:none !important; }
 html[data-theme="dark"] .brand-mark-light { display:none !important; }
 html[data-theme="dark"] .brand-mark-dark { display:block !important; }
+
+/* Community board pagination */
+.board-pagination { display:flex; justify-content:center; align-items:center; gap:6px; padding:22px 10px 8px; }
+.board-pagination button { min-width:38px; height:38px; padding:0 10px; border:1px solid var(--gh-border); border-radius:7px; background:var(--gh-surface); color:var(--gh-text-muted); font-size:13px; font-weight:700; cursor:pointer; }
+.board-pagination button:hover:not(:disabled) { border-color:var(--gh-accent); color:var(--gh-text); }
+.board-pagination button.is-active { background:var(--gh-control-active); color:var(--gh-control-active-text); border-color:var(--gh-control-active); }
+.board-pagination button:disabled { opacity:.35; cursor:default; }
+.board-pagination-ellipsis { min-width:22px; text-align:center; color:var(--gh-text-subtle); }
+@media (max-width: 640px) { .board-pagination { gap:4px; padding-top:18px; } .board-pagination button { min-width:34px; height:34px; padding:0 8px; font-size:12px; } }
