@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
@@ -494,7 +495,7 @@ export default function Header() {
         {/* ======================================================================
             3. 모바일 서랍식 드로어 슬라이드오버 (Backdrop 클릭, ESC 키 및 링크 클릭 이탈 완벽 연동)
            ====================================================================== */}
-        {menuOpen && (
+        {menuOpen && typeof document !== "undefined" && createPortal(
           <>
             {/* 회색 반투명 백드롭 */}
             <div
@@ -633,7 +634,8 @@ export default function Header() {
                 )}
               </div>
             </div>
-          </>
+          </>,
+          document.body
         )}
 
       </div>
