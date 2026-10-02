@@ -815,6 +815,7 @@ function HomeContent() {
                         {formatDate(post.created_at)}
                       </td>
                       <td className="main-post-views" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)", textAlign: "center" }}>
+                        <span className="main-post-date-inline">{formatDate(post.created_at)}</span>
                         <span className="main-post-stats" aria-label={`ì¡°íšŒ ${post.views || 0}, ì¢‹ì•„ìš” ${likesCount}`}>
                           <span className="main-post-stat"><span aria-hidden="true">&#128065;&#65039;</span><span>{post.views || 0}</span></span>
                           <span className="main-post-stat"><span aria-hidden="true">&#10084;&#65039;</span><span>{likesCount}</span></span>

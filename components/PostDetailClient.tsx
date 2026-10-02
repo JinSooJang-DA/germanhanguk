@@ -99,7 +99,7 @@ export default function PostDetailClient({
 
   useEffect(function() {
     let isCurrent = true;
-    const authorIds = [post.author_id];
+    const authorIds = [post.author_id, ...bottomPosts.map(function(item) { return item.author_id; })];
     comments.forEach(function(comment) {
       authorIds.push(comment.author_id);
       (comment.replies || []).forEach(function(reply) { authorIds.push(reply.author_id); });
@@ -109,7 +109,7 @@ export default function PostDetailClient({
       if (isCurrent) setCommunityIdentities(identityMap);
     });
     return function() { isCurrent = false; };
-  }, [comments, post.author_id]);
+  }, [comments, post.author_id, bottomPosts]);
 
   async function fetchComments() {
     setCommentsLoading(true);
@@ -1173,11 +1173,23 @@ export default function PostDetailClient({
                       )}
                       <td className="related-post-author" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
                         {p.author_id ? (
+                          <span className="related-post-author-line">
                           <AuthorActionMenu
                             authorId={p.author_id}
                             authorName={p.author_name}
                             avatarUrl={p.author_avatar}
                           />
+                          {communityIdentities[p.author_id] && (
+                            <CommunityIdentity
+                              xp={communityIdentities[p.author_id].reputation_xp}
+                              tenureValue={communityIdentities[p.author_id].tenure_value}
+                              tenureUnit={communityIdentities[p.author_id].tenure_unit}
+                              showLevel={communityIdentities[p.author_id].show_community_level}
+                              showTenure={communityIdentities[p.author_id].show_germany_tenure}
+                              compact
+                            />
+                          )}
+                          </span>
                         ) : (
                           <span>{p.author_name}</span>
                         )}
@@ -1186,7 +1198,7 @@ export default function PostDetailClient({
                         {formatDate(p.created_at)}
                       </td>
                       <td className="related-post-views" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)", textAlign: "center" }}>
-                        👁️ {p.views || 0} &nbsp;&nbsp; ❤️ {relatedLikesCount}
+                        <span className="related-post-date-inline">{formatDate(p.created_at)}</span><span className="related-post-stats">👁️ {p.views || 0} &nbsp; ❤️ {relatedLikesCount}</span>
                       </td>
                     </tr>
                   );

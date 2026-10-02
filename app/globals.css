@@ -3418,3 +3418,73 @@ html[data-theme="dark"] .brand-mark-dark { display:block !important; }
 .community-home--category .main-post-list thead th:first-child {
   display:none !important;
 }
+
+/* 2026-10 board rows v2: lock date to engagement and remove excess vertical air. */
+.main-post-date-inline,
+.related-post-date-inline { display:none; }
+
+@media (max-width:768px) {
+  .community-home--category .main-post-list tbody tr {
+    grid-template-columns:minmax(0,1fr) max-content !important;
+    grid-template-rows:min-content min-content !important;
+    row-gap:2px !important;
+    column-gap:8px !important;
+    align-items:center !important;
+    align-content:start !important;
+    min-height:0 !important;
+    height:auto !important;
+    padding:7px 4px !important;
+  }
+  .community-home--category .main-post-date { display:none !important; }
+  .community-home--category .main-post-title { grid-column:1; grid-row:1; line-height:1.15 !important; }
+  .community-home--category .main-post-views { grid-column:2; grid-row:1; display:inline-flex !important; align-items:center; gap:6px; justify-self:end; width:max-content !important; line-height:1 !important; }
+  .community-home--category .main-post-date-inline { display:inline; color:var(--gh-text-subtle); font-size:9.5px; white-space:nowrap; }
+  .community-home--category .main-post-region { grid-column:1; grid-row:2; line-height:1 !important; }
+  .community-home--category .main-post-author { grid-column:2; grid-row:2; justify-self:end; width:max-content !important; line-height:1 !important; }
+  .community-home--category .main-post-author > div { line-height:1 !important; }
+  .community-home--category .community-identity { line-height:1 !important; }
+  .community-home--category .board-notice-row .main-post-date { display:block !important; grid-column:2; grid-row:1; justify-self:end; }
+  .community-home--category .board-notice-row .main-post-views { display:none !important; }
+}
+@media (max-width:768px) {
+  .related-posts table,
+  .related-posts tbody { width:100%; }
+  .related-posts tbody tr {
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) max-content !important;
+    grid-template-rows:min-content min-content !important;
+    column-gap:8px !important;
+    row-gap:2px !important;
+    align-items:center !important;
+    padding:7px 4px !important;
+    min-height:0 !important;
+    height:auto !important;
+  }
+  .related-posts .related-post-category,
+  .related-posts .related-post-date { display:none !important; }
+  .related-posts .related-post-title { grid-column:1; grid-row:1; margin:0 !important; min-width:0; line-height:1.15 !important; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  .related-posts .related-post-title a { display:block !important; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-size:14px; }
+  .related-posts .related-post-views { grid-column:2; grid-row:1; display:inline-flex !important; align-items:center; gap:6px; justify-self:end; width:max-content !important; font-size:10px !important; line-height:1 !important; white-space:nowrap; }
+  .related-posts .related-post-views::before { content:none !important; }
+  .related-posts .related-post-date-inline { display:inline; color:var(--gh-text-subtle); font-size:9.5px; }
+  .related-posts .related-post-stats { display:inline; }
+  .related-posts .related-post-region { grid-column:1; grid-row:2; font-size:10.5px !important; line-height:1 !important; white-space:nowrap; }
+  .related-posts .related-post-author { grid-column:2; grid-row:2; display:inline-flex !important; align-items:center; gap:5px; justify-self:end; width:max-content !important; font-size:10.5px !important; line-height:1 !important; white-space:nowrap; }
+  .related-posts .related-post-author .author-action-trigger { gap:2px; padding:0; font-size:10px; font-weight:400; }
+  .related-posts .related-post-author .author-action-avatar { width:18px; height:18px; }
+  .related-posts .related-post-author .author-action-chevron { font-size:8px; }
+  .related-posts .community-identity { flex-wrap:nowrap; gap:3px; font-size:9.5px; line-height:1 !important; white-space:nowrap; }
+}
+
+@media (max-width:360px) {
+  .community-home--category .main-post-list tbody tr,
+  .related-posts tbody tr { column-gap:5px !important; row-gap:1px !important; padding:6px 0 !important; }
+  .community-home--category .main-post-date-inline,
+  .related-posts .related-post-date-inline { font-size:9px; }
+  .related-posts .related-post-region,
+  .related-posts .related-post-author { font-size:9.5px !important; }
+  .related-posts .community-identity { font-size:8.5px; }
+}
+@media (max-width:768px) {
+  .related-posts .related-post-author-line { display:inline-flex; align-items:center; gap:5px; line-height:1; }
+}
