@@ -18,7 +18,7 @@ async function main() {
     const query = buildStockImageQuery(article.category, [], source?.source_title || "");
     const image = await searchPixabayImage(query);
     if (!image) continue;
-    const sources = Array.isArray(article.source_urls) ? article.source_urls.filter((x: any) => x?.kind !== "image") : [];
+    const sources = Array.isArray(article.source_urls) ? article.source_urls.filter((x: unknown) => !x || typeof x !== "object" || (x as { kind?: string }).kind !== "image") : [];
     const credit = { title: `Photo: ${image.photographer} / Pixabay`, url: image.photoUrl, kind: "image", photographer: image.photographer, photographerUrl: image.photographerUrl };
     const { error: updateError } = await db.from("articles").update({ image_url: image.imageUrl, source_urls: [...sources, credit] }).eq("id", article.id);
     if (!updateError) updated += 1;

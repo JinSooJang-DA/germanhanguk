@@ -486,7 +486,7 @@ export default function PublicProfilePage({
 
         {COMMUNITY_REPUTATION_ENABLED && profile.show_reputation_stats && (
           <section aria-label="community reputation" className="community-stats">
-            {[ ["\uD65C\uB3D9", profile.activity_score || 0], ["\uC9C0\uC2DD", profile.knowledge_score || 0], ["\uC18C\uD1B5", profile.communication_score || 0], ["\uB3C4\uC6C0", profile.helpful_score || 0] ].map(([label, value]) => (
+            {[ ["활동", profile.activity_score || 0], ["지식", profile.knowledge_score || 0], ["소통", profile.communication_score || 0], ["도움", profile.helpful_score || 0] ].map(([label, value]) => (
               <div key={String(label)} className="community-stats__item"><strong>{value}</strong><span>{label}</span></div>
             ))}
           </section>

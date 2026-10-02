@@ -208,7 +208,7 @@ RETURNS TABLE (
 BEGIN
   RETURN QUERY
   SELECT
-    CASE WHEN p.show_community_level THEN COALESCE(r.reputation_xp, 0) ELSE NULL END,
+    CASE WHEN p.show_community_level THEN CASE WHEN COALESCE(r.reputation_xp, 0) >= 500 THEN 500 WHEN COALESCE(r.reputation_xp, 0) >= 200 THEN 200 WHEN COALESCE(r.reputation_xp, 0) >= 80 THEN 80 WHEN COALESCE(r.reputation_xp, 0) >= 20 THEN 20 ELSE 0 END ELSE NULL END,
     CASE WHEN p.show_germany_tenure AND d.germany_since IS NOT NULL AND d.germany_since <= current_date THEN
       CASE WHEN current_date - d.germany_since < 31 THEN current_date - d.germany_since + 1
            WHEN EXTRACT(YEAR FROM age(current_date, d.germany_since)) < 1 THEN GREATEST(1, EXTRACT(MONTH FROM age(current_date, d.germany_since))::integer)
@@ -240,7 +240,7 @@ RETURNS TABLE (
   show_community_level boolean, show_germany_tenure boolean
 ) AS $$
   SELECT p.id,
-    CASE WHEN p.show_community_level THEN COALESCE(r.reputation_xp, 0) ELSE NULL END,
+    CASE WHEN p.show_community_level THEN CASE WHEN COALESCE(r.reputation_xp, 0) >= 500 THEN 500 WHEN COALESCE(r.reputation_xp, 0) >= 200 THEN 200 WHEN COALESCE(r.reputation_xp, 0) >= 80 THEN 80 WHEN COALESCE(r.reputation_xp, 0) >= 20 THEN 20 ELSE 0 END ELSE NULL END,
     CASE WHEN p.show_germany_tenure AND d.germany_since IS NOT NULL AND d.germany_since <= current_date THEN
       CASE WHEN current_date - d.germany_since < 31 THEN current_date - d.germany_since + 1
            WHEN EXTRACT(YEAR FROM age(current_date, d.germany_since)) < 1 THEN GREATEST(1, EXTRACT(MONTH FROM age(current_date, d.germany_since))::integer)

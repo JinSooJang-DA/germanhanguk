@@ -602,15 +602,15 @@ export default function ProfilePage() {
           {COMMUNITY_REPUTATION_ENABLED && (
             <div className="profile-reputation-settings">
               <div className="form-group">
-                <label htmlFor="germanySince">{"\uB3C5\uC77C \uAC70\uC8FC \uC2DC\uC791\uC77C"}</label>
+                <label htmlFor="germanySince">독일 거주 시작일</label>
                 <input id="germanySince" type="date" value={germanySince} max={new Date().toISOString().slice(0, 10)} onChange={(e) => setGermanySince(e.target.value)} />
-                <small>{"\uC2E4\uC81C \uB0A0\uC9DC\uB294 \uACF5\uAC1C\uD558\uC9C0 \uC54A\uACE0, \uC120\uD0DD\uD558\uBA74 \uC5F0\uCC28\uB9CC \uD45C\uC2DC\uD569\uB2C8\uB2E4."}</small>
+                <small>실제 날짜는 공개하지 않고, 선택하면 독일생활 기간만 표시합니다.</small>
               </div>
               <fieldset>
-                <legend>{"\uACF5\uAC1C \uC124\uC815"}</legend>
-                <label><input type="checkbox" checked={showCommunityLevel} onChange={(e) => setShowCommunityLevel(e.target.checked)} /> {"\uB4F1\uAE09 \uD45C\uC2DC"}</label>
-                <label><input type="checkbox" checked={showGermanyTenure} onChange={(e) => setShowGermanyTenure(e.target.checked)} /> {"\uB3C5\uC77C\uC0DD\uD65C \uAE30\uAC04 \uD45C\uC2DC"}</label>
-                <label><input type="checkbox" checked={showReputationStats} onChange={(e) => setShowReputationStats(e.target.checked)} /> {"\uD65C\uB3D9 \uC218\uCE58 \uACF5\uAC1C"}</label>
+                <legend>공개 설정</legend>
+                <label><input type="checkbox" checked={showCommunityLevel} onChange={(e) => setShowCommunityLevel(e.target.checked)} /> 등급 표시</label>
+                <label><input type="checkbox" checked={showGermanyTenure} onChange={(e) => setShowGermanyTenure(e.target.checked)} /> 독일생활 기간 표시</label>
+                <label><input type="checkbox" checked={showReputationStats} onChange={(e) => setShowReputationStats(e.target.checked)} /> 활동 수치 공개</label>
               </fieldset>
             </div>
           )}

@@ -82,7 +82,10 @@ export default function AdminArticlesPage() {
     setLoading(false);
   }, [router]);
 
-  useEffect(() => { void loadDrafts(); }, [loadDrafts]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => { void loadDrafts(); }, 0);
+    return () => window.clearTimeout(timer);
+  }, [loadDrafts]);
   function choose(article: DraftArticle) {
     setSelected(article);
     setEditor({ id: article.id, title: article.title, summary: article.summary, content: article.content, category: article.category, image_url: article.image_url, is_featured: article.is_featured });
