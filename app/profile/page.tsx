@@ -51,6 +51,7 @@ const CATEGORIES: Record<string, string> = {
   life: "생활정보",
   market: "중고장터",
   jobs: "구인구직",
+  tandem: "탄뎀 · Tandem",
   events: "행사",
 };
 

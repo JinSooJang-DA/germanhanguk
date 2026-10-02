@@ -667,6 +667,13 @@ function HomeContent() {
           </Link>
         </div>
 
+        {selectedCategory === "tandem" && (
+          <div className="tandem-community-intro" style={{ margin: "-4px 0 22px", padding: "16px 18px", border: "1px solid var(--gh-border)", background: "var(--gh-surface)", borderRadius: "8px" }}>
+            <strong style={{ color: "var(--gh-text)", fontSize: "14px" }}>🇰🇷 ↔ 🇩🇪 탄뎀 · Tandem</strong>
+            <span style={{ display: "block", marginTop: "5px", color: "var(--gh-text-subtle)", fontSize: "12px", lineHeight: 1.6 }}>한국어와 독일어, 어느 언어로든 편하게 글을 남겨보세요. Finde Menschen für Sprache, Kultur und echten Austausch.</span>
+          </div>
+        )}
+
         {selectedCategory === "education" && (
           <div className="education-community-topics" style={{ margin: "-4px 0 22px", padding: "16px 18px", border: "1px solid var(--gh-border)", background: "var(--gh-surface)", borderRadius: "8px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap", marginBottom: "10px" }}>

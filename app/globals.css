@@ -2795,3 +2795,5 @@ html[data-theme="dark"] .brand-mark-dark { display:block !important; }
     align-self: stretch;
   }
 }
+.kculture-status-link { text-decoration: none; cursor: pointer; }
+.kculture-status-link:hover { text-decoration: underline; }

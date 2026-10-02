@@ -13,6 +13,7 @@ export const CATEGORIES: readonly Category[] = [
   { value: "education", label: { ko: "유학·교육", de: "Studium & Ausbildung", en: "Study & Education" } },
   { value: "market", label: { ko: "중고장터", de: "Flohmarkt", en: "Marketplace" } },
   { value: "jobs", label: { ko: "구인구직", de: "Jobs & Karriere", en: "Jobs" } },
+  { value: "tandem", label: { ko: "탄뎀", de: "Tandem", en: "Tandem" } },
 ] as const;
 
 export type CategoryValue = typeof CATEGORIES[number]["value"];
@@ -70,6 +71,7 @@ const POST_REGION_POLICIES: Record<CategoryValue, PostRegionPolicy> = {
   education: { usesRegion: true, required: false, label: "관련 지역" },
   market: { usesRegion: true, required: true, label: "거래 지역" },
   jobs: { usesRegion: true, required: true, label: "근무 지역" },
+  tandem: { usesRegion: true, required: false, label: "만나고 싶은 지역 / Ort (선택)" },
 };
 
 const DEFAULT_POST_AUTHORING_COPY: PostAuthoringCopy = {
@@ -99,6 +101,11 @@ const POST_AUTHORING_COPIES: Record<CategoryValue, PostAuthoringCopy> = {
     titlePlaceholder: "채용 또는 구직 내용을 간단히 적어주세요",
     contentPlaceholder: "업무 내용, 조건, 근무 형태 등 필요한 정보를 구체적으로 적어주세요.",
     helperText: "지원자와 구직자가 판단할 수 있도록 실제 근무하거나 구하는 지역을 입력해 주세요.",
+  },
+  tandem: {
+    titlePlaceholder: "탄뎀 파트너를 찾는 제목을 적어주세요 / Titel",
+    contentPlaceholder: "사용 언어, 배우고 싶은 언어, 관심사와 원하는 교류 방식을 자유롭게 적어주세요. Deutsch oder Koreanisch ist willkommen.",
+    helperText: "한국어와 독일어 어느 언어로 작성해도 좋습니다. 공개 글에는 전화번호·주소 등 불필요한 개인정보를 남기지 마세요.",
   },
 };
 

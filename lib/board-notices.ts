@@ -1,6 +1,6 @@
 export interface BoardNotice {
   key: string;
-  category: "all" | "community" | "life" | "education" | "market" | "jobs";
+  category: "all" | "community" | "life" | "education" | "market" | "jobs" | "tandem";
   title: string;
   intro: string;
   points: string[];
@@ -44,6 +44,14 @@ export const BOARD_NOTICES: readonly BoardNotice[] = [
     title: "구인·구직 게시판 이용 안내",
     intro: "독일 내 채용, 아르바이트, Werkstudent, 인턴과 구직 정보를 나누는 공간입니다.",
     points: ["구인글에는 근무지·업무·고용형태·근무시간·지원방법을 구체적으로 적어주세요.", "가능하면 급여 또는 급여 범위를 투명하게 안내해주세요.", "구직자는 연락처·체류서류 등 개인정보를 공개 게시물에 과도하게 노출하지 마세요."],
+  },
+  {
+    key: "tandem",
+    category: "tandem",
+    title: "탄뎀 · Tandem에 오신 것을 환영합니다",
+    intro: "한국어와 독일어를 배우고, 서로의 문화를 실제 사람들과 나누는 공간입니다. Deutsch und Koreanisch sind beide willkommen.",
+    points: ["사용 언어와 배우고 싶은 언어, 관심사를 적어주세요.", "온라인 대화인지 오프라인 만남인지, 선호하는 지역과 방식을 알려주세요.", "서로의 언어 수준과 문화적 차이를 존중하고 부담 없는 교류를 만들어주세요."],
+    caution: "첫 만남은 공개된 장소를 권장하며, 주소·전화번호 등 민감한 개인정보는 공개 게시물에 남기지 마세요.",
   },
   {
     key: "all",

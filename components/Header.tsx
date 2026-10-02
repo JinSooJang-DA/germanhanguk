@@ -561,6 +561,7 @@ export default function Header() {
                   <Link href="/?section=community&category=life" onClick={function() { setMenuOpen(false); }}>생활정보</Link>
                   <Link href="/?section=community&category=market" onClick={function() { setMenuOpen(false); }}>중고장터</Link>
                   <Link href="/?section=community&category=jobs" onClick={function() { setMenuOpen(false); }}>구인구직</Link>
+                  <Link href="/?section=community&category=tandem" onClick={function() { setMenuOpen(false); }}>🇰🇷↔🇩🇪 탄뎀 · Tandem</Link>
                 </section>
               </nav>
 
