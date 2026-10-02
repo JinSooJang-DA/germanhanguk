@@ -17,6 +17,7 @@ import {
 import { VIEW_INCREMENT_EVENT } from "@/components/PostViewCount";
 import AuthorActionMenu from "@/components/AuthorActionMenu";
 import CommunityIdentity from "@/components/CommunityIdentity";
+import PostEngagementStats, { HeartIcon } from "@/components/PostEngagementStats";
 import { fetchPublicCommunityIdentities, type PublicCommunityIdentityMap } from "@/lib/publicCommunityIdentity";
 import { deletePostImagesByUrl, getStoredImageUrls } from "@/lib/postImages";
 
@@ -670,7 +671,7 @@ export default function PostDetailClient({
             transition: "all 0.2s",
           }}
         >
-          <span className="gh-like-icon">{isLiked ? "♥" : "♡"}</span>
+          <HeartIcon className="gh-like-icon" />
           <span>좋아요 {likesCount}</span>
         </button>
       </div>
@@ -1136,7 +1137,7 @@ export default function PostDetailClient({
                   {relatedUsesRegion && <th style={{ padding: "14px" }}>지역</th>}
                   <th style={{ padding: "14px" }}>작성자</th>
                   <th style={{ padding: "14px" }}>작성일</th>
-                  <th style={{ padding: "14px", textAlign: "center" }}>조회/추천</th>
+                  <th style={{ padding: "14px", textAlign: "center" }}>반응</th>
                 </tr>
               </thead>
               <tbody>
@@ -1198,7 +1199,7 @@ export default function PostDetailClient({
                         {formatDate(p.created_at)}
                       </td>
                       <td className="related-post-views" style={{ padding: "18px 14px", fontSize: "14px", color: "var(--gh-text-muted)", textAlign: "center" }}>
-                        <span className="related-post-date-inline">{formatDate(p.created_at)}</span><span className="related-post-stats">👁️ {p.views || 0} &nbsp; ❤️ {relatedLikesCount}</span>
+                        <span className="related-post-date-inline">{formatDate(p.created_at)}</span><PostEngagementStats views={p.views || 0} likes={relatedLikesCount} className="related-post-stats" />
                       </td>
                     </tr>
                   );

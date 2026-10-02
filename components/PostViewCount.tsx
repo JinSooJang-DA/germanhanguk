@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { EyeIcon } from "@/components/PostEngagementStats";
 
 interface PostViewCountProps {
   postId: number;
@@ -24,5 +25,5 @@ export default function PostViewCount({ postId, initialViews }: PostViewCountPro
     return () => window.removeEventListener(VIEW_INCREMENT_EVENT, handleViewIncrement);
   }, [postId]);
 
-  return <>👁️ 조회 {views}회</>;
+  return <span className="post-view-count"><EyeIcon /> 조회 {views}회</span>;
 }

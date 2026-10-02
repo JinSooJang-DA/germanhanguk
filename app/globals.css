@@ -2268,6 +2268,10 @@ html[data-theme="dark"] .gh-like-icon {
   filter:saturate(.52);
 }
 html[data-theme="dark"] .gh-like-action:not(.is-active) .gh-like-icon { color:#9b9b91; }
+.gh-like-icon { width:17px; height:17px; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.gh-like-action.is-active .gh-like-icon { fill:currentColor; }
+.post-view-count { display:inline-flex; align-items:center; gap:5px; }
+.post-view-count svg { width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
 
 
 /* Footer palette + stable hero hover */
@@ -2643,22 +2647,31 @@ html[data-theme="dark"] .brand-mark-dark { display:block !important; }
 }
 
 /* 2026-10 board readability: keep category/title separate and align engagement stats. */
-.main-post-stats {
-  display:inline-grid;
-  grid-template-columns:max-content max-content;
+.post-engagement-stats {
+  display:inline-flex;
   align-items:center;
   justify-content:center;
-  gap:12px;
+  gap:10px;
+  color:var(--gh-text-subtle);
   white-space:nowrap;
 }
-.main-post-stat {
-  display:inline-grid;
-  grid-template-columns:18px minmax(1.5ch,auto);
+.post-engagement-stat {
+  display:inline-flex;
   align-items:center;
-  column-gap:3px;
+  gap:4px;
+  font-size:12px;
+  line-height:1;
+  font-variant-numeric:tabular-nums;
 }
-.main-post-stat > span:first-child { text-align:center; line-height:1; }
-.main-post-stat > span:last-child { text-align:right; font-variant-numeric:tabular-nums; }
+.post-engagement-stat svg {
+  width:14px;
+  height:14px;
+  stroke:currentColor;
+  stroke-width:1.7;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.post-engagement-stat span { min-width:1ch; text-align:right; }
 
 
 
