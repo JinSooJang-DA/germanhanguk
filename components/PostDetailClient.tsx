@@ -674,7 +674,7 @@ export default function PostDetailClient({
               padding: "12px",
               border: "1px solid var(--gh-border)",
               borderRadius: "6px",
-              fontSize: "14px",
+              fontSize: "16px",
               resize: "vertical",
               background: "var(--gh-surface)",
               color: "var(--gh-text)",
@@ -864,7 +864,7 @@ export default function PostDetailClient({
                               padding: "10px",
                                 border: "1px solid var(--gh-border)",
                               borderRadius: "4px",
-                              fontSize: "14px",
+                              fontSize: "16px",
                               resize: "vertical",
                               boxSizing: "border-box",
                             }}
@@ -947,7 +947,7 @@ export default function PostDetailClient({
                                 padding: "8px 12px",
                                 border: "1px solid var(--gh-border)",
                                 borderRadius: "4px",
-                                fontSize: "13px",
+                                fontSize: "16px",
                                 background: "var(--gh-surface)",
                                 color: "var(--gh-text)",
                               }}

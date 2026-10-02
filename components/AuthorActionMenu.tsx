@@ -92,6 +92,15 @@ export default function AuthorActionMenu({ authorId, authorName, avatarUrl, show
     };
   }, [sending]);
 
+  useEffect(() => {
+    if (!composeOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [composeOpen]);
+
   const isOwnProfile = currentUserId === authorId;
 
   return (
@@ -113,7 +122,7 @@ export default function AuthorActionMenu({ authorId, authorName, avatarUrl, show
 
       {composeOpen && (
         <div className="author-message-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !sending) setComposeOpen(false); }}>
-          <form className="author-message-dialog" onSubmit={sendMessage} aria-label={`${authorName}님에게 쪽지 보내기`}>
+          <form className="author-message-dialog" onSubmit={sendMessage} role="dialog" aria-modal="true" aria-label={`${authorName}님에게 쪽지 보내기`}>
             <div className="author-message-heading">
               <div><strong>{authorName}</strong>님에게 쪽지 보내기</div>
               <button type="button" onClick={() => setComposeOpen(false)} disabled={sending} aria-label="닫기">×</button>

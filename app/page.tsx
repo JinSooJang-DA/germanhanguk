@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -50,11 +50,20 @@ function HomeContent() {
     ? educationSubCategoryParam
     : null;
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [debouncedSearchKeyword, setDebouncedSearchKeyword] = useState("");
+  const staticFeedLoadedRef = useRef(false);
   const selectedFeedKey = selectedCategory + ":" + (selectedEducationSubCategory || "all");
   const [loadedCategory, setLoadedCategory] = useState<string | null>(null);
   const [postsError, setPostsError] = useState<string | null>(null);
   const [postsRetryKey, setPostsRetryKey] = useState(0);
   const loading = loadedCategory !== selectedFeedKey;
+
+  useEffect(function() {
+    const timer = window.setTimeout(function() {
+      setDebouncedSearchKeyword(searchKeyword.trim());
+    }, 275);
+    return function() { window.clearTimeout(timer); };
+  }, [searchKeyword]);
 
   useEffect(function() {
     let isCurrent = true;
@@ -132,8 +141,8 @@ function HomeContent() {
         query = query.eq("sub_category", selectedEducationSubCategory);
       }
 
-      if (searchKeyword.trim()) {
-        const keyword = searchKeyword.trim();
+      if (debouncedSearchKeyword) {
+        const keyword = debouncedSearchKeyword;
         query = query.or("title.ilike.%" + keyword + "%,content.ilike.%" + keyword + "%");
       }
 
@@ -187,13 +196,16 @@ function HomeContent() {
     }
 
     fetchPosts();
-    fetchFeaturedArticles();
-    fetchTrendingPosts();
+    if (!staticFeedLoadedRef.current) {
+      Promise.allSettled([fetchFeaturedArticles(), fetchTrendingPosts()]).then(function() {
+        if (isCurrent) staticFeedLoadedRef.current = true;
+      });
+    }
 
     return function() {
       isCurrent = false;
     };
-  }, [postsRetryKey, searchKeyword, selectedCategory, selectedEducationSubCategory, selectedFeedKey]);
+  }, [postsRetryKey, debouncedSearchKeyword, selectedCategory, selectedEducationSubCategory, selectedFeedKey]);
 
   useEffect(function() {
     const desktopMotion = window.matchMedia("(min-width: 769px) and (prefers-reduced-motion: no-preference)");
@@ -320,6 +332,8 @@ function HomeContent() {
                         className={currentSlide === index ? "home-hero-image is-active" : "home-hero-image"}
                         src={article.image_url}
                         alt={article.title}
+                        loading={index === 0 ? "eager" : "lazy"}
+                        fetchPriority={index === 0 ? "high" : "auto"}
                         style={{
                           width: "100%",
                           height: "100%",
