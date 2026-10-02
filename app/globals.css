@@ -3488,3 +3488,67 @@ html[data-theme="dark"] .brand-mark-dark { display:block !important; }
 @media (max-width:768px) {
   .related-posts .related-post-author-line { display:inline-flex; align-items:center; gap:5px; line-height:1; }
 }
+
+/* 2026-10 board rows v3: fixed region column + aligned author metadata. */
+@media (max-width:768px) {
+  .community-home--category .main-post-list,
+  .related-posts table {
+    width:calc(100% + 12px) !important;
+    margin-left:-6px !important;
+    margin-right:-6px !important;
+  }
+  .community-home--category .main-post-list tbody tr,
+  .related-posts tbody tr {
+    grid-template-columns:88px minmax(0,1fr) max-content !important;
+    grid-template-rows:min-content min-content !important;
+    column-gap:0 !important;
+    row-gap:2px !important;
+    padding:7px 8px !important;
+  }
+  .community-home--category .main-post-title,
+  .related-posts .related-post-title {
+    grid-column:1 / 3 !important;
+    grid-row:1 !important;
+    padding-right:8px !important;
+  }
+  .community-home--category .main-post-views,
+  .related-posts .related-post-views {
+    grid-column:3 !important;
+    grid-row:1 !important;
+    padding-right:2px !important;
+    justify-self:end !important;
+  }
+  .community-home--category .main-post-region,
+  .related-posts .related-post-region {
+    grid-column:1 !important;
+    grid-row:2 !important;
+    width:88px !important;
+    padding-right:8px !important;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .community-home--category .main-post-author,
+  .related-posts .related-post-author {
+    grid-column:2 / 4 !important;
+    grid-row:2 !important;
+    justify-self:start !important;
+    width:auto !important;
+    min-width:0 !important;
+    padding-left:0 !important;
+  }
+  .community-home--category .board-notice-row .main-post-title { grid-column:1 / 3 !important; }
+  .community-home--category .board-notice-row .main-post-date { grid-column:3 !important; }
+}
+
+@media (max-width:360px) {
+  .community-home--category .main-post-list tbody tr,
+  .related-posts tbody tr {
+    grid-template-columns:68px minmax(0,1fr) max-content !important;
+    padding:6px 7px !important;
+  }
+  .community-home--category .main-post-region,
+  .related-posts .related-post-region {
+    width:68px !important;
+    padding-right:5px !important;
+  }
+}
