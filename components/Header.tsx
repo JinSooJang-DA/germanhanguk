@@ -501,7 +501,7 @@ export default function Header() {
               onClick={function() { setMenuOpen(false); }}
               style={{
                 position: "fixed",
-                inset: 0,
+                inset: "0 0 calc(64px + env(safe-area-inset-bottom)) 0",
                 background: "rgba(15, 23, 42, 0.4)",
                 backdropFilter: "blur(1px)",
                 zIndex: 998,
@@ -519,7 +519,7 @@ export default function Header() {
                 position: "fixed",
                 top: 0,
                 right: 0,
-                bottom: 0,
+                bottom: "calc(64px + env(safe-area-inset-bottom))",
                 width: "300px",
                 background: "var(--gh-surface)",
                 boxShadow: "-4px 0 24px rgba(0, 0, 0, 0.15)",
@@ -648,7 +648,7 @@ export default function Header() {
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10l7-7 7 7M12 3v18" /></svg>
           <span>맨위</span>
         </button>
-        <button type="button" className="mobile-bottom-nav-item" onClick={function() { setMenuOpen(true); }} aria-label="전체 메뉴 열기" aria-expanded={menuOpen}>
+        <button type="button" className="mobile-bottom-nav-item" onClick={function() { setMenuOpen(function(open) { return !open; }); }} aria-label="전체 메뉴 열기" aria-expanded={menuOpen}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
           <span>메뉴</span>
         </button>

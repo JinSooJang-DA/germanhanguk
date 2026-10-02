@@ -1650,14 +1650,15 @@ html[data-theme="light"] .mobile-topic-links a {
 /* Responsive polish: keep the drawer independent from the glass header. */
 @media (max-width:1179px) {
   html[data-theme="light"] .site-header,
+  html[data-theme="dark"] .site-header,
   .site-header {
     backdrop-filter:none !important;
     -webkit-backdrop-filter:none !important;
   }
   .mobile-menu-drawer {
     width:min(72vw,300px) !important;
-    height:100dvh !important;
-    max-height:100dvh !important;
+    height:calc(100dvh - 64px - env(safe-area-inset-bottom)) !important;
+    max-height:calc(100dvh - 64px - env(safe-area-inset-bottom)) !important;
     padding:16px !important;
     overflow-y:auto !important;
     overscroll-behavior:contain;
