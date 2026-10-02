@@ -3571,3 +3571,27 @@ html[data-theme="dark"] .brand-mark-dark { display:block !important; }
     text-align:right !important;
   }
 }
+
+/* 2026-10 mobile board row v5: one shared mid-density rhythm for list + related posts. */
+@media (max-width:768px) {
+  .community-home--category .main-post-list tbody tr,
+  .related-posts tbody tr {
+    row-gap:3px !important;
+    padding:9px 8px !important;
+  }
+  .community-home--category .main-post-title,
+  .related-posts .related-post-title {
+    line-height:1.2 !important;
+    margin:0 !important;
+  }
+  .community-home--category .main-post-author,
+  .community-home--category .main-post-region,
+  .related-posts .related-post-author,
+  .related-posts .related-post-region {
+    line-height:1.1 !important;
+  }
+}
+@media (max-width:360px) {
+  .community-home--category .main-post-list tbody tr,
+  .related-posts tbody tr { row-gap:3px !important; padding:8px 7px !important; }
+}
