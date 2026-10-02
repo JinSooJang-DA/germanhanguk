@@ -26,7 +26,6 @@ export default function Header() {
   // 모바일 메뉴 서랍 열림 상태
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [portalMenuOpen, setPortalMenuOpen] = useState<"info" | "community" | null>(null);
 
   async function loadUserProfile(userId: string, defaultEmail?: string) {
     const { data: profile } = await supabase
@@ -155,14 +154,12 @@ export default function Header() {
     const handleKeyDown = function(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setMenuOpen(false);
-        setPortalMenuOpen(null);
         setProfileMenuOpen(false);
       }
     };
     const handlePointerDown = function(e: PointerEvent) {
       const target = e.target;
       if (!(target instanceof Element)) return;
-      if (!target.closest(".portal-nav")) setPortalMenuOpen(null);
       if (!target.closest(".profile-menu-shell")) setProfileMenuOpen(false);
     };
     window.addEventListener("keydown", handleKeyDown);
