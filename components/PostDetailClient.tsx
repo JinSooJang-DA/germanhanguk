@@ -16,6 +16,8 @@ import {
 } from "@/lib/contentValidation";
 import { VIEW_INCREMENT_EVENT } from "@/components/PostViewCount";
 import AuthorActionMenu from "@/components/AuthorActionMenu";
+import CommunityIdentity from "@/components/CommunityIdentity";
+import { fetchPublicCommunityIdentities, type PublicCommunityIdentityMap } from "@/lib/publicCommunityIdentity";
 import { deletePostImagesByUrl, getStoredImageUrls } from "@/lib/postImages";
 
 const PAGE_SIZE = 10;
@@ -64,6 +66,7 @@ export default function PostDetailClient({
 
   const [post] = useState<Post>(initialPost);
   const [comments, setComments] = useState<Comment[]>(initialComments);
+  const [communityIdentities, setCommunityIdentities] = useState<PublicCommunityIdentityMap>({});
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [commentsError, setCommentsError] = useState<string | null>(
     initialCommentsError ? "댓글을 불러오지 못했습니다. 잠시 후 다시 시도해주세요." : null
@@ -93,6 +96,20 @@ export default function PostDetailClient({
   const newCommentCharacterCount = formatCharacterCount(newComment, COMMENT_RULE.maxLength);
   const replyCharacterCount = formatCharacterCount(replyContent, COMMENT_RULE.maxLength);
   const editingCommentCharacterCount = formatCharacterCount(editingCommentContent, COMMENT_RULE.maxLength);
+
+  useEffect(function() {
+    let isCurrent = true;
+    const authorIds = [post.author_id];
+    comments.forEach(function(comment) {
+      authorIds.push(comment.author_id);
+      (comment.replies || []).forEach(function(reply) { authorIds.push(reply.author_id); });
+    });
+
+    fetchPublicCommunityIdentities(authorIds).then(function(identityMap) {
+      if (isCurrent) setCommunityIdentities(identityMap);
+    });
+    return function() { isCurrent = false; };
+  }, [comments, post.author_id]);
 
   async function fetchComments() {
     setCommentsLoading(true);
@@ -807,16 +824,21 @@ export default function PostDetailClient({
                           color: "var(--gh-text-muted)",
                         }}
                       >
-                        {comment.author_id ? (
-                          <Link
-                            href={"/profile/" + comment.author_id}
-                            style={{ fontWeight: "bold", color: "var(--gh-text)", textDecoration: "none" }}
-                          >
-                            {comment.author_name}
-                          </Link>
-                        ) : (
-                          <span style={{ fontWeight: "bold", color: "var(--gh-text)" }}>{comment.author_name}</span>
-                        )}
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "2px" }}>
+                          {comment.author_id ? (
+                            <Link
+                              href={"/profile/" + comment.author_id}
+                              style={{ fontWeight: "bold", color: "var(--gh-text)", textDecoration: "none" }}
+                            >
+                              {comment.author_name}
+                            </Link>
+                          ) : (
+                            <span style={{ fontWeight: "bold", color: "var(--gh-text)" }}>{comment.author_name}</span>
+                          )}
+                          {comment.author_id && communityIdentities[comment.author_id] && (
+                            <CommunityIdentity xp={communityIdentities[comment.author_id].reputation_xp} tenureValue={communityIdentities[comment.author_id].tenure_value} tenureUnit={communityIdentities[comment.author_id].tenure_unit} showLevel={communityIdentities[comment.author_id].show_community_level} showTenure={communityIdentities[comment.author_id].show_germany_tenure} compact />
+                          )}
+                        </div>
                         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                           <span>{formatDateTime(comment.created_at)}</span>
                           {isCommentAuthor && !isEditing && (
@@ -1014,7 +1036,12 @@ export default function PostDetailClient({
                             </div>
                             <div style={{ flex: 1 }}>
                                 <div style={{ display: "flex", fontSize: "12px", color: "var(--gh-text-muted)", marginBottom: "4px", justifyContent: "space-between" }}>
-                                <span style={{ fontWeight: "bold", color: "var(--gh-text)" }}>{reply.author_name}</span>
+                                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "2px" }}>
+                                  <span style={{ fontWeight: "bold", color: "var(--gh-text)" }}>{reply.author_name}</span>
+                                  {reply.author_id && communityIdentities[reply.author_id] && (
+                                    <CommunityIdentity xp={communityIdentities[reply.author_id].reputation_xp} tenureValue={communityIdentities[reply.author_id].tenure_value} tenureUnit={communityIdentities[reply.author_id].tenure_unit} showLevel={communityIdentities[reply.author_id].show_community_level} showTenure={communityIdentities[reply.author_id].show_germany_tenure} compact />
+                                  )}
+                                </div>
                                 <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                                   <span>{formatDateTime(reply.created_at)}</span>
                                   {isReplyAuthor && !isEditingReply && (

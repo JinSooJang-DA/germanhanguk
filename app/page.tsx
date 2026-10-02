@@ -17,6 +17,8 @@ import type { Post as BasePost } from "@/types/post";
 import type { Article } from "@/types/article";
 import AdSlot from "@/components/AdSlot";
 import AuthorActionMenu from "@/components/AuthorActionMenu";
+import CommunityIdentity from "@/components/CommunityIdentity";
+import { fetchPublicCommunityIdentities, type PublicCommunityIdentityMap } from "@/lib/publicCommunityIdentity";
 
 interface EngagementCount {
   count: number;
@@ -35,6 +37,7 @@ function HomeContent() {
   const isCommunityView = searchParams.get("section") === "community" || categoryParam !== null;
 
   const [posts, setPosts] = useState<Post[]>([]);
+  const [communityIdentities, setCommunityIdentities] = useState<PublicCommunityIdentityMap>({});
   const [trendingPosts, setTrendingPosts] = useState<Post[]>([]);
   const [featuredArticles, setFeaturedArticles] = useState<Article[]>([]);
   const [articlesError, setArticlesError] = useState(false);
@@ -174,6 +177,8 @@ function HomeContent() {
         }
       }
 
+      const identityMap = await fetchPublicCommunityIdentities(authorIds);
+
       const postsWithAvatar: Post[] = postsData.map(function(p) {
         return {
           ...p,
@@ -183,6 +188,7 @@ function HomeContent() {
 
       if (isCurrent) {
         setPosts(postsWithAvatar);
+        setCommunityIdentities(identityMap);
         setPostsError(null);
       }
       } catch (err) {
@@ -730,11 +736,23 @@ function HomeContent() {
                       )}
                       <td className="main-post-author" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
                         {post.author_id ? (
-                          <AuthorActionMenu
-                            authorId={post.author_id}
-                            authorName={post.author_name}
-                            avatarUrl={post.author_avatar}
-                          />
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "3px" }}>
+                            <AuthorActionMenu
+                              authorId={post.author_id}
+                              authorName={post.author_name}
+                              avatarUrl={post.author_avatar}
+                            />
+                            {communityIdentities[post.author_id] && (
+                              <CommunityIdentity
+                                xp={communityIdentities[post.author_id].reputation_xp}
+                                tenureValue={communityIdentities[post.author_id].tenure_value}
+                                tenureUnit={communityIdentities[post.author_id].tenure_unit}
+                                showLevel={communityIdentities[post.author_id].show_community_level}
+                                showTenure={communityIdentities[post.author_id].show_germany_tenure}
+                                compact
+                              />
+                            )}
+                          </div>
                         ) : (
                           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                             <div

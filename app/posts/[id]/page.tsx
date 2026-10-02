@@ -6,6 +6,8 @@ import { formatDate } from "@/lib/date";
 import { Post, Comment } from "@/types/post";
 import PostViewCount from "@/components/PostViewCount";
 import AuthorActionMenu from "@/components/AuthorActionMenu";
+import CommunityIdentity from "@/components/CommunityIdentity";
+import { fetchPublicCommunityIdentities } from "@/lib/publicCommunityIdentity";
 import PostContent from "@/components/PostContent";
 import { stripPostImageTokens } from "@/lib/postImages";
 
@@ -134,6 +136,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     ...postData,
     author_avatar: authorAvatar,
   };
+  const identityMap = await fetchPublicCommunityIdentities([post.author_id]);
+  const authorIdentity = post.author_id ? identityMap[post.author_id] : null;
 
   const { data: { session } } = await supabase.auth.getSession();
   const userId = session?.user?.id || null;
@@ -172,11 +176,16 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           }}
         >
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-            {post.author_id ? (
-              <AuthorActionMenu authorId={post.author_id} authorName={post.author_name} avatarUrl={post.author_avatar} />
-            ) : (
-              <span style={{ fontWeight: "bold", color: "var(--gh-text)" }}>{post.author_name}</span>
-            )}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "3px" }}>
+              {post.author_id ? (
+                <AuthorActionMenu authorId={post.author_id} authorName={post.author_name} avatarUrl={post.author_avatar} />
+              ) : (
+                <span style={{ fontWeight: "bold", color: "var(--gh-text)" }}>{post.author_name}</span>
+              )}
+              {authorIdentity && (
+                <CommunityIdentity xp={authorIdentity.reputation_xp} tenureValue={authorIdentity.tenure_value} tenureUnit={authorIdentity.tenure_unit} showLevel={authorIdentity.show_community_level} showTenure={authorIdentity.show_germany_tenure} compact />
+              )}
+            </div>
             <span style={{ marginLeft: "8px", color: "#94a3b8" }}>
               <PostViewCount postId={post.id} initialViews={post.views || 0} />
             </span>

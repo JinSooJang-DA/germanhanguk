@@ -232,3 +232,27 @@ GRANT EXECUTE ON FUNCTION public.get_public_community_identity(uuid) TO anon, au
 
 -- Exact Germany start dates and hidden score totals remain behind RLS; public clients receive privacy-filtered RPC output only.
 -- Existing users start at zero. Historical posts/comments are not backfilled.
+
+-- Batch form used by community lists/comments to avoid one RPC per author.
+CREATE OR REPLACE FUNCTION public.get_public_community_identities(p_user_ids uuid[])
+RETURNS TABLE (
+  user_id uuid, reputation_xp integer, tenure_value integer, tenure_unit text,
+  show_community_level boolean, show_germany_tenure boolean
+) AS $$
+  SELECT p.id,
+    CASE WHEN p.show_community_level THEN COALESCE(r.reputation_xp, 0) ELSE NULL END,
+    CASE WHEN p.show_germany_tenure AND d.germany_since IS NOT NULL AND d.germany_since <= current_date THEN
+      CASE WHEN current_date - d.germany_since < 31 THEN current_date - d.germany_since + 1
+           WHEN EXTRACT(YEAR FROM age(current_date, d.germany_since)) < 1 THEN GREATEST(1, EXTRACT(MONTH FROM age(current_date, d.germany_since))::integer)
+           ELSE EXTRACT(YEAR FROM age(current_date, d.germany_since))::integer END ELSE NULL END,
+    CASE WHEN p.show_germany_tenure AND d.germany_since IS NOT NULL AND d.germany_since <= current_date THEN
+      CASE WHEN current_date - d.germany_since < 31 THEN 'day'
+           WHEN EXTRACT(YEAR FROM age(current_date, d.germany_since)) < 1 THEN 'month' ELSE 'year' END ELSE NULL END,
+    p.show_community_level, p.show_germany_tenure
+  FROM public.profiles p
+  LEFT JOIN public.profile_private_details d ON d.user_id = p.id
+  LEFT JOIN public.community_reputation r ON r.user_id = p.id
+  WHERE p.id = ANY(p_user_ids);
+$$ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '';
+REVOKE ALL ON FUNCTION public.get_public_community_identities(uuid[]) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.get_public_community_identities(uuid[]) TO anon, authenticated;
