@@ -3157,3 +3157,43 @@ html[data-theme="dark"] .brand-mark-dark { display:block !important; }
 .board-pagination button:disabled { opacity:.35; cursor:default; }
 .board-pagination-ellipsis { min-width:22px; text-align:center; color:var(--gh-text-subtle); }
 @media (max-width: 640px) { .board-pagination { gap:4px; padding-top:18px; } .board-pagination button { min-width:34px; height:34px; padding:0 8px; font-size:12px; } }
+
+/* 320px narrow-phone board fit: prevent the four metadata columns from forcing extra width. */
+@media (max-width: 360px) {
+  .community-home,
+  .community-home .main-post-list,
+  .community-home .main-post-list table,
+  .community-home .main-post-list tbody,
+  .community-home .main-post-list tbody tr {
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+  }
+  .community-home .main-post-list { overflow-x:hidden !important; }
+  .community-home .main-post-list tbody tr {
+    grid-template-columns:max-content minmax(0,1fr);
+    grid-template-rows:auto auto auto;
+    column-gap:8px;
+    row-gap:4px;
+    padding:9px 0 !important;
+  }
+  .community-home .main-post-category { grid-column:1; grid-row:1; }
+  .community-home .main-post-title { grid-column:2; grid-row:1; }
+  .community-home .main-post-region { grid-column:1; grid-row:2; }
+  .community-home .main-post-author { grid-column:2; grid-row:2; min-width:0; }
+  .community-home .main-post-date { grid-column:1; grid-row:3; }
+  .community-home .main-post-views { grid-column:2; grid-row:3; text-align:left !important; }
+  .board-pagination {
+    width:100%;
+    max-width:100%;
+    gap:3px;
+    padding:16px 0 6px;
+  }
+  .board-pagination button {
+    min-width:30px;
+    width:30px;
+    height:32px;
+    padding:0;
+  }
+  .board-pagination-ellipsis { min-width:14px; }
+}
