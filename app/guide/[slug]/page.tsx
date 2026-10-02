@@ -11,6 +11,7 @@ import GuideQuickSummary from "@/components/GuideQuickSummary";
 import GuideEmployeeSteps from "@/components/GuideEmployeeSteps";
 import GuideStudentSituations from "@/components/GuideStudentSituations";
 import GuideInsuranceComparison from "@/components/GuideInsuranceComparison";
+import GuideBankComparison from "@/components/GuideBankComparison";
 import { GUIDE_CONTENT } from "@/lib/guide-content";
 import { GUIDE_SUPPLEMENTS } from "@/lib/guide-supplements";
 import GuideSupplement from "@/components/GuideSupplement";
@@ -251,6 +252,10 @@ export default async function GuideDetailPage({ params }: { params: Promise<{ sl
 
         {GUIDE_CONTENT[slug]?.audience && (
           <GuideAudienceCards items={GUIDE_CONTENT[slug].audience} />
+        )}
+
+        {slug === "german-bank-account-guide" && (
+          <GuideBankComparison />
         )}
 
         {/* 가이드 콘텐츠 */}

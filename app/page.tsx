@@ -38,6 +38,7 @@ function HomeContent() {
   const [featuredArticles, setFeaturedArticles] = useState<Article[]>([]);
   const [articlesError, setArticlesError] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [mobileLiveIndex, setMobileLiveIndex] = useState(0);
   const [isHeroPaused, setIsHeroPaused] = useState(false);
 
   const selectedCategory = categoryParam || "all";
@@ -206,6 +207,21 @@ function HomeContent() {
     };
   }, [featuredArticles.length, isCommunityView, isHeroPaused]);
 
+  useEffect(function() {
+    const mobileMotion = window.matchMedia("(max-width: 768px) and (prefers-reduced-motion: no-preference)");
+    if (isCommunityView || featuredArticles.length < 2 || !mobileMotion.matches) return;
+
+    const timer = window.setInterval(function() {
+      setMobileLiveIndex(function(previous) {
+        return (previous + 1) % featuredArticles.length;
+      });
+    }, 4200);
+
+    return function() {
+      window.clearInterval(timer);
+    };
+  }, [featuredArticles.length, isCommunityView]);
+
   const retryPosts = function() {
     setPostsError(null);
     setLoadedCategory(null);
@@ -241,9 +257,17 @@ function HomeContent() {
             <div className="home-live-window">
               <div className="home-live-track">
                 {[...featuredArticles, ...featuredArticles].map(function(article, index) {
-                  return <span key={`${article.id}-${index}`}>{article.title}<b aria-hidden="true">•</b></span>;
+                  return <Link className="home-live-item" key={`${article.id}-${index}`} href={`/articles/${article.slug}`}>{article.title}<b aria-hidden="true">•</b></Link>;
                 })}
               </div>
+              <Link
+                className="home-live-mobile-item"
+                key={`mobile-live-${featuredArticles[mobileLiveIndex]?.id || mobileLiveIndex}`}
+                href={`/articles/${featuredArticles[mobileLiveIndex]?.slug || featuredArticles[0].slug}`}
+              >
+                <span className="home-live-mobile-title">{featuredArticles[mobileLiveIndex]?.title || featuredArticles[0].title}</span>
+                <span className="home-live-mobile-arrow" aria-hidden="true">?</span>
+              </Link>
             </div>
           </div>
           <div

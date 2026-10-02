@@ -1063,9 +1063,9 @@ html:not([data-theme="dark"]) .community-home > div:first-child a {
     margin-top:22px !important;
     padding:0 16px !important;
   }
-  html:not([data-theme="dark"]) .info-news-section > div:nth-child(2) {
+  html:not([data-theme="dark"]) .info-news-section .info-hero {
     height:330px !important;
-    border-radius:14px !important;
+    border-radius:0 !important;
   }
   html:not([data-theme="dark"]) .info-hub-section { padding:0 16px !important; }
   html:not([data-theme="dark"]) .info-hub-grid {
@@ -1138,9 +1138,9 @@ html[data-theme="light"] .portal-menu > summary.is-active,
 html[data-theme="light"] .portal-menu[open] > summary { color:#17201f; }
 html[data-theme="light"] .portal-mega-menu,
 html[data-theme="light"] .profile-menu-shell [role="menu"] { background:#fff !important; color:#17201f !important; }
-html[data-theme="light"] .info-news-section > div:nth-child(2) { background:#fff !important; }
-html[data-theme="light"] .info-news-section > div:nth-child(2) img { opacity:.88 !important; }
-html[data-theme="light"] .info-news-section > div:nth-child(2) a > div:first-of-type:not(:last-child) {
+html[data-theme="light"] .info-news-section .info-hero { background:#fff !important; }
+html[data-theme="light"] .info-news-section .info-hero img { opacity:.88 !important; }
+html[data-theme="light"] .info-news-section .info-hero a > div:first-of-type:not(:last-child) {
   background:linear-gradient(135deg,#eef3f1 0%,#dde7e3 100%) !important;
 }
 html[data-theme="light"] .info-news-section a > div[style*="bottom: 50px"] {
@@ -1670,7 +1670,6 @@ html[data-theme="light"] .mobile-topic-links a {
 
 /* Mobile hero: reserve clear lanes for slider controls and copy. */
 @media (max-width:768px) {
-  html[data-theme="light"] .info-news-section > div:nth-child(2),
   html[data-theme="light"] .info-news-section .info-hero,
   .info-news-section .info-hero {
     border-radius:0 !important;
@@ -1919,10 +1918,10 @@ html:not([data-theme="dark"]) .messe-next-card { background:rgba(207,220,213,.76
   stroke-linecap:round;
 }
 @media (max-width:1179px) {
-  .article-detail-page { padding:36px 28px var(--gh-footer-height) !important; }
+  .article-detail-page { padding:36px 28px var(--gh-footer-height, 80px) !important; }
 }
 @media (max-width:600px) {
-  .article-detail-page { padding:30px 24px var(--gh-footer-height) !important; }
+  .article-detail-page { padding:30px 24px var(--gh-footer-height, 80px) !important; }
 }
 
 /* 2026-10 mobile drawer hierarchy + dark square information cards. */
@@ -2540,7 +2539,10 @@ html[data-theme="dark"] .author-action-popover {
   .home-live-label i { width:7px; height:7px; border-radius:50%; background:#df3f3f; animation:home-live-pulse 1.8s ease-in-out infinite; }
   .home-live-window { min-width:0; overflow:hidden; mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent); }
   .home-live-track { display:flex; width:max-content; animation:home-live-scroll 34s linear infinite; }
-  .home-live-track span { display:flex; align-items:center; gap:24px; padding-left:24px; white-space:nowrap; color:var(--gh-text-muted); font-size:12px; }
+  .home-live-mobile-item { display:none; }
+  .home-live-track span, .home-live-track .home-live-item { display:flex; align-items:center; gap:24px; padding-left:24px; white-space:nowrap; color:var(--gh-text-muted); font-size:12px; }
+  .home-live-track .home-live-item { text-decoration:none; cursor:pointer; }
+  .home-live-track .home-live-item:hover { color:var(--gh-text); text-decoration:underline; text-underline-offset:3px; }
   .home-live-track b { color:var(--gh-text-subtle); font-size:9px; }
   .home-live-rail:hover .home-live-track { animation-play-state:paused; }
   .home-motion-hero { transition:box-shadow .35s ease, transform .35s ease; }
@@ -2557,11 +2559,60 @@ html[data-theme="dark"] .author-action-popover {
 }
 
 @keyframes home-live-scroll { to { transform:translateX(-50%); } }
+@keyframes home-live-rise {
+  0% { opacity:0; transform:translateY(100%); }
+  12%,82% { opacity:1; transform:translateY(0); }
+  100% { opacity:0; transform:translateY(-100%); }
+}
 @keyframes home-live-pulse { 0%,100% { opacity:.35; transform:scale(.8); } 50% { opacity:1; transform:scale(1.15); } }
 @keyframes home-hero-progress { from { transform:scaleX(0); } to { transform:scaleX(1); } }
 @keyframes home-card-arrive { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
 
-@media (max-width: 768px) { .home-live-rail { display:none; } }
+@media (max-width: 768px) {
+  html:not([data-theme="dark"]) .home-live-rail { background:#fff !important; }
+
+  .home-live-rail {
+    display:flex;
+    align-items:center;
+    height:32px;
+    margin:8px 12px 10px;
+    overflow:hidden;
+    border:1px solid var(--gh-border);
+    background:var(--gh-surface);
+  }
+  .home-live-label {
+    display:flex;
+    flex:0 0 auto;
+    align-items:center;
+    gap:6px;
+    height:100%;
+    padding:0 9px;
+    border-right:1px solid var(--gh-border);
+    color:var(--gh-accent);
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:.08em;
+  }
+  .home-live-label i { width:6px; height:6px; border-radius:50%; background:#b56d66; animation:home-live-pulse 1.8s ease-in-out infinite; }
+  .home-live-window { position:relative; min-width:0; flex:1; height:30px; overflow:hidden; }
+  .home-live-track { display:none; }
+  .home-live-mobile-item {
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    min-width:0;
+    padding:0 9px 0 10px;
+    color:var(--gh-text-muted);
+    font-size:11px;
+    text-decoration:none;
+    animation:home-live-rise 4.2s cubic-bezier(.22,.75,.24,1) both;
+  }
+  .home-live-mobile-item:not(:focus) { outline:none; }
+  .home-live-mobile-title { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .home-live-mobile-arrow { flex:0 0 auto; margin-left:auto; color:var(--gh-text-subtle); font-size:16px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .home-live-track, .home-live-label i, .home-hero-progress, .info-hub-card { animation:none !important; }
   .home-hero-image, .home-motion-hero, .info-hub-card > div:first-child { transition:none !important; transform:none !important; }
@@ -2603,8 +2654,8 @@ html[data-theme="dark"] .info-hero {
   box-shadow:0 20px 52px rgba(2,6,4,.34) !important;
 }
 html[data-theme="dark"] .info-news-section .info-hero img {
-  opacity:.46 !important;
-  filter:saturate(.58) contrast(1.03) brightness(.82);
+  opacity:1 !important;
+  filter:saturate(.86) contrast(1.01) brightness(.96);
 }
 html[data-theme="dark"] .info-hero > div > a::after {
   content:"";
@@ -2612,7 +2663,7 @@ html[data-theme="dark"] .info-hero > div > a::after {
   inset:0;
   z-index:1;
   pointer-events:none;
-  background:linear-gradient(90deg,rgba(8,13,10,.82) 0%,rgba(12,19,15,.58) 42%,rgba(16,25,20,.12) 76%,transparent 100%);
+  background:linear-gradient(90deg,rgba(8,13,10,.68) 0%,rgba(12,19,15,.38) 42%,rgba(16,25,20,.06) 76%,transparent 100%);
 }
 html[data-theme="dark"] .info-hero-copy { z-index:2; }
 html[data-theme="dark"] .info-hero-copy > div:first-child {
@@ -2769,3 +2820,59 @@ main, .main-page, .community-home { background-image:var(--gh-ambient-pattern) !
 /* Keep the pattern atmospheric: content surfaces remain clean and readable. */
 .post-card, .guide-card, .info-hub-card, .community-trending, .community-trending-card, .auth-box, input, textarea, select { background-image:none; }
 @media (max-width:700px) { body, main, .main-page, .community-home { background-size:420px 315px !important; } }
+
+/* Hero slider must stay square in light mode at every breakpoint. */
+html[data-theme="light"] body .info-news-section .info-hero,
+html[data-theme="light"] body .info-news-section .info-hero > div,
+html[data-theme="light"] body .info-news-section .info-hero > div > a,
+html[data-theme="light"] body .info-news-section .info-hero img,
+html:not([data-theme="dark"]) body .info-news-section .info-hero,
+html:not([data-theme="dark"]) body .info-news-section .info-hero > div,
+html:not([data-theme="dark"]) body .info-news-section .info-hero > div > a,
+html:not([data-theme="dark"]) body .info-news-section .info-hero img {
+  border-radius:0 !important;
+}
+
+/* Mobile article gutters: keep news cards and article text away from viewport edges. */
+@media (max-width: 600px) {
+  .articles-page { padding:28px 16px var(--gh-footer-height, 80px) !important; }
+  .articles-shell, .articles-grid { width:100%; min-width:0; }
+  .articles-grid { grid-template-columns:minmax(0,1fr) !important; gap:16px !important; }
+  .article-card { min-width:0; width:100%; }
+  .article-card-body { padding:18px 16px !important; }
+  .article-detail-page { padding:28px 18px var(--gh-footer-height, 80px) !important; }
+  .article-detail-shell { width:100%; min-width:0; }
+}
+
+/* Bank guide: factual account comparison, refreshed from official conditions. */
+.guide-bank-comparison { margin:30px 0 36px; padding:22px; border:1px solid var(--gh-border); background:var(--gh-surface); }
+.guide-bank-comparison-head { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:10px; }
+.guide-bank-kicker { display:block; margin-bottom:5px; color:var(--gh-accent); font-size:10px; font-weight:800; letter-spacing:.12em; }
+.guide-bank-comparison h2 { margin:0; color:var(--gh-text); font-size:20px; line-height:1.3; }
+.guide-bank-verified { flex:0 0 auto; color:var(--gh-text-subtle); font-size:11px; }
+.guide-bank-intro { margin:0 0 18px; color:var(--gh-text-muted); font-size:13px; line-height:1.65; }
+.guide-bank-list { border-top:1px solid var(--gh-border); }
+.guide-bank-row { display:grid; grid-template-columns:120px 1.15fr 1fr; gap:10px 16px; padding:16px 0; border-bottom:1px solid var(--gh-border); }
+.guide-bank-name { display:flex; flex-direction:column; gap:3px; }
+.guide-bank-name strong { color:var(--gh-text); font-size:14px; }
+.guide-bank-name span { color:var(--gh-text-subtle); font-size:11px; }
+.guide-bank-detail p, .guide-bank-note { margin:3px 0 0; color:var(--gh-text-muted); font-size:12px; line-height:1.55; }
+.guide-bank-label { color:var(--gh-text-subtle); font-size:10px; font-weight:800; letter-spacing:.04em; }
+.guide-bank-note { grid-column:2 / 4; }
+.guide-bank-source { grid-column:2 / 4; width:max-content; color:var(--gh-accent); font-size:11px; font-weight:700; text-decoration:none; }
+.guide-bank-source:hover { text-decoration:underline; text-underline-offset:3px; }
+.guide-bank-basiskonto { margin-top:18px; padding:15px 16px; border-left:3px solid var(--gh-accent); background:var(--gh-surface-muted); }
+.guide-bank-basiskonto strong { color:var(--gh-text); font-size:13px; }
+.guide-bank-basiskonto p { margin:6px 0 8px; color:var(--gh-text-muted); font-size:12px; line-height:1.6; }
+.guide-bank-basiskonto a { color:var(--gh-accent); font-size:11px; font-weight:700; }
+.guide-bank-footnote { margin:14px 0 0; color:var(--gh-text-subtle); font-size:10px; line-height:1.55; }
+@media (max-width:600px) {
+  .guide-bank-comparison { margin:24px 0 30px; padding:18px 15px; }
+  .guide-bank-comparison-head { align-items:flex-start; flex-direction:column; gap:5px; }
+  .guide-bank-comparison h2 { font-size:18px; }
+  .guide-bank-row { grid-template-columns:1fr; gap:9px; padding:15px 0; }
+  .guide-bank-name { padding-bottom:2px; }
+  .guide-bank-detail p, .guide-bank-note { margin-top:2px; }
+  .guide-bank-note, .guide-bank-source { grid-column:1; }
+  .guide-bank-basiskonto { padding:14px; }
+}

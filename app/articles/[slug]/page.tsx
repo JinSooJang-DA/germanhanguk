@@ -116,7 +116,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   const articleSources = article.source_urls?.filter((source) => source.kind !== "image") ?? [];
 
   return (
-    <main className="article-detail-page" style={{ minHeight: "80vh", padding: "40px 20px var(--gh-footer-height) 20px" }}>
+    <main className="article-detail-page" style={{ minHeight: "80vh", padding: "40px 20px var(--gh-footer-height, 80px) 20px" }}>
       <div className="article-detail-shell" style={{ maxWidth: "800px", margin: "0 auto" }}>
         {/* 네비게이션 경로 */}
         <div style={{ marginBottom: "20px" }}>

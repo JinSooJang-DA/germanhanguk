@@ -95,8 +95,8 @@ function ArticlesContent() {
   }
 
   return (
-    <main style={{ minHeight: "80vh", padding: "40px 20px var(--gh-footer-height) 20px" }}>
-      <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
+    <main className="articles-page" style={{ minHeight: "80vh", padding: "40px 20px var(--gh-footer-height, 80px) 20px" }}>
+      <div className="articles-shell" style={{ maxWidth: "1000px", margin: "0 auto" }}>
         <div style={{ borderBottom: "1px solid var(--gh-border)", paddingBottom: "16px", marginBottom: "30px" }}>
           <h1 style={{ fontSize: "28px", fontWeight: "bold", color: "var(--gh-text)", margin: "0 0 8px" }}>🇩🇪 독일 소식</h1>
           <p style={{ color: "var(--gh-text-muted)", fontSize: "14px", margin: 0 }}>
@@ -109,7 +109,7 @@ function ArticlesContent() {
             <p style={{ color: "var(--gh-text-muted)", margin: 0, fontSize: "14px" }}>등록된 최신 소식이 아직 없습니다.</p>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px" }}>
+          <div className="articles-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px" }}>
             {articles.map((article) => (
               <Link
                 key={article.id}
@@ -139,7 +139,7 @@ function ArticlesContent() {
                     <span style={{ fontSize: "36px" }}>📰</span>
                   </div>
                 )}
-                <div style={{ padding: "20px", flex: 1, display: "flex", flexDirection: "column" }}>
+                <div className="article-card-body" style={{ padding: "20px", flex: 1, display: "flex", flexDirection: "column" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
                     <span style={{ fontSize: "12px", fontWeight: "bold", color: "var(--gh-accent)", background: "color-mix(in srgb, var(--gh-accent) 12%, transparent)", padding: "2px 8px", borderRadius: "0" }}>
                       {article.category}
