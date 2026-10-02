@@ -20,6 +20,7 @@ import {
 } from "@/lib/contentValidation";
 import type { Post } from "@/types/post";
 import PostImagePicker from "@/components/PostImagePicker";
+import PostExpressionPicker from "@/components/PostExpressionPicker";
 import {
   deletePostImagesByUrl,
   getStoredImageUrls,
@@ -306,6 +307,7 @@ function NewPostContent() {
               aria-describedby="title-character-count"
               required
             />
+            <PostExpressionPicker target="title" value={title} setValue={setTitle} disabled={submitting} />
             <p id="title-character-count" style={{ margin: "6px 0 0", color: "var(--gh-text-subtle)", fontSize: "12px", textAlign: "right" }}>
               {titleCharacterCount}
             </p>
@@ -322,6 +324,7 @@ function NewPostContent() {
               aria-describedby="content-character-count"
               required
             />
+            <PostExpressionPicker target="content" value={content} setValue={setContent} disabled={submitting} />
             <p id="content-character-count" style={{ margin: "6px 0 0", color: "var(--gh-text-subtle)", fontSize: "12px", textAlign: "right" }}>
               {contentCharacterCount}
             </p>

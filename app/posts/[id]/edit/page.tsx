@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import PostImagePicker from "@/components/PostImagePicker";
+import PostExpressionPicker from "@/components/PostExpressionPicker";
 import {
   createEditablePostContent,
   deletePostImagesByUrl,
@@ -311,6 +312,7 @@ export default function EditPostPage({
               aria-describedby="title-character-count"
               required
             />
+            <PostExpressionPicker target="title" value={title} setValue={setTitle} disabled={saving} />
             <p id="title-character-count" style={{ margin: "6px 0 0", color: "var(--gh-text-subtle)", fontSize: "12px", textAlign: "right" }}>
               {titleCharacterCount}
             </p>
@@ -327,6 +329,7 @@ export default function EditPostPage({
               aria-describedby="content-character-count"
               required
             />
+            <PostExpressionPicker target="content" value={content} setValue={setContent} disabled={saving} />
             <p id="content-character-count" style={{ margin: "6px 0 0", color: "var(--gh-text-subtle)", fontSize: "12px", textAlign: "right" }}>
               {contentCharacterCount}
             </p>

@@ -2905,3 +2905,40 @@ html:not([data-theme="dark"]) body .info-news-section .info-hero img {
   .community-home .board-notice-row .main-post-title a,
   .community-home .board-notice-row .main-post-author { font-weight:600 !important; }
 }
+
+/* Community authoring: emoji + GIF expression tools. */
+.post-expression-picker { position:relative; margin-top:7px; }
+.post-expression-actions { display:flex; gap:7px; }
+.post-expression-actions button {
+  padding:6px 9px; border:1px solid var(--gh-border); border-radius:5px;
+  background:var(--gh-surface-muted); color:var(--gh-text-muted); font-size:12px; cursor:pointer;
+}
+.post-expression-actions button:hover { color:var(--gh-text); border-color:var(--gh-text-subtle); }
+.post-expression-actions button:disabled { opacity:.5; cursor:default; }
+.post-emoji-popover, .post-gif-popover {
+  position:absolute; z-index:1200; left:0; top:36px; width:min(390px,calc(100vw - 48px));
+  padding:12px; border:1px solid var(--gh-border); border-radius:8px;
+  background:var(--gh-surface); box-shadow:0 12px 30px rgba(0,0,0,.14);
+}
+.post-emoji-popover { display:grid; grid-template-columns:repeat(10,1fr); gap:3px; }
+.post-emoji-popover button { padding:5px 2px; border:0; border-radius:4px; background:transparent; font-size:20px; cursor:pointer; }
+.post-emoji-popover button:hover { background:var(--gh-surface-muted); }
+.post-gif-search { display:flex; gap:7px; }
+.post-gif-search input { min-width:0; flex:1; padding:9px 10px; border:1px solid var(--gh-border); border-radius:5px; background:var(--gh-surface); color:var(--gh-text); }
+.post-gif-search button { padding:8px 12px; border:0; border-radius:5px; background:var(--gh-control-active); color:var(--gh-control-active-text); font-weight:700; cursor:pointer; }
+.post-gif-search button:disabled { opacity:.5; }
+.post-gif-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin-top:10px; max-height:360px; overflow:auto; }
+.post-gif-grid button { padding:0; border:0; background:var(--gh-surface-muted); cursor:pointer; overflow:hidden; }
+.post-gif-grid img { display:block; width:100%; height:100px; object-fit:cover; }
+.post-gif-error { margin:10px 0 0; color:#b42318; font-size:12px; }
+.post-gif-hint { margin:10px 0 0; color:var(--gh-text-muted); font-size:12px; line-height:1.5; }
+.post-gif-attribution { margin-top:9px; color:var(--gh-text-subtle); font-size:10px; font-weight:700; text-align:right; letter-spacing:.02em; }
+.post-inline-gif { margin:24px 0; width:max-content; max-width:100%; }
+.post-inline-gif img { display:block; width:auto; max-width:100%; max-height:520px; object-fit:contain; }
+.post-inline-gif figcaption { margin-top:5px; color:var(--gh-text-subtle); font-size:10px; }
+@media (max-width:640px) {
+  .post-emoji-popover { grid-template-columns:repeat(8,1fr); }
+  .post-gif-grid { grid-template-columns:repeat(2,1fr); max-height:320px; }
+  .post-gif-grid img { height:110px; }
+  .post-inline-gif { margin:18px 0; }
+}

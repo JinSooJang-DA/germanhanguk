@@ -7,6 +7,8 @@ export const POST_IMAGE_MAX_DIMENSION = 1920;
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const PENDING_IMAGE_PATTERN = /\[\[이미지(\d+)\]\]/g;
 const STORED_IMAGE_PATTERN = /\[\[GH_IMAGE:(https?:\/\/[^\]\s]+)\]\]/g;
+const GIF_PATTERN = /\[\[GH_GIF:(https?:\/\/[^\]\s]+)\]\]/g;
+const MEDIA_PATTERN = /\[\[(GH_IMAGE|GH_GIF):(https?:\/\/[^\]\s]+)\]\]/g;
 
 export type PendingPostImage = {
   id: string;
@@ -85,6 +87,7 @@ export function stripPostImageTokens(content: string): string {
   return content
     .replace(STORED_IMAGE_PATTERN, "")
     .replace(PENDING_IMAGE_PATTERN, "")
+    .replace(GIF_PATTERN, "")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
@@ -103,19 +106,36 @@ export function removePendingImage(content: string, id: string): string {
 export function splitPostContent(content: string): Array<
   | { type: "text"; value: string }
   | { type: "image"; url: string }
+  | { type: "gif"; url: string }
 > {
-  const parts: Array<{ type: "text"; value: string } | { type: "image"; url: string }> = [];
+  const parts: Array<
+    { type: "text"; value: string } | { type: "image"; url: string } | { type: "gif"; url: string }
+  > = [];
   let cursor = 0;
 
-  for (const match of content.matchAll(STORED_IMAGE_PATTERN)) {
+  for (const match of content.matchAll(MEDIA_PATTERN)) {
     const index = match.index ?? 0;
     if (index > cursor) parts.push({ type: "text", value: content.slice(cursor, index) });
-    parts.push({ type: "image", url: match[1] });
+    const type = match[1] === "GH_GIF" ? "gif" : "image";
+    if (type === "gif" && !isAllowedGifUrl(match[2])) {
+      parts.push({ type: "text", value: "[í‘œì‹œí•  ìˆ˜ ì—†ëŠ” GIF]" });
+    } else {
+      parts.push({ type, url: match[2] });
+    }
     cursor = index + match[0].length;
   }
 
   if (cursor < content.length) parts.push({ type: "text", value: content.slice(cursor) });
   return parts;
+}
+
+function isAllowedGifUrl(value: string): boolean {
+  try {
+    const hostname = new URL(value).hostname.toLowerCase();
+    return hostname === "i.giphy.com" || hostname === "media.giphy.com" || /^media\d*\.giphy\.com$/.test(hostname);
+  } catch {
+    return false;
+  }
 }
 
 export async function compressPostImage(file: File): Promise<Blob> {

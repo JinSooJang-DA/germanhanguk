@@ -64,14 +64,15 @@ export default function PostContent({ content }: { content: string }) {
   const parts = splitPostContent(content);
   const rendered = parts.reduce<{ nodes: ReactNode[]; used: number }>(
     (result, part, index) => {
-      if (part.type === "image") {
-        const image = (
-          <figure className="post-inline-image" key={`${part.url}-${index}`}>
+      if (part.type === "image" || part.type === "gif") {
+        const media = (
+          <figure className={part.type === "gif" ? "post-inline-gif" : "post-inline-image"} key={`${part.url}-${index}`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={part.url} alt="게시글 첨부 이미지" loading="lazy" />
+            <img src={part.url} alt={part.type === "gif" ? "Post GIF" : "Post image"} loading="lazy" />
+            {part.type === "gif" && <figcaption>GIF Â· GIPHY</figcaption>}
           </figure>
         );
-        return { nodes: [...result.nodes, image], used: result.used };
+        return { nodes: [...result.nodes, media], used: result.used };
       }
 
       const text = renderTextWithEmbeds(part.value, MAX_SOCIAL_EMBEDS - result.used);
