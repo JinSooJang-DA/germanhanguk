@@ -13,7 +13,7 @@ import { fetchBmwsbArticleCandidates } from "../lib/articles/automation/sources/
 import { fetchBmjvArticleCandidates } from "../lib/articles/automation/sources/bmjv";
 import { fetchBmvArticleCandidates } from "../lib/articles/automation/sources/bmv";
 import { validateGeneratedArticleDraft } from "../lib/articles/automation/validator";
-import { ARTICLE_DRAFT_CATEGORIES, type ArticleDraftEvidence, type GeneratedArticleDraft } from "../lib/articles/automation/draft";
+import { type ArticleDraftEvidence, type GeneratedArticleDraft } from "../lib/articles/automation/draft";
 import { buildArticleDraftPrompt } from "../lib/articles/automation/prompt";
 import { selectStockImage } from "../lib/articles/automation/stockImage";
 

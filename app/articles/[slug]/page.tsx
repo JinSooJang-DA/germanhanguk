@@ -112,7 +112,6 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
     notFound();
   }
 
-  const imageSource = article.source_urls?.find((source) => source.kind === "image");
   const articleSources = article.source_urls?.filter((source) => source.kind !== "image") ?? [];
 
   return (
