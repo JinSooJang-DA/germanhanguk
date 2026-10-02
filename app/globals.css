@@ -3415,3 +3415,18 @@ html[data-theme="dark"] .brand-mark-dark { display:block !important; }
   .community-home--category .community-identity,
   .related-posts .community-identity { font-size:8.5px; }
 }
+
+/* Post detail: related rows intentionally breathe more than board-list rows. */
+@media (max-width:768px) {
+  .related-posts tbody tr {
+    row-gap:5px !important;
+    padding:14px 8px !important;
+  }
+}
+
+@media (max-width:360px) {
+  .related-posts tbody tr {
+    row-gap:4px !important;
+    padding:12px 7px !important;
+  }
+}
