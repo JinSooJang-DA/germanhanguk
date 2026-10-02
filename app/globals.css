@@ -2521,7 +2521,7 @@ html[data-theme="dark"] .author-action-popover {
     margin:0 0 12px;
     overflow:hidden;
     border-block:1px solid var(--gh-border);
-    background:var(--gh-surface);
+    background:#fff;
   }
   .home-live-label {
     display:flex;
@@ -2568,9 +2568,9 @@ html[data-theme="dark"] .author-action-popover {
 @keyframes home-hero-progress { from { transform:scaleX(0); } to { transform:scaleX(1); } }
 @keyframes home-card-arrive { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
 
-@media (max-width: 768px) {
-  html:not([data-theme="dark"]) .home-live-rail { background:#fff !important; }
+html:not([data-theme="dark"]) .home-live-rail { background:#fff !important; }
 
+@media (max-width: 768px) {
   .home-live-rail {
     display:flex;
     align-items:center;

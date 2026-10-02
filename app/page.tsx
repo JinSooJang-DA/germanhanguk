@@ -268,7 +268,7 @@ function HomeContent() {
                 href={`/articles/${featuredArticles[mobileLiveIndex]?.slug || featuredArticles[0].slug}`}
               >
                 <span className="home-live-mobile-title">{featuredArticles[mobileLiveIndex]?.title || featuredArticles[0].title}</span>
-                <span className="home-live-mobile-arrow" aria-hidden="true">?</span>
+                <span className="home-live-mobile-arrow" aria-hidden="true">&rarr;</span>
               </Link>
             </div>
           </div>
