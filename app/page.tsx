@@ -41,6 +41,7 @@ function HomeContent() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [mobileLiveIndex, setMobileLiveIndex] = useState(0);
   const [isHeroPaused, setIsHeroPaused] = useState(false);
+  const [isMobileLivePaused, setIsMobileLivePaused] = useState(false);
 
   const selectedCategory = categoryParam || "all";
   const boardNotice = getBoardNotice(selectedCategory);
@@ -211,7 +212,7 @@ function HomeContent() {
 
   useEffect(function() {
     const mobileMotion = window.matchMedia("(max-width: 768px) and (prefers-reduced-motion: no-preference)");
-    if (isCommunityView || featuredArticles.length < 2 || !mobileMotion.matches) return;
+    if (isCommunityView || isMobileLivePaused || featuredArticles.length < 2 || !mobileMotion.matches) return;
 
     const timer = window.setInterval(function() {
       setMobileLiveIndex(function(previous) {
@@ -222,7 +223,7 @@ function HomeContent() {
     return function() {
       window.clearInterval(timer);
     };
-  }, [featuredArticles.length, isCommunityView]);
+  }, [featuredArticles.length, isCommunityView, isMobileLivePaused]);
 
   const retryPosts = function() {
     setPostsError(null);
@@ -266,9 +267,11 @@ function HomeContent() {
                 className="home-live-mobile-item"
                 key={`mobile-live-${featuredArticles[mobileLiveIndex]?.id || mobileLiveIndex}`}
                 href={`/articles/${featuredArticles[mobileLiveIndex]?.slug || featuredArticles[0].slug}`}
+                onFocus={function() { setIsMobileLivePaused(true); }}
+                onBlur={function() { setIsMobileLivePaused(false); }}
               >
                 <span className="home-live-mobile-title">{featuredArticles[mobileLiveIndex]?.title || featuredArticles[0].title}</span>
-                <span className="home-live-mobile-arrow" aria-hidden="true">&rarr;</span>
+                <span className="home-live-mobile-arrow" aria-hidden="true">→</span>
               </Link>
             </div>
           </div>
@@ -302,6 +305,8 @@ function HomeContent() {
                   <Link
                     key={article.id}
                     href={"/articles/" + article.slug}
+                    aria-hidden={currentSlide !== index}
+                    tabIndex={currentSlide === index ? 0 : -1}
                     style={{
                       minWidth: "100%",
                       height: "100%",
@@ -362,6 +367,7 @@ function HomeContent() {
                 <button
                   className="info-hero-arrow info-hero-arrow-prev"
                   onClick={prevSlide}
+                  aria-label="이전 주요 소식"
                   style={{
                     position: "absolute",
                     left: "16px",
@@ -386,6 +392,7 @@ function HomeContent() {
                 <button
                   className="info-hero-arrow info-hero-arrow-next"
                   onClick={nextSlide}
+                  aria-label="다음 주요 소식"
                   style={{
                     position: "absolute",
                     right: "16px",
@@ -424,6 +431,8 @@ function HomeContent() {
                       <button
                         key={index}
                         onClick={setCurrentSlide.bind(null, index)}
+                        aria-label={`${index + 1}번째 주요 소식 보기`}
+                        aria-current={currentSlide === index ? "true" : undefined}
                         style={{
                           width: currentSlide === index ? "24px" : "10px",
                           height: "10px",

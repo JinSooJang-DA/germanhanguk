@@ -21,6 +21,20 @@ import { deletePostImagesByUrl, getStoredImageUrls } from "@/lib/postImages";
 const PAGE_SIZE = 10;
 const VIEW_COUNT_DEDUPLICATION_MS = 30 * 60 * 1000;
 
+function getPaginationItems(currentPage: number, totalPages: number): Array<number | string> {
+  if (totalPages <= 5) return Array.from({ length: totalPages }, (_, index) => index + 1);
+
+  const items: Array<number | string> = [1];
+  const start = Math.max(2, currentPage - 1);
+  const end = Math.min(totalPages - 1, currentPage + 1);
+
+  if (start > 2) items.push("ellipsis-start");
+  for (let page = start; page <= end; page += 1) items.push(page);
+  if (end < totalPages - 1) items.push("ellipsis-end");
+  items.push(totalPages);
+  return items;
+}
+
 interface EngagementCount {
   count: number;
 }
@@ -1154,35 +1168,62 @@ export default function PostDetailClient({
             </table>
 
             {totalPages > 1 && (
-              <div
+              <nav
+                aria-label="관련 게시글 페이지"
                 style={{
                   display: "flex",
                   justifyContent: "center",
+                  alignItems: "center",
+                  flexWrap: "wrap",
                   gap: "6px",
                   marginTop: "20px",
                 }}
               >
-                {Array.from({ length: totalPages }, function(_, i) { return i + 1; }).map(function(pageNum) {
+                <button
+                  type="button"
+                  onClick={function() { setCurrentPage(Math.max(1, currentPage - 1)); }}
+                  disabled={currentPage === 1}
+                  aria-label="이전 페이지"
+                  style={{ minWidth: "44px", height: "44px", border: "1px solid #cbd5e1", borderRadius: "4px", background: "#fff", color: "#334155", cursor: currentPage === 1 ? "default" : "pointer", opacity: currentPage === 1 ? 0.45 : 1 }}
+                >
+                  ‹
+                </button>
+                {getPaginationItems(currentPage, totalPages).map(function(item) {
+                  if (typeof item === "string") return <span key={item} aria-hidden="true" style={{ padding: "0 2px" }}>…</span>;
                   return (
                     <button
-                      key={pageNum}
-                      onClick={setCurrentPage.bind(null, pageNum)}
+                      type="button"
+                      key={item}
+                      onClick={setCurrentPage.bind(null, item)}
+                      aria-current={currentPage === item ? "page" : undefined}
+                      aria-label={`${item}페이지`}
                       style={{
-                        padding: "6px 12px",
+                        minWidth: "44px",
+                        height: "44px",
+                        padding: "0 10px",
                         border: "1px solid #cbd5e1",
                         borderRadius: "4px",
-                        background: currentPage === pageNum ? "#0f172a" : "#fff",
-                        color: currentPage === pageNum ? "#fff" : "#334155",
-                        fontWeight: currentPage === pageNum ? "bold" : "normal",
+                        background: currentPage === item ? "#0f172a" : "#fff",
+                        color: currentPage === item ? "#fff" : "#334155",
+                        fontWeight: currentPage === item ? "bold" : "normal",
                         cursor: "pointer",
                         fontSize: "13px",
                       }}
                     >
-                      {pageNum}
+                      {item}
                     </button>
                   );
                 })}
-              </div>
+                <button
+                  type="button"
+                  onClick={function() { setCurrentPage(Math.min(totalPages, currentPage + 1)); }}
+                  disabled={currentPage === totalPages}
+                  aria-label="다음 페이지"
+                  style={{ minWidth: "44px", height: "44px", border: "1px solid #cbd5e1", borderRadius: "4px", background: "#fff", color: "#334155", cursor: currentPage === totalPages ? "default" : "pointer", opacity: currentPage === totalPages ? 0.45 : 1 }}
+                >
+                  ›
+                </button>
+              </nav>
             )}
           </>
         )}

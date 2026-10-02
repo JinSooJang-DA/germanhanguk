@@ -35,7 +35,7 @@ export default function GuideInsuranceComparison() {
             margin: "0 0 5px",
             fontSize: "20px",
             lineHeight: "1.4",
-            color: "#0f172a",
+            color: "var(--gh-text)",
           }}
         >
           공보험 vs 사보험
@@ -46,7 +46,7 @@ export default function GuideInsuranceComparison() {
             margin: 0,
             fontSize: "13px",
             lineHeight: "1.6",
-            color: "#64748b",
+            color: "var(--gh-text-muted)",
           }}
         >
           GKV와 PKV의 기본적인 구조를 한눈에 비교해보세요.
@@ -70,7 +70,7 @@ export default function GuideInsuranceComparison() {
             borderBottom: "1px solid #e2e8f0",
             fontSize: "13px",
             fontWeight: "700",
-            color: "#0f172a",
+            color: "var(--gh-text)",
           }}
         >
           <span />
@@ -92,10 +92,10 @@ export default function GuideInsuranceComparison() {
                   : "1px solid #eef2f7",
               fontSize: "13px",
               lineHeight: "1.5",
-              color: "#475569",
+              color: "var(--gh-text-muted)",
             }}
           >
-            <strong style={{ color: "#0f172a" }}>{row.label}</strong>
+            <strong style={{ color: "var(--gh-text)" }}>{row.label}</strong>
             <span>{row.gkv}</span>
             <span>{row.pkv}</span>
           </div>

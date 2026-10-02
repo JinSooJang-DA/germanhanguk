@@ -12,8 +12,32 @@ const won = new Intl.NumberFormat("ko-KR", { maximumFractionDigits: 0 });
 const euro = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 2 });
 
 function numberValue(value: string): number {
-  const normalized = value.replace(/,/g, ".").replace(/[^0-9.]/g, "");
-  return Number(normalized) || 0;
+  const cleaned = value.trim().replace(/\s/g, "").replace(/[^0-9.,+-]/g, "");
+  if (!cleaned || !/[0-9]/.test(cleaned)) return 0;
+
+  const sign = cleaned.startsWith("-") ? -1 : 1;
+  const unsigned = cleaned.replace(/[+-]/g, "");
+  const dot = unsigned.lastIndexOf(".");
+  const comma = unsigned.lastIndexOf(",");
+  const lastSeparator = Math.max(dot, comma);
+
+  if (dot >= 0 && comma >= 0) {
+    const integerPart = unsigned.slice(0, lastSeparator).replace(/[.,]/g, "");
+    const decimalPart = unsigned.slice(lastSeparator + 1).replace(/[.,]/g, "");
+    return sign * (Number(`${integerPart}.${decimalPart}`) || 0);
+  }
+
+  if (lastSeparator >= 0) {
+    const separator = unsigned[lastSeparator];
+    const parts = unsigned.split(separator);
+    const groupedThousands = parts.length > 1 && parts.slice(1).every((part) => part.length === 3);
+    const normalized = groupedThousands
+      ? parts.join("")
+      : `${parts.slice(0, -1).join("")}.${parts.at(-1) || ""}`;
+    return sign * (Number(normalized) || 0);
+  }
+
+  return sign * (Number(unsigned) || 0);
 }
 
 export default function ExchangeCalculator({ rate, history }: Props) {

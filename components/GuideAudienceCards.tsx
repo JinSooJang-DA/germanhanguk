@@ -19,7 +19,7 @@ export default function GuideAudienceCards({
             margin: "0 0 5px",
             fontSize: "20px",
             lineHeight: "1.4",
-            color: "#0f172a",
+            color: "var(--gh-text)",
           }}
         >
           나는 어디에 해당할까?
@@ -30,7 +30,7 @@ export default function GuideAudienceCards({
             margin: 0,
             fontSize: "13px",
             lineHeight: "1.6",
-            color: "#64748b",
+            color: "var(--gh-text-muted)",
           }}
         >
           현재 상황에 맞는 내용을 먼저 확인해보세요.
@@ -61,7 +61,7 @@ export default function GuideAudienceCards({
                 fontSize: "15px",
                 lineHeight: "1.4",
                 fontWeight: "700",
-                color: "#0f172a",
+                color: "var(--gh-text)",
               }}
             >
               {item.title}
@@ -72,7 +72,7 @@ export default function GuideAudienceCards({
                 margin: 0,
                 fontSize: "12.5px",
                 lineHeight: "1.6",
-                color: "#64748b",
+                color: "var(--gh-text-muted)",
               }}
             >
               {item.description}
@@ -84,7 +84,7 @@ export default function GuideAudienceCards({
                 paddingTop: "10px",
                 fontSize: "12px",
                 fontWeight: "600",
-                color: "#475569",
+                color: "var(--gh-text-muted)",
               }}
             >
               핵심 보기 →

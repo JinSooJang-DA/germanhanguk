@@ -25,7 +25,7 @@ export default function GuideEmployeeSteps() {
             margin: "0 0 5px",
             fontSize: "20px",
             lineHeight: "1.4",
-            color: "#0f172a",
+            color: "var(--gh-text)",
           }}
         >
           직장인이 먼저 확인할 것
@@ -36,7 +36,7 @@ export default function GuideEmployeeSteps() {
             margin: 0,
             fontSize: "13px",
             lineHeight: "1.6",
-            color: "#64748b",
+            color: "var(--gh-text-muted)",
           }}
         >
           처음 취업했다면 아래 세 가지부터 확인해보세요.
@@ -63,7 +63,7 @@ export default function GuideEmployeeSteps() {
               style={{
                 fontSize: "12px",
                 fontWeight: "700",
-                color: "#94a3b8",
+                color: "var(--gh-text-subtle)",
               }}
             >
               {step.number}
@@ -75,7 +75,7 @@ export default function GuideEmployeeSteps() {
                   margin: "0 0 4px",
                   fontSize: "15px",
                   lineHeight: "1.4",
-                  color: "#0f172a",
+                  color: "var(--gh-text)",
                 }}
               >
                 {step.title}
@@ -86,7 +86,7 @@ export default function GuideEmployeeSteps() {
                   margin: 0,
                   fontSize: "13px",
                   lineHeight: "1.6",
-                  color: "#64748b",
+                  color: "var(--gh-text-muted)",
                 }}
               >
                 {step.description}

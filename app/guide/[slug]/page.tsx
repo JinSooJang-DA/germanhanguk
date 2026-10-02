@@ -208,10 +208,10 @@ export default async function GuideDetailPage({ params }: { params: Promise<{ sl
 
         {/* 상단 브레드크럼 */}
         <div style={{ marginBottom: "24px", fontSize: "14px" }}>
-          <Link href="/guide" style={{ textDecoration: "none", color: "#64748b" }}>생활정보 가이드</Link>
-          <span style={{ color: "#94a3b8", margin: "0 8px" }}>&gt;</span>
-          <Link href={"/guide/" + getGuideCategoryHubSlug(guide.category)} style={{ textDecoration: "none", color: "#64748b" }}>{categoryLabel}</Link>
-          <span style={{ color: "#94a3b8", margin: "0 8px" }}>&gt;</span>
+          <Link href="/guide" style={{ textDecoration: "none", color: "var(--gh-text-muted)" }}>생활정보 가이드</Link>
+          <span style={{ color: "var(--gh-text-subtle)", margin: "0 8px" }}>&gt;</span>
+          <Link href={"/guide/" + getGuideCategoryHubSlug(guide.category)} style={{ textDecoration: "none", color: "var(--gh-text-muted)" }}>{categoryLabel}</Link>
+          <span style={{ color: "var(--gh-text-subtle)", margin: "0 8px" }}>&gt;</span>
           <span style={{ color: "var(--gh-text)", fontWeight: "bold" }}>상세 정보</span>
         </div>
 
@@ -223,10 +223,10 @@ export default async function GuideDetailPage({ params }: { params: Promise<{ sl
           <p style={{ fontSize: "16px", color: "var(--gh-text-muted)", lineHeight: "1.6", margin: "0 0 16px 0", fontStyle: "italic" }}>
             {guide.description}
           </p>
-          <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", fontSize: "13px", color: "#94a3b8" }}>
+          <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", fontSize: "13px", color: "var(--gh-text-subtle)" }}>
             <span>✍️ GermanHanguk 공식 에디터 집필</span>
             {guide.last_verified_at && (
-              <span style={{ color: "#16a34a", fontWeight: "bold" }}>
+              <span style={{ color: "var(--gh-success)", fontWeight: "bold" }}>
                 ✅ 마지막 정보 확인일: {formatDate(guide.last_verified_at)}
               </span>
             )}
