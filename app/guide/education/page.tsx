@@ -3,6 +3,8 @@ import React from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { formatDate } from "@/lib/date";
+import OfficialLinksPanel from "@/components/OfficialLinksPanel";
+import { STUDENT_OFFICIAL_LINKS } from "@/lib/official-links";
 
 export const metadata = {
   title: "독일 유학·교육 가이드 - GermanHanguk",
@@ -106,6 +108,13 @@ export default async function EducationHubPage() {
             독일 유학 경로 선택부터 대학 지원·등록, 재학 중 근로와 졸업 후 취업·체류 전환까지 이어지는 전체 흐름을 단계별로 확인하세요. 한국인이 실제로 준비하고 행동해야 할 핵심 절차와 독일어 용어를 한곳에 정리했습니다.
           </p>
         </div>
+        <OfficialLinksPanel
+          eyebrow="Student official tools"
+          title="유학생 공식 도구"
+          description="전공 탐색부터 실제 지원까지, 단계별로 가장 먼저 확인할 공식·공식위탁 포털을 모았습니다."
+          links={STUDENT_OFFICIAL_LINKS}
+        />
+
         <section style={{ marginBottom: "40px" }}>
           <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "#0f172a", borderBottom: "2px solid #0f172a", paddingBottom: "10px", marginBottom: "20px" }}>
             <span style={{ display: "inline-block" }}>🧭 유학 경로와 입학자격</span>{" "}<span className="german-sub-title" style={{ fontWeight: "normal", color: "#64748b" }}>(Studienwahl & Zulassung)</span>

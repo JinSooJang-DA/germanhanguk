@@ -3107,3 +3107,23 @@ html:not([data-theme="dark"]) body .info-news-section .info-hero img {
 .auth-status-spinner { width:28px; height:28px; margin:0 auto; border:3px solid var(--gh-border); border-top-color:var(--gh-accent); border-radius:50%; animation:auth-spin .8s linear infinite; }
 @keyframes auth-spin { to { transform:rotate(360deg); } }
 @media (max-width: 520px) { .auth-page { padding:24px 20px; box-sizing:border-box; } .auth-box { width:100%; padding:28px 22px; box-sizing:border-box; } }
+
+/* Official service shortcuts */
+.official-links-panel { margin: 0 0 42px; padding: 22px; border: 2px solid var(--gh-card-border); background: var(--gh-card-surface); box-shadow: var(--gh-card-shadow); }
+.official-links-heading { margin-bottom: 16px; }
+.official-links-heading > span { display:block; margin-bottom:6px; color:var(--gh-accent); font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+.official-links-heading h2 { margin:0 0 7px; color:var(--gh-text); font-size:20px; }
+.official-links-heading p { margin:0; color:var(--gh-text-muted); font-size:13px; line-height:1.55; }
+.official-links-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.official-link-card { display:block; min-width:0; padding:14px 15px; border:1px solid var(--gh-border); background:var(--gh-surface); color:var(--gh-text); text-decoration:none; transition:transform .15s ease,border-color .15s ease; }
+.official-link-card:hover { transform:translateY(-1px); border-color:var(--gh-accent); }
+.official-link-card-top { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+.official-link-card-top strong { font-size:14px; line-height:1.35; }
+.official-link-card-top span { color:var(--gh-accent); font-size:15px; }
+.official-link-card p { margin:7px 0 9px; color:var(--gh-text-muted); font-size:12px; line-height:1.5; word-break:keep-all; }
+.official-link-card small { color:var(--gh-text-subtle); font-size:10px; font-weight:700; }
+@media (max-width: 640px) {
+  .official-links-panel { margin-bottom:30px; padding:16px; }
+  .official-links-grid { grid-template-columns:1fr; }
+  .official-link-card { padding:13px 14px; }
+}

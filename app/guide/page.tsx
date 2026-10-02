@@ -2,6 +2,8 @@ import { SITE_URL } from "@/lib/config";
 import React from "react";
 import Link from "next/link";
 import { GUIDE_CATEGORIES } from "@/lib/constants";
+import OfficialLinksPanel from "@/components/OfficialLinksPanel";
+import { LIVING_OFFICIAL_LINKS } from "@/lib/official-links";
 
 export const metadata = {
   title: "독일 생활 가이드 & 정착 정보 - GermanHanguk",
@@ -35,6 +37,13 @@ export default function GuideLandingPage() {
             핵심 생활정보들을 독일 공공 부처 최신 법령을 기준으로 엄격하게 선별해 드립니다.
           </p>
         </div>
+
+        <OfficialLinksPanel
+          eyebrow="Official shortcuts"
+          title="독일생활 공식 바로가기"
+          description="설명은 GermanHanguk에서 읽고, 실제 신청·검색·확인은 독일 공식 서비스로 바로 이어가세요."
+          links={LIVING_OFFICIAL_LINKS}
+        />
 
         {/* 카테고리 그리드 */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
