@@ -11,6 +11,7 @@ const themeInitScript = `(()=>{try{const key='germanhanguk-theme';const saved=lo
 export const metadata: Metadata = {
   title: "German Hanguk",
   description: "독일 거주 한인을 위한 보금자리",
+  icons: { icon: "/assets/brand/germanhanguk-logo-s.webp", apple: "/assets/brand/germanhanguk-logo-m.png" },
 };
 
 export default function RootLayout({

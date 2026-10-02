@@ -3127,3 +3127,17 @@ html:not([data-theme="dark"]) body .info-news-section .info-hero img {
   .official-links-grid { grid-template-columns:1fr; }
   .official-link-card { padding:13px 14px; }
 }
+
+/* GermanHanguk brand mark */
+.brand-lockup { display:inline-flex; align-items:center; gap:9px; min-width:max-content; }
+.brand-mark { display:block; object-fit:contain; flex:0 0 auto; }
+.brand-mark-desktop { width:38px; height:38px; }
+.brand-lockup-mobile { gap:7px; }
+.brand-mark-mobile { width:32px; height:32px; }
+.footer-brand { display:flex; flex-direction:column; align-items:center; gap:7px; }
+.footer-brand-mark { width:48px; height:48px; object-fit:contain; }
+@media (max-width: 420px) {
+  .brand-lockup-mobile { gap:5px; }
+  .brand-mark-mobile { width:29px; height:29px; }
+  .brand-lockup-mobile h1 { font-size:17px !important; }
+}

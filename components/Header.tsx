@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
@@ -188,7 +189,8 @@ export default function Header() {
             1. 데스크톱 헤더 (769px 이상에서만 노출, 기존 디자인 및 동작 100% 동일 보장)
            ====================================================================== */}
         <div className="desktop-header">
-          <Link className="desktop-logo" href="/" style={{ textDecoration: "none", color: "var(--gh-text)", marginRight: "24px" }}>
+          <Link className="desktop-logo brand-lockup" href="/" style={{ textDecoration: "none", color: "var(--gh-text)", marginRight: "24px" }}>
+            <Image className="brand-mark brand-mark-desktop" src="/assets/brand/germanhanguk-logo-m.png" alt="" width={38} height={38} priority />
             <h1 style={{ fontSize: "20px", fontWeight: "bold", margin: 0 }}>German Hanguk</h1>
           </Link>
 
@@ -389,7 +391,8 @@ export default function Header() {
             2. 모바일 헤더 (768px 이하 전용, 360px 기기 완벽 대응 컴팩트 구조)
            ====================================================================== */}
         <div className="mobile-header">
-          <Link href="/" style={{ textDecoration: "none", color: "var(--gh-text)" }}>
+          <Link className="brand-lockup brand-lockup-mobile" href="/" style={{ textDecoration: "none", color: "var(--gh-text)" }}>
+            <Image className="brand-mark brand-mark-mobile" src="/assets/brand/germanhanguk-logo-m.png" alt="" width={32} height={32} priority />
             <h1 style={{ fontSize: "18px", fontWeight: "bold", margin: 0, letterSpacing: "-0.02em" }}>German Hanguk</h1>
           </Link>
 
