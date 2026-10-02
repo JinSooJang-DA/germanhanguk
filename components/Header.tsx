@@ -161,6 +161,13 @@ export default function Header() {
     };
   }, []);
 
+  useEffect(function() {
+    if (!menuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return function() { document.body.style.overflow = previousOverflow; };
+  }, [menuOpen]);
+
   async function handleLogout() {
     await supabase.auth.signOut();
     setUser(null);
@@ -460,6 +467,7 @@ export default function Header() {
               onClick={function() { setMenuOpen(!menuOpen); }}
               aria-label="전체 메뉴 열기"
               aria-expanded={menuOpen}
+              aria-controls="mobile-menu-drawer"
               style={{
                 background: "none",
                 border: "none",
@@ -502,7 +510,7 @@ export default function Header() {
               className="mobile-menu-drawer"
               role="dialog"
               aria-modal="true"
-              aria-label="?? ??"
+              aria-label="전체 메뉴"
               style={{
                 position: "fixed",
                 top: 0,

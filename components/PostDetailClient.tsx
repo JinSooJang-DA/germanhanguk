@@ -1047,7 +1047,7 @@ export default function PostDetailClient({
                                       padding: "8px",
                                       border: "1px solid var(--gh-border)",
                                       borderRadius: "4px",
-                                      fontSize: "13px",
+                                      fontSize: "16px",
                                       boxSizing: "border-box",
                                     }}
                                   />

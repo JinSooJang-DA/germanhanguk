@@ -118,6 +118,13 @@ export default function MessageDetailPage({
     };
   }, [showReplyModal, sendingReply]);
 
+  useEffect(() => {
+    if (!showReplyModal) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [showReplyModal]);
+
   async function handleSendReply(e: React.FormEvent) {
     e.preventDefault();
     if (sendingReply) return;
@@ -392,14 +399,14 @@ export default function MessageDetailPage({
                   marginBottom: "20px",
                 }}
               >
-                <h3 style={{ margin: 0, fontSize: "16px", color: "var(--gh-text)" }}>
+                <h3 id="reply-message-title" style={{ margin: 0, fontSize: "16px", color: "var(--gh-text)" }}>
                   {senderProfile?.display_name || "회원"}님에게 답장 보내기
                 </h3>
                 <button
                   type="button"
                   onClick={() => !sendingReply && setShowReplyModal(false)}
                   disabled={sendingReply}
-                  aria-label="?? ?? ? ??"
+                  aria-label="답장 창 닫기"
                   style={{
                     background: "none",
                     border: "none",
@@ -428,7 +435,7 @@ export default function MessageDetailPage({
                       padding: "14px",
                       borderRadius: "8px",
                       border: "1px solid var(--gh-border)",
-                      fontSize: "14px",
+                      fontSize: "16px",
                       resize: "vertical",
                       boxSizing: "border-box",
                       lineHeight: "1.6",

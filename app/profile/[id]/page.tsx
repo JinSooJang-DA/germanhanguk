@@ -172,6 +172,13 @@ export default function PublicProfilePage({
     };
   }, [showModal, sendingMessage]);
 
+  useEffect(() => {
+    if (!showModal) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [showModal]);
+
   async function handleSendMessage(e: React.FormEvent) {
     e.preventDefault();
     if (sendingMessage) return;
@@ -671,7 +678,7 @@ export default function PublicProfilePage({
                     )}
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, fontSize: "16px", color: "var(--gh-text)" }}>
+                    <h3 id="send-message-title" style={{ margin: 0, fontSize: "16px", color: "var(--gh-text)" }}>
                       {profile.display_name || "회원"}님에게 쪽지 보내기
                     </h3>
                   </div>
@@ -680,7 +687,7 @@ export default function PublicProfilePage({
                   type="button"
                   onClick={() => !sendingMessage && setShowModal(false)}
                   disabled={sendingMessage}
-                  aria-label="?? ?? ? ??"
+                  aria-label="쪽지 작성 창 닫기"
                   style={{
                     background: "none",
                     border: "none",
@@ -710,7 +717,7 @@ export default function PublicProfilePage({
                       padding: "14px",
                       borderRadius: "8px",
                       border: "1px solid var(--gh-border)",
-                      fontSize: "14px",
+                      fontSize: "16px",
                       resize: "vertical",
                       boxSizing: "border-box",
                       lineHeight: "1.6",

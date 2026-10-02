@@ -555,7 +555,7 @@ export default function ProfilePage() {
                 padding: "10px",
                 border: "1px solid var(--gh-border)",
                 borderRadius: "4px",
-                fontSize: "14px",
+                fontSize: "16px",
                 resize: "vertical",
                 boxSizing: "border-box",
               }}
