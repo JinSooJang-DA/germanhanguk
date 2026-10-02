@@ -3417,15 +3417,8 @@ html[data-theme="dark"] .brand-mark-dark { display:block !important; }
 }
 
 /* Post detail: related rows intentionally breathe more than board-list rows.
-   Keep desktop and mobile explicit so a desktop test is not accidentally affected
-   only by the mobile breakpoint. */
-@media (min-width:769px) {
-  .related-posts tbody td {
-    padding-top:18px !important;
-    padding-bottom:18px !important;
-  }
-}
-
+   Desktop spacing lives on the related-list cells in PostDetailClient; these rules
+   only adapt the compact mobile grid. */
 @media (max-width:768px) {
   .related-posts tbody tr {
     row-gap:6px !important;

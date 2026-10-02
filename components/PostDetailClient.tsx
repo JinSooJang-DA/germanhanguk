@@ -1151,10 +1151,10 @@ export default function PostDetailClient({
                         background: isCurrent ? "var(--gh-surface-muted)" : "transparent",
                       }}
                     >
-                      <td className="related-post-category" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
+                      <td className="related-post-category" style={{ padding: "18px 14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
                         {getCategoryLabel(p.category, "ko")}
                       </td>
-                      <td className="related-post-title" style={{ padding: "14px" }}>
+                      <td className="related-post-title" style={{ padding: "18px 14px" }}>
                         <Link
                           href={"/posts/" + p.id + "?page=" + currentPage}
                           style={{
@@ -1167,11 +1167,11 @@ export default function PostDetailClient({
                         </Link>
                       </td>
                       {relatedUsesRegion && (
-                        <td className="related-post-region" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
+                        <td className="related-post-region" style={{ padding: "18px 14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
                           {shouldDisplayPostRegion(p.category, p.region) ? p.region : ""}
                         </td>
                       )}
-                      <td className="related-post-author" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
+                      <td className="related-post-author" style={{ padding: "18px 14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
                         {p.author_id ? (
                           <span className="related-post-author-line">
                           <AuthorActionMenu
@@ -1194,10 +1194,10 @@ export default function PostDetailClient({
                           <span>{p.author_name}</span>
                         )}
                       </td>
-                      <td className="related-post-date" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-subtle)" }}>
+                      <td className="related-post-date" style={{ padding: "18px 14px", fontSize: "14px", color: "var(--gh-text-subtle)" }}>
                         {formatDate(p.created_at)}
                       </td>
-                      <td className="related-post-views" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)", textAlign: "center" }}>
+                      <td className="related-post-views" style={{ padding: "18px 14px", fontSize: "14px", color: "var(--gh-text-muted)", textAlign: "center" }}>
                         <span className="related-post-date-inline">{formatDate(p.created_at)}</span><span className="related-post-stats">👁️ {p.views || 0} &nbsp; ❤️ {relatedLikesCount}</span>
                       </td>
                     </tr>
