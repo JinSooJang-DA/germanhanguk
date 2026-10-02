@@ -2677,3 +2677,33 @@ html[data-theme="dark"] .brand-mark-dark { display:block !important; }
 /* Post detail: related rows intentionally breathe more than board-list rows.
    Desktop spacing lives on the related-list cells in PostDetailClient; these rules
    only adapt the compact mobile grid. */
+
+/* 2026-10 mobile drawer: section labels are headings, not clickable tiles. */
+@media (max-width:1179px) {
+  .mobile-menu-heading {
+    margin:4px 0 5px !important;
+    padding:7px 10px !important;
+    border:0 !important;
+    border-left:3px solid #79b9c7 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+    text-shadow:none !important;
+  }
+  .mobile-menu-heading span {
+    color:#79b9c7 !important;
+    font-size:16px !important;
+    font-weight:800;
+    letter-spacing:-.02em;
+  }
+  .mobile-menu-heading small {
+    margin-top:2px !important;
+    color:var(--gh-text-subtle) !important;
+    font-size:10px !important;
+  }
+  html[data-theme="light"] .mobile-menu-heading {
+    border-left-color:#29433b !important;
+    background:transparent !important;
+  }
+  html[data-theme="light"] .mobile-menu-heading span { color:#29433b !important; }
+  html[data-theme="light"] .mobile-menu-heading small { color:#65746e !important; }
+}
