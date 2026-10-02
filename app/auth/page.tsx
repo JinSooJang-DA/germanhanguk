@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -22,7 +22,7 @@ export default function AuthPage() {
   const [socialLoading, setSocialLoading] = useState<"google" | "kakao" | null>(null);
 
   const googleAuthEnabled = true;
-  const kakaoAuthEnabled = true;
+  const kakaoAuthEnabled = false;
   const socialAuthEnabled = googleAuthEnabled || kakaoAuthEnabled;
 
   function resetForm() {
@@ -58,27 +58,27 @@ export default function AuthPage() {
     setMessage("");
 
     if (isSignup) {
-      // 1. 비밀번호 확인 검증
+      // 1. ë¹„ë°€ë²ˆí˜¸ í™•ì¸ ê²€ì¦
       if (password !== passwordConfirm) {
-        setMessage("비밀번호가 일치하지 않습니다.");
+        setMessage("ë¹„ë°€ë²ˆí˜¸ê°€ ì¼ì¹˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.");
         return;
       }
 
-      // 2. 닉네임 유효성 검증
+      // 2. ë‹‰ë„¤ìž„ ìœ íš¨ì„± ê²€ì¦
       const trimmedDisplayName = displayName.trim();
       if (!trimmedDisplayName) {
-        setMessage("닉네임을 입력해 주세요.");
+        setMessage("ë‹‰ë„¤ìž„ì„ ìž…ë ¥í•´ ì£¼ì„¸ìš”.");
         return;
       }
       if (trimmedDisplayName.length < 2) {
-        setMessage("닉네임은 2자 이상이어야 합니다.");
+        setMessage("ë‹‰ë„¤ìž„ì€ 2ìž ì´ìƒì´ì–´ì•¼ í•©ë‹ˆë‹¤.");
         return;
       }
 
-      // 3. 거주지역 선택 검증
+      // 3. ê±°ì£¼ì§€ì—­ ì„ íƒ ê²€ì¦
       const trimmedRegion = region.trim();
       if (!trimmedRegion) {
-        setMessage("거주지역을 선택하거나 입력해 주세요.");
+        setMessage("ê±°ì£¼ì§€ì—­ì„ ì„ íƒí•˜ê±°ë‚˜ ìž…ë ¥í•´ ì£¼ì„¸ìš”.");
         return;
       }
 
@@ -103,13 +103,13 @@ export default function AuthPage() {
         return;
       }
 
-      // 4. 회원가입 성공 분기 처리
+      // 4. íšŒì›ê°€ìž… ì„±ê³µ ë¶„ê¸° ì²˜ë¦¬
       if (data?.session) {
-        // 이메일 인증 없이 즉시 세션이 발급된 경우 -> 마이페이지로 즉시 이동
+        // ì´ë©”ì¼ ì¸ì¦ ì—†ì´ ì¦‰ì‹œ ì„¸ì…˜ì´ ë°œê¸‰ëœ ê²½ìš° -> ë§ˆì´íŽ˜ì´ì§€ë¡œ ì¦‰ì‹œ ì´ë™
         router.push("/profile");
         router.refresh();
       } else {
-        // 이메일 인증이 필요한 경우 (data.session === null) -> 폼을 닫고 가입 완료 안내 화면 표시
+        // ì´ë©”ì¼ ì¸ì¦ì´ í•„ìš”í•œ ê²½ìš° (data.session === null) -> í¼ì„ ë‹«ê³  ê°€ìž… ì™„ë£Œ ì•ˆë‚´ í™”ë©´ í‘œì‹œ
         setRegisteredEmail(signupEmail);
         setIsEmailConfirmationPending(true);
       }
@@ -128,26 +128,26 @@ export default function AuthPage() {
         return;
       }
 
-      // 로그인 성공 시 세션 갱신 후 메인으로 이동
+      // ë¡œê·¸ì¸ ì„±ê³µ ì‹œ ì„¸ì…˜ ê°±ì‹  í›„ ë©”ì¸ìœ¼ë¡œ ì´ë™
       router.push("/");
       router.refresh();
     }
   }
 
-  // 이메일 인증 대기 화면 (가입 완료 화면)
+  // ì´ë©”ì¼ ì¸ì¦ ëŒ€ê¸° í™”ë©´ (ê°€ìž… ì™„ë£Œ í™”ë©´)
   if (isEmailConfirmationPending) {
     return (
       <main className="auth-page">
         <div className="auth-box" style={{ textAlign: "center" }}>
           <h1>German Hanguk</h1>
 
-          <div style={{ fontSize: "48px", margin: "16px 0 8px" }}>✉️</div>
-          <h2>회원가입 완료</h2>
+          <div style={{ fontSize: "48px", margin: "16px 0 8px" }}>âœ‰ï¸</div>
+          <h2>íšŒì›ê°€ìž… ì™„ë£Œ</h2>
 
           <p style={{ color: "#475569", lineHeight: "1.6", margin: "16px 0 28px", fontSize: "15px" }}>
-            회원가입이 완료되었습니다.<br />
-            <strong>{registeredEmail}</strong>으로 전송된 인증 링크를 확인해 주세요.<br />
-            이메일 인증을 완료하신 후 로그인하실 수 있습니다.
+            íšŒì›ê°€ìž…ì´ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤.<br />
+            <strong>{registeredEmail}</strong>ìœ¼ë¡œ ì „ì†¡ëœ ì¸ì¦ ë§í¬ë¥¼ í™•ì¸í•´ ì£¼ì„¸ìš”.<br />
+            ì´ë©”ì¼ ì¸ì¦ì„ ì™„ë£Œí•˜ì‹  í›„ ë¡œê·¸ì¸í•˜ì‹¤ ìˆ˜ ìžˆìŠµë‹ˆë‹¤.
           </p>
 
           <button
@@ -170,7 +170,7 @@ export default function AuthPage() {
               cursor: "pointer",
             }}
           >
-            로그인 화면으로 이동
+            ë¡œê·¸ì¸ í™”ë©´ìœ¼ë¡œ ì´ë™
           </button>
         </div>
       </main>
@@ -182,31 +182,31 @@ export default function AuthPage() {
       <div className="auth-box">
         <h1>German Hanguk</h1>
 
-        <h2>{isSignup ? "회원가입" : "로그인"}</h2>
+        <h2>{isSignup ? "íšŒì›ê°€ìž…" : "ë¡œê·¸ì¸"}</h2>
 
         {socialAuthEnabled && (
           <>
-            <div className="auth-social-actions" aria-label="소셜 계정으로 계속하기">
+            <div className="auth-social-actions" aria-label="ì†Œì…œ ê³„ì •ìœ¼ë¡œ ê³„ì†í•˜ê¸°">
               {googleAuthEnabled && (
                 <button type="button" className="auth-social-button auth-social-button--google" onClick={() => handleSocialLogin("google")} disabled={socialLoading !== null || loading}>
                   <span className="auth-social-icon" aria-hidden="true">G</span>
-                  {socialLoading === "google" ? "Google 연결 중..." : "Google로 계속하기"}
+                  {socialLoading === "google" ? "Google ì—°ê²° ì¤‘..." : "Googleë¡œ ê³„ì†í•˜ê¸°"}
                 </button>
               )}
               {kakaoAuthEnabled && (
                 <button type="button" className="auth-social-button auth-social-button--kakao" onClick={() => handleSocialLogin("kakao")} disabled={socialLoading !== null || loading}>
                   <span className="auth-social-icon" aria-hidden="true">K</span>
-                  {socialLoading === "kakao" ? "카카오 연결 중..." : "카카오로 계속하기"}
+                  {socialLoading === "kakao" ? "ì¹´ì¹´ì˜¤ ì—°ê²° ì¤‘..." : "ì¹´ì¹´ì˜¤ë¡œ ê³„ì†í•˜ê¸°"}
                 </button>
               )}
             </div>
-            <div className="auth-divider"><span>또는 이메일로</span></div>
+            <div className="auth-divider"><span>ë˜ëŠ” ì´ë©”ì¼ë¡œ</span></div>
           </>
         )}
 
         <form onSubmit={handleSubmit}>
           <label>
-            이메일
+            ì´ë©”ì¼
             <input
               type="email"
               value={email}
@@ -219,12 +219,12 @@ export default function AuthPage() {
           {isSignup && (
             <>
               <label>
-                닉네임 (별명)
+                ë‹‰ë„¤ìž„ (ë³„ëª…)
                 <input
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="커뮤니티에서 사용할 닉네임 (2자 이상)"
+                  placeholder="ì»¤ë®¤ë‹ˆí‹°ì—ì„œ ì‚¬ìš©í•  ë‹‰ë„¤ìž„ (2ìž ì´ìƒ)"
                   required
                   minLength={2}
                   maxLength={30}
@@ -232,7 +232,7 @@ export default function AuthPage() {
               </label>
 
               <label>
-                거주지역
+                ê±°ì£¼ì§€ì—­
                 <select
                   value={region}
                   onChange={(e) => setRegion(e.target.value)}
@@ -245,7 +245,7 @@ export default function AuthPage() {
                     background: "#fff",
                   }}
                 >
-                  <option value="">거주지역을 선택하세요</option>
+                  <option value="">ê±°ì£¼ì§€ì—­ì„ ì„ íƒí•˜ì„¸ìš”</option>
                   {GERMAN_REGIONS.map((city) => (
                     <option key={city} value={city}>
                       {city}
@@ -257,12 +257,12 @@ export default function AuthPage() {
           )}
 
           <label>
-            비밀번호
+            ë¹„ë°€ë²ˆí˜¸
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="비밀번호 (6자 이상)"
+              placeholder="ë¹„ë°€ë²ˆí˜¸ (6ìž ì´ìƒ)"
               required
               minLength={6}
             />
@@ -270,12 +270,12 @@ export default function AuthPage() {
 
           {isSignup && (
             <label>
-              비밀번호 확인
+              ë¹„ë°€ë²ˆí˜¸ í™•ì¸
               <input
                 type="password"
                 value={passwordConfirm}
                 onChange={(e) => setPasswordConfirm(e.target.value)}
-                placeholder="비밀번호 다시 입력"
+                placeholder="ë¹„ë°€ë²ˆí˜¸ ë‹¤ì‹œ ìž…ë ¥"
                 required
                 minLength={6}
               />
@@ -283,7 +283,7 @@ export default function AuthPage() {
           )}
 
           <button className="auth-primary-action" type="submit" disabled={loading}>
-            {loading ? "처리 중..." : isSignup ? "회원가입" : "로그인"}
+            {loading ? "ì²˜ë¦¬ ì¤‘..." : isSignup ? "íšŒì›ê°€ìž…" : "ë¡œê·¸ì¸"}
           </button>
         </form>
 
@@ -291,7 +291,7 @@ export default function AuthPage() {
           <p
             className="auth-message"
             style={{
-              color: message.includes("완료") ? "var(--gh-success)" : "var(--gh-alert)",
+              color: message.includes("ì™„ë£Œ") ? "var(--gh-success)" : "var(--gh-alert)",
               fontWeight: 500,
             }}
           >
@@ -308,8 +308,8 @@ export default function AuthPage() {
           }}
         >
           {isSignup
-            ? "이미 계정이 있습니다 → 로그인"
-            : "계정이 없으신가요? → 회원가입"}
+            ? "ì´ë¯¸ ê³„ì •ì´ ìžˆìŠµë‹ˆë‹¤ â†’ ë¡œê·¸ì¸"
+            : "ê³„ì •ì´ ì—†ìœ¼ì‹ ê°€ìš”? â†’ íšŒì›ê°€ìž…"}
         </button>
       </div>
     </main>
