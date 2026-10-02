@@ -154,6 +154,7 @@ export const GUIDE_CATEGORIES: readonly GuideCategory[] = [
   { value: "insurance", label: { ko: "보험", de: "Versicherungen", en: "Insurance" }, icon: "🏥", description: "공보험과 사보험, 책임보험 등 독일 보험" },
   { value: "driving", label: { ko: "교통·운전", de: "Verkehr & Führerschein", en: "Traffic & Driving" }, icon: "🚗", description: "면허 교환, 독일 교통 규칙, 차량 구매" },
   { value: "german-life", label: { ko: "독일생활", de: "Leben in DE", en: "German Life" }, icon: "🇩🇪", description: "현지 마트, 쓰레기 분리수거, 일상 상식" },
+  { value: "banking", label: { ko: "은행·금융", de: "Bank & Finanzen", en: "Banking & Finance" }, icon: "🏦", description: "은행계좌 개설, 은행별 비교, 카드·SEPA·SCHUFA" },
   { value: "korean-life", label: { ko: "한국생활", de: "Leben in KR", en: "Korean Life" }, icon: "🇰🇷", description: "한국 방문, 역이민, 한국 거주 팁" },
   { value: "language", label: { ko: "언어", de: "Sprache", en: "Language" }, icon: "🗣️", description: "독일어 학습 요령, 현지 표현, 어학 시험" },
   { value: "culture-travel", label: { ko: "문화·여행", de: "Kultur & Reisen", en: "Culture & Travel" }, icon: "✈️", description: "독일 주말 휴일, 연차 사용, 기차 여행" },

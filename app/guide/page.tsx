@@ -39,10 +39,11 @@ export default function GuideLandingPage() {
         {/* 카테고리 그리드 */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
           {GUIDE_CATEGORIES.map(function (cat) {
-            const isReady = cat.value === "insurance" || cat.value === "housing" || cat.value === "visa" || cat.value === "taxes" || cat.value === "jobs" || cat.value === "education" || cat.value === "driving" || cat.value === "german-life" || cat.value === "korean-life" || cat.value === "language" || cat.value === "culture-travel";
+            const isReady = cat.value === "insurance" || cat.value === "housing" || cat.value === "visa" || cat.value === "taxes" || cat.value === "jobs" || cat.value === "education" || cat.value === "driving" || cat.value === "german-life" || cat.value === "banking" || cat.value === "korean-life" || cat.value === "language" || cat.value === "culture-travel";
             
             const getCategoryPath = function(val: string) {
               if (val === "visa") return "visa-residence";
+              if (val === "banking") return "german-bank-account-guide";
               return val;
             };
 
