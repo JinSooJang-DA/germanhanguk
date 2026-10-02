@@ -1,319 +1,221 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { formatDateTime } from "@/lib/date";
+import styles from "./notifications.module.css";
+
+type NotificationType = "COMMENT" | "REPLY" | "POST_LIKE";
+type Filter = "all" | "unread";
 
 interface NotificationItem {
   id: string;
   recipient_id: string;
   actor_id: string;
-  type: "COMMENT" | "REPLY" | "POST_LIKE";
+  type: NotificationType;
   reference_id: string;
   post_id: number;
   is_read: boolean;
   created_at: string;
-  profiles?: {
-    display_name: string | null;
-    avatar_url: string | null;
-  } | null;
-  posts?: {
-    title: string;
-  } | null;
+  profiles?: { display_name: string | null; avatar_url: string | null } | null;
+  posts?: { title: string } | null;
+}
+
+const PAGE_SIZE = 20;
+function getMessage(item: NotificationItem) {
+  const actor = item.profiles?.display_name || "누군가";
+  const title = item.posts?.title ? `“${item.posts.title}”` : "게시물";
+  if (item.type === "COMMENT") return `${actor}님이 회원님의 게시글 ${title}에 댓글을 남겼습니다.`;
+  if (item.type === "REPLY") return `${actor}님이 회원님의 댓글에 답글을 남겼습니다.`;
+  return `${actor}님이 회원님의 게시글 ${title}을 좋아합니다.`;
+}
+
+function getKind(item: NotificationItem) {
+  if (item.type === "COMMENT") return { icon: "💬", label: "댓글" };
+  if (item.type === "REPLY") return { icon: "↩", label: "답글" };
+  return { icon: "♥", label: "좋아요" };
+}
+
+function getHref(item: NotificationItem) {
+  const anchor = item.type === "POST_LIKE" ? "" : `#comment-${item.reference_id}`;
+  return `/posts/${item.post_id}${anchor}`;
 }
 
 export default function NotificationsPage() {
   const router = useRouter();
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [items, setItems] = useState<NotificationItem[]>([]);
+  const [filter, setFilter] = useState<Filter>("all");
+  const [limit, setLimit] = useState(PAGE_SIZE);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [reloadKey, setReloadKey] = useState(0);
-  const [completedLoadKey, setCompletedLoadKey] = useState<number | null>(null);
-  const loading = completedLoadKey !== reloadKey;
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(function() {
-    let isCurrent = true;
-
-    async function loadNotifications() {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!isCurrent) return;
-
-        if (!session) {
-          setNotifications([]);
-          setCurrentUserId(null);
-          setError(null);
-          alert("로그인이 필요한 서비스입니다.");
-          router.push("/auth");
-          return;
-        }
-
-        setCurrentUserId(session.user.id);
-
-        const { data, error: fetchErr } = await supabase
-          .from("notifications")
-          .select("id,recipient_id,actor_id,type,reference_id,post_id,is_read,created_at,profiles:actor_id(display_name,avatar_url),posts:post_id(title)")
-          .order("created_at", { ascending: false });
-
-        if (!isCurrent) return;
-
-        if (fetchErr) {
-          setError(fetchErr.message);
-        } else {
-          setError(null);
-          setNotifications((data || []) as unknown as NotificationItem[]);
-        }
-      } catch (err: unknown) {
-        if (isCurrent) {
-          console.error("Auth fetch error:", err);
-          setError("알림 목록을 불러오는 데 실패했습니다.");
-        }
-      } finally {
-        if (isCurrent) {
-          setCompletedLoadKey(reloadKey);
-        }
-      }
-    }
-
-    loadNotifications();
-
-    return function() {
-      isCurrent = false;
-    };
-  }, [reloadKey, router]);
-
-  async function handleMarkAsRead(notifId: string) {
-    try {
-      const { error: patchErr } = await supabase
-        .from("notifications")
-        .update({ is_read: true })
-        .eq("id", notifId);
-
-      if (patchErr) {
-        console.error("Mark as read error:", patchErr);
+    let active = true;
+    supabase.auth.getUser().then(function({ data }) {
+      if (!active) return;
+      if (!data.user) {
+        router.replace("/auth");
         return;
       }
+      setUserId(data.user.id);
+    });
+    return function() { active = false; };
+  }, [router]);
 
-      setNotifications(function(prev) {
-        return prev.map(function(n) {
-          if (n.id === notifId) {
-            return { ...n, is_read: true };
-          }
-          return n;
-        });
-      });
-
-      window.dispatchEvent(new Event("notifications-updated"));
-    } catch (err) {
-      console.error("Failed to mark notification as read:", err);
+  const loadNotifications = useCallback(async function() {
+    if (!userId) return;
+    setLoading(true);
+    setError(null);
+    let query = supabase.from("notifications")
+      .select("id,recipient_id,actor_id,type,reference_id,post_id,is_read,created_at,profiles:actor_id(display_name,avatar_url),posts:post_id(title)")
+      .order("created_at", { ascending: false })
+      .range(0, limit);
+    if (filter === "unread") query = query.eq("is_read", false);
+    const [listResult, countResult] = await Promise.all([
+      query,
+      supabase.from("notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("recipient_id", userId)
+        .eq("is_read", false),
+    ]);
+    if (listResult.error) {
+      setError(listResult.error.message);
+      setLoading(false);
+      return;
     }
-  }
+    const rows = (listResult.data || []) as unknown as NotificationItem[];
+    setItems(rows.slice(0, limit));
+    setHasMore(rows.length > limit);
+    if (!countResult.error) setUnreadCount(countResult.count || 0);
+    setLoading(false);
+  }, [filter, limit, userId]);
 
-  async function handleMarkAllAsRead() {
-    if (!currentUserId || notifications.length === 0) return;
-    try {
-      const { error: patchErr } = await supabase
-        .from("notifications")
-        .update({ is_read: true })
-        .eq("recipient_id", currentUserId)
-        .eq("is_read", false);
+  useEffect(function() {
+    const timer = window.setTimeout(function() { void loadNotifications(); }, 0);
+    return function() { window.clearTimeout(timer); };
+  }, [loadNotifications, refreshKey]);
 
-      if (patchErr) {
-        alert("알림 전체 읽음 처리 실패: " + patchErr.message);
-        return;
-      }
+  useEffect(function() {
+    if (!userId) return;
+    const channel = supabase.channel("notification-center-" + userId)
+      .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: "recipient_id=eq." + userId }, function() {
+        setRefreshKey(function(value) { return value + 1; });
+        window.dispatchEvent(new Event("notifications-updated"));
+      })
+      .subscribe();
+    return function() { void supabase.removeChannel(channel); };
+  }, [userId]);
 
-      setNotifications(function(prev) {
-        return prev.map(function(n) {
-          return { ...n, is_read: true };
-        });
-      });
-      window.dispatchEvent(new Event("notifications-updated"));
-    } catch (err) {
-      console.error("Failed to mark all notifications as read:", err);
+  async function markAsRead(item: NotificationItem) {
+    if (item.is_read || !userId) return;
+    setItems(function(current) {
+      return current.map(function(row) { return row.id === item.id ? { ...row, is_read: true } : row; });
+    });
+    setUnreadCount(function(count) { return Math.max(0, count - 1); });
+    const { error: updateError } = await supabase.from("notifications")
+      .update({ is_read: true })
+      .eq("id", item.id)
+      .eq("recipient_id", userId);
+    if (updateError) {
+      setRefreshKey(function(value) { return value + 1; });
+      return;
     }
+    window.dispatchEvent(new Event("notifications-updated"));
   }
 
-  function getNotificationMessage(item: NotificationItem) {
-    const actorName = item.profiles?.display_name || "누군가";
-    const postTitle = item.posts?.title ? '"' + item.posts.title + '"' : "게시물";
-
-    if (item.type === "COMMENT") {
-      return actorName + "님이 회원님의 게시글 " + postTitle + "에 댓글을 남겼습니다.";
-    } else if (item.type === "REPLY") {
-      return actorName + "님이 회원님의 댓글에 답글을 남겼습니다.";
-    } else if (item.type === "POST_LIKE") {
-      return actorName + "님이 회원님의 게시글 " + postTitle + "을 좋아합니다.";
+  async function markAllAsRead() {
+    if (!userId || unreadCount === 0) return;
+    const { error: updateError } = await supabase.from("notifications")
+      .update({ is_read: true })
+      .eq("recipient_id", userId)
+      .eq("is_read", false);
+    if (updateError) {
+      setError("알림을 읽음 처리하지 못했습니다. 잠시 후 다시 시도해주세요.");
+      return;
     }
-    return "새로운 알림이 도착했습니다.";
+    setUnreadCount(0);
+    setItems(function(current) { return filter === "unread" ? [] : current.map(function(row) { return { ...row, is_read: true }; }); });
+    window.dispatchEvent(new Event("notifications-updated"));
   }
 
-  const hasUnread = notifications.some(function(n) {
-    return !n.is_read;
-  });
-
-  if (loading) {
-    return (
-      <main style={{ padding: "80px 0", minHeight: "calc(100vh - 80px)" }}>
-        <div className="wrapper" style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
-          <p style={{ color: "var(--gh-text-muted)" }}>알림 목록을 불러오는 중...</p>
-        </div>
-      </main>
-    );
+  function changeFilter(next: Filter) {
+    setFilter(next);
+    setLimit(PAGE_SIZE);
   }
 
-  if (error) {
-    return (
-      <main style={{ padding: "80px 0", minHeight: "calc(100vh - 80px)" }}>
-        <div className="wrapper" style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
-          <p style={{ color: "var(--gh-alert)", marginBottom: "16px" }}>에러: {error}</p>
-          <button
-            onClick={function() {
-              setReloadKey(function(previousKey) {
-                return previousKey + 1;
-              });
-            }}
-            style={{
-              padding: "10px 20px",
-              background: "var(--gh-text)",
-              color: "var(--gh-surface)",
-              border: "none",
-              borderRadius: "6px",
-              fontWeight: "bold",
-              cursor: "pointer",
-            }}
-          >
-            다시 시도
-          </button>
-        </div>
-      </main>
-    );
+  if (!userId || (loading && items.length === 0)) {
+    return <main className={styles.page}><div className={styles.container}><div className={styles.state}>알림을 불러오는 중...</div></div></main>;
   }
 
   return (
-    <main style={{ padding: "60px 0", minHeight: "calc(100vh - 80px)", background: "var(--gh-page-bg)" }}>
-      <div className="wrapper" style={{ maxWidth: "600px", margin: "0 auto", padding: "0 20px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-          <h1 style={{ fontSize: "24px", fontWeight: "bold", color: "var(--gh-text)", margin: 0 }}>알림 내역</h1>
-          {hasUnread && (
-            <button
-              onClick={handleMarkAllAsRead}
-              style={{
-                background: "none",
-                border: "none",
-                color: "var(--gh-accent)",
-                fontSize: "14px",
-                fontWeight: "600",
-                cursor: "pointer",
-                padding: 0,
-              }}
-            >
-              모두 읽음으로 표시
-            </button>
-          )}
+    <main className={styles.page}>
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <div>
+            <h1 className={styles.title}>알림</h1>
+            <p className={styles.subtitle}>댓글, 답글, 좋아요 소식을 확인하세요.</p>
+          </div>
+          {unreadCount > 0 && <button className={styles.markAll} onClick={function() { void markAllAsRead(); }}>모두 읽음</button>}
+        </div>
+        <div className={styles.tabs} role="tablist" aria-label="알림 필터">
+          <button className={`${styles.tab} ${filter === "all" ? styles.tabActive : ""}`} onClick={function() { changeFilter("all"); }}>
+            전체
+          </button>
+          <button className={`${styles.tab} ${filter === "unread" ? styles.tabActive : ""}`} onClick={function() { changeFilter("unread"); }}>
+            안 읽음 {unreadCount > 0 ? unreadCount : ""}
+          </button>
         </div>
 
-        {notifications.length === 0 ? (
-          <div style={{
-            background: "var(--gh-surface)",
-            borderRadius: "12px",
-            padding: "60px 20px",
-            textAlign: "center",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-            border: "1px solid var(--gh-border)"
-          }}>
-            <p style={{ fontSize: "36px", margin: "0 0 16px 0" }}>🔔</p>
-            <p style={{ color: "var(--gh-text-muted)", margin: 0, fontSize: "15px" }}>아직 도착한 알림이 없습니다.</p>
+        {error && (
+          <div className={`${styles.state} ${styles.error}`}>
+            <div>{error}</div>
+            <button className={`${styles.loadMore} ${styles.retry}`} onClick={function() { setRefreshKey(function(v) { return v + 1; }); }}>다시 시도</button>
           </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            {notifications.map(function(item) {
-              return (
-                <div
-                  key={item.id}
-                  style={{
-                    background: "var(--gh-surface)",
-                    borderRadius: "12px",
-                    padding: "16px",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-                    border: "1px solid var(--gh-border)",
-                    display: "flex",
-                    gap: "14px",
-                    alignItems: "flex-start",
-                    opacity: item.is_read ? 0.7 : 1,
-                    position: "relative",
-                    transition: "all 0.2s"
-                  }}
-                >
-                  {!item.is_read && (
-                    <span style={{
-                      width: "8px",
-                      height: "8px",
-                      borderRadius: "50%",
-                      background: "var(--gh-alert)",
-                      position: "absolute",
-                      top: "20px",
-                      right: "20px"
-                    }} />
-                  )}
+        )}
 
-                  <div style={{
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "50%",
-                    background: "var(--gh-surface-muted)",
-                    overflow: "hidden",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0
-                  }}>
-                    {item.profiles?.avatar_url ? (
-                      <img
-                        src={item.profiles.avatar_url}
-                        alt={item.profiles?.display_name || "사용자"}
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                      />
-                    ) : (
-                      <span style={{ fontSize: "18px" }}>👤</span>
-                    )}
-                  </div>
+        {!error && items.length === 0 && (
+          <div className={styles.empty}>
+            <span className={styles.emptyIcon}>🔔</span>
+            {filter === "unread" ? "읽지 않은 알림이 없습니다." : "아직 도착한 알림이 없습니다."}
+          </div>
+        )}
 
-                  <div style={{ flex: 1, paddingRight: "16px" }}>
-                    <p style={{
-                      margin: "0 0 6px 0",
-                      fontSize: "14px",
-                      lineHeight: "1.5",
-                      color: item.is_read ? "var(--gh-text-muted)" : "var(--gh-text)",
-                      fontWeight: item.is_read ? "normal" : "500"
-                    }}>
-                      {getNotificationMessage(item)}
-                    </p>
-                    <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                      <span style={{ fontSize: "12px", color: "var(--gh-text-subtle)" }}>
-                        {formatDateTime(item.created_at)}
-                      </span>
-                      
-                      <Link
-                        href={"/posts/" + item.post_id + (item.type !== "POST_LIKE" ? "#comment-" + item.reference_id : "")}
-                        onClick={handleMarkAsRead.bind(null, item.id)}
-                        style={{
-                          fontSize: "12px",
-                          color: "var(--gh-accent)",
-                          fontWeight: "600",
-                          textDecoration: "none"
-                        }}
-                      >
-                        이동하기 →
-                      </Link>
-                    </div>
-                  </div>
+        {!error && items.length > 0 && <div className={styles.list}>
+          {items.map(function(item) {
+            const kind = getKind(item);
+            return (
+              <Link
+                key={item.id}
+                href={getHref(item)}
+                className={`${styles.card} ${!item.is_read ? styles.unread : ""}`}
+                onClick={function() { void markAsRead(item); }}
+              >
+                {!item.is_read && <span className={styles.dot} aria-label="읽지 않음" />}
+                {item.profiles?.avatar_url ? (
+                  <span className={styles.avatar} style={{ backgroundImage: `url(${item.profiles.avatar_url})` }} aria-hidden="true" />
+                ) : (
+                  <span className={styles.avatarFallback} aria-hidden="true">👤</span>
+                )}
+                <div className={styles.body}>
+                  <p className={styles.message}>{getMessage(item)}</p>
+                  <div className={styles.meta}>{formatDateTime(item.created_at)}</div>
                 </div>
-              );
-            })}
-          </div>
+                <span className={styles.kind}><span aria-hidden="true">{kind.icon}</span>{kind.label}</span>
+              </Link>
+            );
+          })}
+        </div>}
+
+        {!error && hasMore && (
+          <button className={styles.loadMore} onClick={function() { setLimit(function(value) { return value + PAGE_SIZE; }); }} disabled={loading}>
+            {loading ? "불러오는 중..." : "알림 더 보기"}
+          </button>
         )}
       </div>
     </main>

@@ -127,6 +127,27 @@ export default function Header() {
     };
   }, []);
 
+  // Keep the notification badge fresh across tabs and devices.
+  useEffect(function() {
+    if (!user?.id) return;
+    const userId = user.id;
+    const refreshNotifications = function() { loadUnreadNotificationsCount(userId); };
+    const channel = supabase
+      .channel("header-notifications-" + userId)
+      .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: "recipient_id=eq." + userId }, refreshNotifications)
+      .subscribe();
+    const handleVisibility = function() {
+      if (document.visibilityState === "visible") refreshNotifications();
+    };
+    window.addEventListener("focus", refreshNotifications);
+    document.addEventListener("visibilitychange", handleVisibility);
+    return function() {
+      window.removeEventListener("focus", refreshNotifications);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      void supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
   // 열린 메뉴는 ESC 또는 메뉴 바깥 영역을 클릭하면 닫는다.
   useEffect(function() {
     const handleKeyDown = function(e: KeyboardEvent) {
@@ -268,7 +289,7 @@ export default function Header() {
                       boxSizing: "border-box",
                     }}
                   >
-                    {unreadNotificationsCount}
+                    {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
                   </span>
                 )}
               </Link>
@@ -430,7 +451,7 @@ export default function Header() {
                         boxSizing: "border-box",
                       }}
                     >
-                      {unreadNotificationsCount}
+                      {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
                     </span>
                   )}
                 </Link>
