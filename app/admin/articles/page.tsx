@@ -76,7 +76,6 @@ export default function AdminArticlesPage() {
     const { data, error } = await supabase
       .from("articles")
       .select("id,slug,title,summary,content,category,source_urls,image_url,is_featured,status,review_status,ai_generated,created_at")
-      .eq("ai_generated", true)
       .order("created_at", { ascending: false });
     if (error) setMessage("초안을 불러오지 못했습니다: " + error.message);
     else setArticles((data || []) as DraftArticle[]);
@@ -188,8 +187,8 @@ export default function AdminArticlesPage() {
     <main style={{ maxWidth: 1280, margin: "0 auto", padding: "36px 20px 80px" }}>
       <header style={{ marginBottom: 24 }}>
         <p style={{ margin: 0, color: "var(--gh-text-muted)", fontSize: 13 }}>ADMIN · EDITORIAL</p>
-        <h1 style={{ margin: "6px 0" }}>AI 기사 검토함</h1>
-        <p style={{ margin: 0, color: "var(--gh-text-muted)" }}>자동 생성 초안을 원문 출처와 함께 확인하고 수정한 뒤 직접 공개합니다.</p>
+        <h1 style={{ margin: "6px 0" }}>기사 검토함</h1>
+        <p style={{ margin: 0, color: "var(--gh-text-muted)" }}>자동 생성 초안과 기존 기사를 확인하고 수정·공개·삭제할 수 있습니다.</p>
       </header>
 
       {message && <p style={{ padding: 12, border: "1px solid var(--gh-border)", borderRadius: 8 }}>{message}</p>}
@@ -205,7 +204,7 @@ export default function AdminArticlesPage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10 }}>
           <StatusCard label="작업기 상태" value={workerStateLabel} detail={lastRunAt ? `마지막 실행 ${new Date(lastRunAt).toLocaleString()}` : "아직 예약 실행 전입니다."} />
           <StatusCard label="오늘 생성" value={`${todayGenerated}건`} detail={`현재 검토 대기 ${pendingArticles.length}건`} />
-          <StatusCard label="공개 / 반려" value={`${publishedArticles.length} / ${rejectedArticles.length}`} detail="AI 자동작성 기사 기준" />
+          <StatusCard label="공개 / 반려" value={`${publishedArticles.length} / ${rejectedArticles.length}`} detail="전체 기사 기준" />
           <StatusCard label="최근 생성 기사" value={latestArticle ? latestArticle.category : "없음"} detail={latestArticle?.title || "아직 생성된 기사가 없습니다."} />
         </div>
       </section>
