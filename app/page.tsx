@@ -537,7 +537,7 @@ function HomeContent() {
       )}
 
       {isCommunityView && (
-      <div className="wrapper community-home" style={{ padding: "30px 20px 60px 20px", maxWidth: "1200px", margin: "0 auto" }}>
+      <div className={"wrapper community-home" + (selectedCategory !== "all" ? " community-home--category" : "")} style={{ padding: "30px 20px 60px 20px", maxWidth: "1200px", margin: "0 auto" }}>
         <section className="community-intro">
           <span className="community-kicker">GERMAN HANGUK COMMUNITY</span>
           <h1>독일에서 함께 사는 사람들의 이야기</h1>

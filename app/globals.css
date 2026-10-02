@@ -3318,3 +3318,103 @@ html[data-theme="dark"] .brand-mark-dark { display:block !important; }
   .community-home .main-post-views { grid-column:2; grid-row:4; text-align:left !important; }
   .community-home .main-post-stats { justify-content:start; }
 }
+
+/* 2026-10 specific-board mobile rows: two compact information lines. */
+@media (max-width:768px) {
+  .community-home--category .main-post-list tbody tr {
+    grid-template-columns:minmax(0,1fr) max-content max-content;
+    grid-template-rows:auto auto;
+    column-gap:8px;
+    row-gap:4px;
+    align-items:center;
+    padding:8px 4px !important;
+  }
+  .community-home--category .main-post-category { display:none !important; }
+  .community-home--category .main-post-title {
+    grid-column:1;
+    grid-row:1;
+    min-width:0;
+    margin:0 !important;
+    line-height:1.2;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+  }
+  .community-home--category .main-post-title a {
+    display:block !important;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+  }
+  .community-home--category .main-post-date {
+    grid-column:2;
+    grid-row:1;
+    font-size:10px !important;
+    white-space:nowrap;
+  }
+  .community-home--category .main-post-views {
+    grid-column:3;
+    grid-row:1;
+    font-size:10px !important;
+    text-align:right !important;
+    white-space:nowrap;
+  }
+  .community-home--category .main-post-stats { gap:6px; }
+  .community-home--category .main-post-stat {
+    grid-template-columns:14px minmax(1ch,auto);
+    column-gap:1px;
+  }
+  .community-home--category .main-post-region {
+    grid-column:1;
+    grid-row:2;
+    font-size:10.5px !important;
+    white-space:nowrap;
+  }
+  .community-home--category .main-post-author {
+    grid-column:2 / 4;
+    grid-row:2;
+    min-width:0;
+    font-size:10.5px !important;
+    white-space:nowrap;
+  }
+  .community-home--category .main-post-author > div {
+    display:inline-flex !important;
+    flex-direction:row !important;
+    align-items:center !important;
+    gap:5px !important;
+    min-width:0;
+  }
+  .community-home--category .author-action-trigger { gap:4px; padding:0 2px; }
+  .community-home--category .author-action-avatar { width:18px; height:18px; }
+  .community-home--category .community-identity {
+    flex-wrap:nowrap;
+    gap:3px;
+    font-size:9.5px;
+    line-height:1.15;
+    white-space:nowrap;
+  }
+  .community-home--category .community-identity__level,
+  .community-home--category .community-identity__tenure { gap:2px; }
+}
+
+@media (max-width:360px) {
+  .community-home--category .main-post-list tbody tr {
+    grid-template-columns:minmax(0,1fr) max-content max-content;
+    grid-template-rows:auto auto;
+    column-gap:5px;
+    row-gap:3px;
+    padding:7px 0 !important;
+  }
+  .community-home--category .main-post-title { grid-column:1; grid-row:1; }
+  .community-home--category .main-post-date { grid-column:2; grid-row:1; font-size:9px !important; }
+  .community-home--category .main-post-views { grid-column:3; grid-row:1; font-size:9px !important; }
+  .community-home--category .main-post-region { grid-column:1; grid-row:2; font-size:9.5px !important; }
+  .community-home--category .main-post-author { grid-column:2 / 4; grid-row:2; font-size:9.5px !important; }
+  .community-home--category .community-identity { font-size:8.5px; }
+}
+
+/* A specific board already supplies the category context. */
+.community-home--category .main-post-category,
+.community-home--category .main-post-list thead th:first-child {
+  display:none !important;
+}
