@@ -39,6 +39,7 @@ function HomeContent() {
   const [featuredArticles, setFeaturedArticles] = useState<Article[]>([]);
   const [articlesError, setArticlesError] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [heroTransitionEnabled, setHeroTransitionEnabled] = useState(true);
   const [mobileLiveIndex, setMobileLiveIndex] = useState(0);
   const [isHeroPaused, setIsHeroPaused] = useState(false);
   const [isMobileLivePaused, setIsMobileLivePaused] = useState(false);
@@ -213,7 +214,7 @@ function HomeContent() {
 
     const timer = window.setInterval(function() {
       setCurrentSlide(function(previous) {
-        return (previous + 1) % featuredArticles.length;
+        return previous >= featuredArticles.length - 1 ? featuredArticles.length : previous + 1;
       });
     }, 6500);
 
@@ -246,14 +247,28 @@ function HomeContent() {
   };
 
   const nextSlide = function() {
+    setHeroTransitionEnabled(true);
     setCurrentSlide(function(prev) {
-      return prev === featuredArticles.length - 1 ? 0 : prev + 1;
+      return prev >= featuredArticles.length - 1 ? featuredArticles.length : prev + 1;
     });
   };
 
   const prevSlide = function() {
+    setHeroTransitionEnabled(true);
     setCurrentSlide(function(prev) {
-      return prev === 0 ? featuredArticles.length - 1 : prev - 1;
+      return prev === 0 ? featuredArticles.length - 1 : Math.min(prev - 1, featuredArticles.length - 1);
+    });
+  };
+
+  const activeHeroSlide = featuredArticles.length > 0 ? currentSlide % featuredArticles.length : 0;
+  const heroSlides = featuredArticles.length > 1 ? [...featuredArticles, featuredArticles[0]] : featuredArticles;
+
+  const handleHeroTransitionEnd = function() {
+    if (featuredArticles.length < 2 || currentSlide !== featuredArticles.length) return;
+    setHeroTransitionEnabled(false);
+    setCurrentSlide(0);
+    window.requestAnimationFrame(function() {
+      window.requestAnimationFrame(function() { setHeroTransitionEnabled(true); });
     });
   };
 
@@ -301,21 +316,22 @@ function HomeContent() {
             }}
           >
             {featuredArticles.length > 1 && !isHeroPaused && (
-              <div key={currentSlide} className="home-hero-progress" aria-hidden="true" />
+              <div key={activeHeroSlide} className="home-hero-progress" aria-hidden="true" />
             )}
             <div
+              onTransitionEnd={handleHeroTransitionEnd}
               style={{
                 display: "flex",
                 width: "100%",
                 height: "100%",
                 transform: "translateX(-" + (currentSlide * 100) + "%)",
-                transition: "transform 0.5s ease-in-out",
+                transition: heroTransitionEnabled ? "transform 0.5s ease-in-out" : "none",
               }}
             >
-              {featuredArticles.map(function(article, index) {
+              {heroSlides.map(function(article, index) {
                 return (
                   <Link
-                    key={article.id}
+                    key={`${article.id}-${index}`}
                     href={"/articles/" + article.slug}
                     aria-hidden={currentSlide !== index}
                     tabIndex={currentSlide === index ? 0 : -1}
@@ -446,13 +462,13 @@ function HomeContent() {
                         key={index}
                         onClick={setCurrentSlide.bind(null, index)}
                         aria-label={`${index + 1}번째 주요 소식 보기`}
-                        aria-current={currentSlide === index ? "true" : undefined}
+                        aria-current={activeHeroSlide === index ? "true" : undefined}
                         style={{
-                          width: currentSlide === index ? "24px" : "10px",
+                          width: activeHeroSlide === index ? "24px" : "10px",
                           height: "10px",
                           borderRadius: "5px",
                           border: "none",
-                          background: currentSlide === index ? "var(--gh-accent)" : "rgba(255, 255, 255, 0.5)",
+                          background: activeHeroSlide === index ? "var(--gh-accent)" : "rgba(255, 255, 255, 0.5)",
                           cursor: "pointer",
                           transition: "width 0.3s ease",
                         }}

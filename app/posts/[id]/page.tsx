@@ -141,11 +141,12 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const currentCategoryLabel = post.category === "education"
     ? getEducationSubCategoryLabel(post.sub_category)
     : getCategoryLabel(post.category, "ko");
+  const communityListHref = `/?section=community&category=${encodeURIComponent(post.category)}`;
 
   return (
     <main className="post-detail">
       <div className="wrapper">
-        <Link href="/" className="back-link">← 목록으로 돌아가기</Link>
+        <Link href={communityListHref} className="back-link">← 목록으로 돌아가기</Link>
 
         <div className="post-meta">
           <span>[{currentCategoryLabel}]</span>
