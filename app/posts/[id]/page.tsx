@@ -162,19 +162,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
         <h1>{post.title}</h1>
 
-        <div
-          className="post-author"
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "20px",
-            fontSize: "14px",
-            color: "#666",
-            borderBottom: "1px solid #eee",
-            paddingBottom: "20px"
-          }}
-        >
+        <div className="post-author">
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "3px" }}>
               {post.author_id ? (

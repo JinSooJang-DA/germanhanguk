@@ -7,10 +7,19 @@
 
 /* Post detail and mobile authoring shell */
 @media (max-width: 768px) {
+  .post-detail { padding:28px 0 40px; }
   .post-detail .wrapper {
     padding-left: 20px;
-        padding-right: 20px;
+    padding-right: 20px;
   }
+  .post-detail .back-link { margin-bottom:20px; }
+  .post-detail .post-meta { margin-bottom:8px; font-size:13px; }
+  .post-detail h1 { margin-bottom:14px; font-size:28px; line-height:1.24; }
+  .post-detail .post-author { padding-bottom:14px; font-size:13px; }
+  .post-detail .post-content { padding-top:20px; font-size:17px; line-height:1.75; }
+  .post-detail .post-action-bar { margin-top:20px; }
+  .post-detail .post-comments-section { margin-top:24px; padding-top:18px; }
+  .post-detail .related-posts { margin-top:28px; padding-top:18px; }
 
 .new-post-page > .post-form-container {
     padding-left: 20px;

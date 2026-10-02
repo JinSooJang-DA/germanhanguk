@@ -604,80 +604,29 @@ export default function PostDetailClient({
 
   return (
     <div>
-      {isAuthor && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: "8px",
-            margin: "24px 0",
-          }}
-        >
-          <Link
-            href={"/posts/" + id + "/edit"}
-            style={{
-              padding: "8px 12px",
-              background: "var(--gh-surface-muted)",
-              color: "var(--gh-text)",
-              border: "1px solid var(--gh-border)",
-              borderRadius: "6px",
-              fontSize: "14px",
-              fontWeight: "500",
-              textDecoration: "none",
-              whiteSpace: "nowrap",
-            }}
-          >
-            수정
-          </Link>
-          <button
-            type="button"
-            onClick={handleDeletePost}
-            style={{
-              padding: "8px 12px",
-              background: "var(--gh-surface-muted)",
-              color: "var(--gh-text)",
-              border: "1px solid var(--gh-border)",
-              borderRadius: "6px",
-              fontSize: "14px",
-              fontWeight: "500",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-            }}
-          >
-            삭제
-          </button>
-        </div>
-      )}
-
-      {/* 좋아요 버튼 영역 */}
-      <div style={{ display: "flex", justifyContent: "center", margin: "40px 0" }}>
+      <div className="post-action-bar">
         <button
-          className={"gh-cta-action gh-like-action" + (isLiked ? " is-active" : "")}
+          className={"post-action-button gh-like-action" + (isLiked ? " is-active" : "")}
           onClick={handleLikeToggle}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            padding: "10px 24px",
-            background: isLiked ? "var(--gh-surface)" : "var(--gh-surface-muted)",
-            border: isLiked ? "2px solid var(--gh-alert)" : "1px solid var(--gh-border)",
-            borderRadius: "30px",
-            color: isLiked ? "var(--gh-alert)" : "var(--gh-text-muted)",
-            fontWeight: "bold",
-            fontSize: "15px",
-            cursor: "pointer",
-            transition: "all 0.2s",
-          }}
         >
           <HeartIcon className="gh-like-icon" />
           <span>좋아요 {likesCount}</span>
         </button>
+
+        {isAuthor && (
+          <div className="post-owner-actions">
+            <Link href={"/posts/" + id + "/edit"} className="post-action-button">
+              수정
+            </Link>
+            <button type="button" onClick={handleDeletePost} className="post-action-button">
+              삭제
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 댓글 섹션 */}
-      <div style={{ marginTop: "60px", paddingTop: "30px", borderTop: "1px solid var(--gh-border)" }}>
+      <div className="post-comments-section">
         <h3>댓글 ({comments.reduce(function(acc, c) { return acc + 1 + (c.replies?.length || 0); }, 0)})</h3>
 
         <form onSubmit={handleCommentSubmit} style={{ marginTop: "20px", marginBottom: "30px" }} noValidate>
@@ -1116,7 +1065,7 @@ export default function PostDetailClient({
       </div>
 
       {/* 하단 동일 카테고리 게시글 목록 */}
-      <div className="related-posts" style={{ marginTop: "60px", paddingTop: "30px", borderTop: "2px solid var(--gh-text)" }}>
+      <div className="related-posts">
         <h3 style={{ marginBottom: "16px", fontSize: "18px", color: "#0f172a" }}>
           {"'" + currentCategoryLabel + "' 카테고리 다른 글"}
         </h3>
