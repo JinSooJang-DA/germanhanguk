@@ -3197,3 +3197,62 @@ html[data-theme="dark"] .brand-mark-dark { display:block !important; }
   }
   .board-pagination-ellipsis { min-width:14px; }
 }
+
+/* 2026-10 mobile fixed quick navigation + narrow header fit. */
+.mobile-bottom-nav { display:none; }
+@media (max-width:1179px) {
+  body { padding-bottom:calc(64px + env(safe-area-inset-bottom)); }
+  .mobile-bottom-nav {
+    position:fixed;
+    left:0; right:0; bottom:0;
+    z-index:900;
+    height:calc(64px + env(safe-area-inset-bottom));
+    padding:0 8px env(safe-area-inset-bottom);
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    align-items:stretch;
+    border-top:1px solid var(--gh-border);
+    background:color-mix(in srgb,var(--gh-surface) 94%,transparent);
+    box-shadow:0 -8px 24px rgba(18,28,24,.10);
+    backdrop-filter:blur(14px);
+  }
+  .mobile-bottom-nav-item {
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    padding:6px 2px;
+    border:0;
+    background:transparent;
+    color:var(--gh-text-muted);
+    font:inherit;
+    font-size:10px;
+    font-weight:700;
+    text-decoration:none;
+    cursor:pointer;
+  }
+  .mobile-bottom-nav-item svg {
+    width:21px;
+    height:21px;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:1.7;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+  .mobile-bottom-nav-item:active { background:var(--gh-surface-muted); color:var(--gh-text); }
+}
+@media (max-width:420px) {
+  .site-header .wrapper { padding-left:12px; padding-right:12px; }
+  .mobile-header { gap:8px; }
+  .brand-lockup-mobile { min-width:0; flex:1 1 auto; gap:5px; }
+  .brand-mark-mobile { width:27px; height:27px; }
+  .brand-lockup-mobile h1 { font-size:15px !important; white-space:nowrap; }
+  .mobile-header-controls { flex:0 0 auto; gap:4px !important; }
+  .mobile-header-action,
+  .mobile-menu-trigger { width:38px !important; height:38px !important; }
+  .mobile-header-action svg,
+  .mobile-menu-trigger svg { width:21px; height:21px; }
+}

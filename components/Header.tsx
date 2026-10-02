@@ -397,7 +397,7 @@ export default function Header() {
           </Link>
 
           {/* 알림 배지, 쪽지 배지, 햄버거 메뉴를 묶은 컨트롤 존 (최소 44px 클릭 영역) */}
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <div className="mobile-header-controls" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             {user && (
               <>
                 {/* 모바일 전용 알림 배지 */}
@@ -636,6 +636,25 @@ export default function Header() {
         )}
 
       </div>
+
+      <nav className="mobile-bottom-nav" aria-label="모바일 빠른 메뉴">
+        <Link href="/" className="mobile-bottom-nav-item" aria-label="홈으로 이동">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V21h-6v-6H9v6H3z" /></svg>
+          <span>홈</span>
+        </Link>
+        <button type="button" className="mobile-bottom-nav-item" onClick={function() { window.scrollTo({ top: 0, behavior: "smooth" }); }} aria-label="페이지 최상단으로 이동">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10l7-7 7 7M12 3v18" /></svg>
+          <span>맨위</span>
+        </button>
+        <button type="button" className="mobile-bottom-nav-item" onClick={function() { setMenuOpen(true); }} aria-label="전체 메뉴 열기" aria-expanded={menuOpen}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+          <span>메뉴</span>
+        </button>
+        <Link href={user ? "/profile" : "/auth"} className="mobile-bottom-nav-item" aria-label={user ? "프로필로 이동" : "로그인으로 이동"}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 9a7 7 0 0 1 14 0" /></svg>
+          <span>{user ? "프로필" : "로그인"}</span>
+        </Link>
+      </nav>
     </header>
   );
 }
