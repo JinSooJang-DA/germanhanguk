@@ -2730,3 +2730,48 @@ html[data-theme="dark"] .brand-mark-dark { display:block !important; }
   html[data-theme="light"] .mobile-menu-heading span { color:#29433b !important; }
   html[data-theme="light"] .mobile-menu-heading small { color:#65746e !important; }
 }
+
+/* Primary service switcher: shared entry points below the compact header. */
+.service-switcher { border-bottom:1px solid var(--gh-border); background:var(--gh-surface); }
+.service-switcher-inner { width:100%; max-width:1200px; height:46px; margin:0 auto; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); }
+.service-switcher a { position:relative; display:flex; align-items:center; justify-content:center; gap:8px; min-width:0; color:var(--gh-text-muted); text-decoration:none; font-size:14px; font-weight:650; border-inline-start:1px solid transparent; border-inline-end:1px solid transparent; }
+.service-switcher a:hover { color:var(--gh-text); background:var(--gh-surface-muted); }
+.service-switcher a.is-active { color:var(--gh-text); background:var(--gh-surface-muted); }
+.service-switcher a.is-active::after { content:""; position:absolute; left:18%; right:18%; bottom:-1px; height:2px; background:var(--gh-accent); }
+.service-switcher .service-kculture { color:var(--gh-accent); }
+.service-switcher .service-kculture small { color:var(--gh-text-subtle); font-size:10px; font-weight:500; letter-spacing:.02em; }
+
+@media (max-width:1179px) {
+  .service-switcher-inner { height:42px; }
+  .service-switcher a { font-size:13px; }
+  .service-switcher .service-kculture small { display:none; }
+}
+
+@media (max-width:420px) {
+  .service-switcher a { font-size:12px; }
+  .service-switcher a.is-active::after { left:12%; right:12%; }
+}
+
+/* K-Culture entry page: intentionally small until the German-facing content grows. */
+.kculture-page { width:min(1120px,calc(100% - 40px)); margin:0 auto; padding:64px 0 96px; color:var(--gh-text); }
+.kculture-hero { max-width:760px; padding:20px 0 48px; }
+.kculture-kicker { color:var(--gh-accent); font-size:12px; font-weight:800; letter-spacing:.14em; }
+.kculture-hero h1 { margin:14px 0 18px; font-size:clamp(38px,5vw,68px); line-height:1.02; letter-spacing:-.045em; }
+.kculture-hero p { max-width:680px; margin:0; color:var(--gh-text-muted); font-size:18px; line-height:1.7; }
+.kculture-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); border-block:1px solid var(--gh-border); }
+.kculture-card { min-height:220px; padding:28px; border-right:1px solid var(--gh-border); background:var(--gh-surface); }
+.kculture-card:last-child { border-right:0; }
+.kculture-card > span { color:var(--gh-text-subtle); font-size:11px; }
+.kculture-card h2 { margin:28px 0 10px; font-size:24px; }
+.kculture-card p { margin:0; color:var(--gh-text-muted); font-size:14px; line-height:1.65; }
+.kculture-community-link { display:inline-flex; margin-top:28px; color:var(--gh-accent); font-weight:700; text-decoration:none; }
+@media (max-width:768px) {
+  .kculture-page { width:min(100% - 32px,1120px); padding:34px 0 100px; }
+  .kculture-hero { padding:10px 0 30px; }
+  .kculture-hero h1 { font-size:38px; }
+  .kculture-hero p { font-size:15px; }
+  .kculture-grid { grid-template-columns:1fr; }
+  .kculture-card { min-height:0; padding:22px 18px; border-right:0; border-bottom:1px solid var(--gh-border); }
+  .kculture-card:last-child { border-bottom:0; }
+  .kculture-card h2 { margin:14px 0 8px; font-size:21px; }
+}

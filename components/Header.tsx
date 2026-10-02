@@ -15,6 +15,8 @@ export default function Header() {
   const searchParams = useSearchParams();
   const isCommunityHome = pathname === "/" && (searchParams.get("section") === "community" || searchParams.get("category") !== null);
   const isCommunityRoute = pathname.startsWith("/posts") || isCommunityHome;
+  const isKCultureRoute = pathname.startsWith("/k-culture");
+  const isInfoRoute = (!isCommunityRoute && pathname === "/") || pathname.startsWith("/articles") || pathname.startsWith("/guide") || pathname.startsWith("/messe") || pathname.startsWith("/exchange");
   const [user, setUser] = useState<User | null>(null);
   const [displayName, setDisplayName] = useState<string>("");
   const [avatarUrl, setAvatarUrl] = useState<string>("");
@@ -663,6 +665,16 @@ export default function Header() {
 
       </div>
     </header>
+
+    <nav className="service-switcher" aria-label="German Hanguk 서비스">
+      <div className="service-switcher-inner">
+        <Link href="/" className={isInfoRoute ? "is-active" : ""}>정보</Link>
+        <Link href="/?section=community" className={isCommunityRoute ? "is-active" : ""}>커뮤니티</Link>
+        <Link href="/k-culture" className={isKCultureRoute ? "is-active service-kculture" : "service-kculture"}>
+          <span>K-Culture</span><small>Korea entdecken</small>
+        </Link>
+      </div>
+    </nav>
 
       <nav className="mobile-bottom-nav" aria-label="모바일 빠른 메뉴">
         <Link href="/" className="mobile-bottom-nav-item" aria-label="홈으로 이동">

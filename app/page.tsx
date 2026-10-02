@@ -317,13 +317,8 @@ function HomeContent() {
     <main className="main-page">
       {!isCommunityView && !articlesError && featuredArticles.length > 0 && (
         <section className="info-news-section" style={{ maxWidth: "1200px", margin: "30px auto", padding: "0 20px" }}>
-          <div className="info-section-heading" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-            <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "var(--gh-text)", margin: 0 }}>독일 주요 소식</h2>
-            <Link href="/articles" style={{ color: "var(--gh-text-muted)", fontSize: "14px", textDecoration: "none", fontWeight: "500", borderRadius: "0" }}>
-              전체 기사 보기 →
-            </Link>
-          </div>
           <div className="home-live-rail" aria-label="지금 올라온 독일 소식">
+            <Link href="/articles" className="home-live-section-title">독일 주요 소식</Link>
             <span className="home-live-label"><i aria-hidden="true" /> LIVE</span>
             <div className="home-live-window">
               <div className="home-live-track">
@@ -342,6 +337,7 @@ function HomeContent() {
                 <span className="home-live-mobile-arrow" aria-hidden="true">→</span>
               </Link>
             </div>
+            <Link href="/articles" className="home-live-all-link">전체 기사 보기 →</Link>
           </div>
           <div
             className="info-hero home-motion-hero"
