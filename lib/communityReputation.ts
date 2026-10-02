@@ -20,6 +20,18 @@ export function getCommunityLevel(xp: number | null | undefined): CommunityLevel
   return COMMUNITY_LEVELS.reduce((current, level) => safeXp >= level.minXp ? level : current, COMMUNITY_LEVELS[0]);
 }
 
+
+export function getCommunityLevelProgress(xp: number | null | undefined) {
+  const safeXp = Math.max(0, Number(xp) || 0);
+  const current = getCommunityLevel(safeXp);
+  const currentIndex = COMMUNITY_LEVELS.findIndex((level) => level.key === current.key);
+  const next = COMMUNITY_LEVELS[currentIndex + 1] || null;
+  if (!next) return { current, next: null, percent: 100, remainingXp: 0 };
+  const span = next.minXp - current.minXp;
+  const earned = Math.max(0, safeXp - current.minXp);
+  return { current, next, percent: Math.min(100, Math.round((earned / span) * 100)), remainingXp: Math.max(0, next.minXp - safeXp) };
+}
+
 export function formatGermanyTenure(startDate: string | null | undefined, now = new Date()): string | null {
   if (!startDate) return null;
   const start = new Date(`${startDate}T00:00:00`);

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { formatDate } from "@/lib/date";
-import { COMMUNITY_REPUTATION_ENABLED } from "@/lib/communityReputation";
+import { COMMUNITY_REPUTATION_ENABLED, getCommunityLevelProgress } from "@/lib/communityReputation";
 
 interface Post {
   id: number;
@@ -111,6 +111,8 @@ export default function ProfilePage() {
   const [showCommunityLevel, setShowCommunityLevel] = useState(true);
   const [showGermanyTenure, setShowGermanyTenure] = useState(false);
   const [showReputationStats, setShowReputationStats] = useState(false);
+  const [reputationXp, setReputationXp] = useState(0);
+  const [reputationScores, setReputationScores] = useState({ activity: 0, knowledge: 0, communication: 0, helpful: 0 });
   const [newPassword, setNewPassword] = useState("");
   const [myPosts, setMyPosts] = useState<Post[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -213,11 +215,19 @@ export default function ProfilePage() {
             setBio(profile.bio || "");
             setIsAdmin(profile.role === "admin");
             if (COMMUNITY_REPUTATION_ENABLED) {
-              const [{ data: settings }, { data: privateDetails }] = await Promise.all([
+              const [{ data: settings }, { data: privateDetails }, { data: reputation }] = await Promise.all([
                 supabase.from("profiles").select("show_community_level, show_germany_tenure, show_reputation_stats").eq("id", user.id).single(),
                 supabase.from("profile_private_details").select("germany_since").eq("user_id", user.id).maybeSingle(),
+                supabase.from("community_reputation").select("reputation_xp, activity_score, knowledge_score, communication_score, helpful_score").eq("user_id", user.id).maybeSingle(),
               ]);
               setGermanySince(privateDetails?.germany_since || "");
+              setReputationXp(reputation?.reputation_xp || 0);
+              setReputationScores({
+                activity: reputation?.activity_score || 0,
+                knowledge: reputation?.knowledge_score || 0,
+                communication: reputation?.communication_score || 0,
+                helpful: reputation?.helpful_score || 0,
+              });
               if (settings) {
                 setShowCommunityLevel(settings.show_community_level !== false);
                 setShowGermanyTenure(settings.show_germany_tenure === true);
@@ -468,6 +478,8 @@ export default function ProfilePage() {
     );
   }
 
+  const levelProgress = getCommunityLevelProgress(reputationXp);
+
   return (
     <main className="new-post-page">
       <div className="post-form-container" style={{ maxWidth: "800px" }}>
@@ -598,6 +610,35 @@ export default function ProfilePage() {
               }}
             />
           </div>
+
+          {COMMUNITY_REPUTATION_ENABLED && (
+            <section className="profile-growth-card" aria-label="community growth">
+              <div className="profile-growth-card__top">
+                <div>
+                  <span className="profile-growth-card__eyebrow">{"\uB098\uC758 \uCEE4\uBBA4\uB2C8\uD2F0 \uC131\uC7A5"}</span>
+                  <strong>{levelProgress.current.icon} {levelProgress.current.label}</strong>
+                </div>
+                <span className="profile-growth-card__xp">{reputationXp} XP</span>
+              </div>
+              {levelProgress.next ? (
+                <>
+                  <div className="profile-growth-card__progress" aria-label={`${levelProgress.next.label} ${levelProgress.percent}%`}>
+                    <span style={{ width: `${levelProgress.percent}%` }} />
+                  </div>
+                  <p>{levelProgress.next.icon} {levelProgress.next.label}{"\uAE4C\uC9C0 "}<b>{levelProgress.remainingXp} XP</b>{"\uB0A8\uC558\uC5B4\uC694."}</p>
+                </>
+              ) : (
+                <p>{"\uCD5C\uACE0 \uB4F1\uAE09\uC5D0 \uB3C4\uB2EC\uD588\uC5B4\uC694. \uC9C0\uAE08\uCC98\uB7FC \uCEE4\uBBA4\uB2C8\uD2F0\uB97C \uB3C4\uC640\uC8FC\uC138\uC694!"}</p>
+              )}
+              <div className="profile-growth-card__scores">
+                <span>{"\uD65C\uB3D9"} <b>{reputationScores.activity}</b></span>
+                <span>{"\uC9C0\uC2DD"} <b>{reputationScores.knowledge}</b></span>
+                <span>{"\uC18C\uD1B5"} <b>{reputationScores.communication}</b></span>
+                <span>{"\uB3C4\uC6C0"} <b>{reputationScores.helpful}</b></span>
+              </div>
+              <small>{"\uC774 \uC0C1\uC138 \uC810\uC218\uB294 \uBCF8\uC778\uC5D0\uAC8C\uB9CC \uD56D\uC0C1 \uBCF4\uC774\uBA70, \uB2E4\uB978 \uC0AC\uB78C\uC5D0\uAC8C\uB294 \uACF5\uAC1C \uC124\uC815\uC744 \uB530\uB985\uB2C8\uB2E4."}</small>
+            </section>
+          )}
 
           {COMMUNITY_REPUTATION_ENABLED && (
             <div className="profile-reputation-settings">
