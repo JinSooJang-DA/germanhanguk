@@ -139,8 +139,10 @@ export default function PublicProfilePage({
 
         if (isCurrent) {
           if (COMMUNITY_REPUTATION_ENABLED) {
-            const { data: reputation } = await supabase.from("profiles").select("germany_since, show_community_level, show_germany_tenure, show_reputation_stats, reputation_xp, activity_score, knowledge_score, communication_score, helpful_score").eq("id", id).single();
-            setProfile({ ...profileData, ...(reputation || {}) });
+            const { data: identity, error: identityError } = await supabase.rpc("get_public_community_identity", { p_user_id: id });
+            if (identityError) console.warn("Community identity load error:", identityError);
+            const publicIdentity = Array.isArray(identity) ? identity[0] : identity;
+            setProfile({ ...profileData, ...(publicIdentity || {}) });
           } else {
             setProfile(profileData);
           }
@@ -439,7 +441,7 @@ export default function PublicProfilePage({
               {/* 거주지역 및 가입일 */}
               {COMMUNITY_REPUTATION_ENABLED && (profile.show_community_level || profile.show_germany_tenure) && (
                 <div style={{ marginBottom: "10px" }}>
-                  <CommunityIdentity xp={profile.reputation_xp} germanySince={profile.germany_since} showLevel={profile.show_community_level !== false} showTenure={profile.show_germany_tenure === true} />
+                  <CommunityIdentity xp={profile.reputation_xp} tenureValue={profile.tenure_value} tenureUnit={profile.tenure_unit} showLevel={profile.show_community_level !== false} showTenure={profile.show_germany_tenure === true} />
                 </div>
               )}
 

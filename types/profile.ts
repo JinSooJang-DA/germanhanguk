@@ -11,11 +11,11 @@ export interface Profile {
   show_community_level?: boolean;
   show_germany_tenure?: boolean;
   show_reputation_stats?: boolean;
-  reputation_xp?: number;
-  activity_score?: number;
-  knowledge_score?: number;
-  communication_score?: number;
-  helpful_score?: number;
+  reputation_xp?: number | null;
+  activity_score?: number | null;
+  knowledge_score?: number | null;
+  communication_score?: number | null;
+  helpful_score?: number | null;
 }
 
 export interface PublicProfile {
@@ -25,15 +25,16 @@ export interface PublicProfile {
   avatar_url: string | null;
   bio?: string | null;
   created_at: string;
-  germany_since?: string | null;
+  tenure_value?: number | null;
+  tenure_unit?: string | null;
   show_community_level?: boolean;
   show_germany_tenure?: boolean;
   show_reputation_stats?: boolean;
-  reputation_xp?: number;
-  activity_score?: number;
-  knowledge_score?: number;
-  communication_score?: number;
-  helpful_score?: number;
+  reputation_xp?: number | null;
+  activity_score?: number | null;
+  knowledge_score?: number | null;
+  communication_score?: number | null;
+  helpful_score?: number | null;
 }
 
 export interface ProfileUpdateInput {

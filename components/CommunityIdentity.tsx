@@ -1,8 +1,10 @@
-import { formatGermanyTenure, getCommunityLevel } from "@/lib/communityReputation";
+import { formatGermanyTenure, formatGermanyTenureParts, getCommunityLevel } from "@/lib/communityReputation";
 
 type Props = {
   xp?: number | null;
   germanySince?: string | null;
+  tenureValue?: number | null;
+  tenureUnit?: string | null;
   showLevel?: boolean;
   showTenure?: boolean;
   compact?: boolean;
@@ -11,12 +13,14 @@ type Props = {
 export default function CommunityIdentity({
   xp,
   germanySince,
+  tenureValue,
+  tenureUnit,
   showLevel = true,
   showTenure = false,
   compact = false,
 }: Props) {
   const level = getCommunityLevel(xp);
-  const tenure = showTenure ? formatGermanyTenure(germanySince) : null;
+  const tenure = showTenure ? (formatGermanyTenureParts(tenureValue, tenureUnit) || formatGermanyTenure(germanySince)) : null;
   if (!showLevel && !tenure) return null;
 
   return (

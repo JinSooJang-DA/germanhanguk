@@ -44,3 +44,12 @@ export const REPUTATION_REWARDS = {
   firstGuideRead: { xp: 1, knowledge: 1 },
   receivedPostLike: { xp: 1, helpful: 1 },
 } as const;
+
+export function formatGermanyTenureParts(value: number | null | undefined, unit: string | null | undefined): string | null {
+  const safeValue = Number(value);
+  if (!Number.isFinite(safeValue) || safeValue < 1) return null;
+  if (unit === "day") return `독일생활 ${safeValue}일차`;
+  if (unit === "month") return `독일생활 ${safeValue}개월차`;
+  if (unit === "year") return `독일생활 ${safeValue}년차`;
+  return null;
+}

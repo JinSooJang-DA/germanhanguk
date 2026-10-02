@@ -213,12 +213,15 @@ export default function ProfilePage() {
             setBio(profile.bio || "");
             setIsAdmin(profile.role === "admin");
             if (COMMUNITY_REPUTATION_ENABLED) {
-              const { data: reputation } = await supabase.from("profiles").select("germany_since, show_community_level, show_germany_tenure, show_reputation_stats").eq("id", user.id).single();
-              if (reputation) {
-                setGermanySince(reputation.germany_since || "");
-                setShowCommunityLevel(reputation.show_community_level !== false);
-                setShowGermanyTenure(reputation.show_germany_tenure === true);
-                setShowReputationStats(reputation.show_reputation_stats === true);
+              const [{ data: settings }, { data: privateDetails }] = await Promise.all([
+                supabase.from("profiles").select("show_community_level, show_germany_tenure, show_reputation_stats").eq("id", user.id).single(),
+                supabase.from("profile_private_details").select("germany_since").eq("user_id", user.id).maybeSingle(),
+              ]);
+              setGermanySince(privateDetails?.germany_since || "");
+              if (settings) {
+                setShowCommunityLevel(settings.show_community_level !== false);
+                setShowGermanyTenure(settings.show_germany_tenure === true);
+                setShowReputationStats(settings.show_reputation_stats === true);
               }
             }
           } else {
@@ -271,7 +274,6 @@ export default function ProfilePage() {
         updated_at: new Date().toISOString(),
       };
       if (COMMUNITY_REPUTATION_ENABLED) {
-        profileUpdates.germany_since = germanySince || null;
         profileUpdates.show_community_level = showCommunityLevel;
         profileUpdates.show_germany_tenure = showGermanyTenure;
         profileUpdates.show_reputation_stats = showReputationStats;
@@ -288,6 +290,19 @@ export default function ProfilePage() {
       }
 
       setMessage("프로필이 성공적으로 변경되었습니다.");
+      if (COMMUNITY_REPUTATION_ENABLED) {
+        const { error: privateError } = await supabase.from("profile_private_details").upsert({
+          user_id: user.id,
+          germany_since: germanySince || null,
+          updated_at: new Date().toISOString(),
+        });
+        if (privateError) {
+          console.error("Private profile details save error:", privateError);
+          setMessage("\uB3C5\uC77C \uAC70\uC8FC \uC2DC\uC791\uC77C \uC800\uC7A5\uC5D0 \uC2E4\uD328\uD588\uC2B5\uB2C8\uB2E4. \uB2E4\uC2DC \uC2DC\uB3C4\uD574\uC8FC\uC138\uC694.");
+          return;
+        }
+      }
+
       router.refresh();
     } catch (err) {
       console.error("Profile save error:", err);

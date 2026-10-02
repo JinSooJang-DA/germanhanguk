@@ -15,6 +15,7 @@ import GuideBankComparison from "@/components/GuideBankComparison";
 import { GUIDE_CONTENT } from "@/lib/guide-content";
 import { GUIDE_SUPPLEMENTS } from "@/lib/guide-supplements";
 import GuideSupplement from "@/components/GuideSupplement";
+import GuideReadReward from "@/components/GuideReadReward";
 import { formatDate } from "@/lib/date";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -205,6 +206,7 @@ export default async function GuideDetailPage({ params }: { params: Promise<{ sl
   return (
     <main style={{ minHeight: "80vh", padding: "40px 0 80px", background: "var(--gh-page-bg)" }}>
       <article style={{ maxWidth: "720px", margin: "0 auto", padding: "0 20px" }}>
+        <GuideReadReward slug={slug} />
 
         {/* 상단 브레드크럼 */}
         <div style={{ marginBottom: "24px", fontSize: "14px" }}>
