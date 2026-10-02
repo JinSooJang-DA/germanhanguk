@@ -2521,7 +2521,7 @@ html[data-theme="dark"] .author-action-popover {
     margin:0 0 12px;
     overflow:hidden;
     border-block:1px solid var(--gh-border);
-    background:#fff;
+    background:var(--gh-surface);
   }
   .home-live-label {
     display:flex;
