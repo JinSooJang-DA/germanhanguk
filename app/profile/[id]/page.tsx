@@ -624,11 +624,16 @@ export default function PublicProfilePage({
             }}
           >
             <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="send-message-title"
               style={{
                 background: "var(--gh-surface)",
                 borderRadius: "12px",
                 width: "100%",
                 maxWidth: "500px",
+                maxHeight: "calc(100dvh - 40px)",
+                overflowY: "auto",
                 padding: "28px",
                 boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
               }}
@@ -675,6 +680,7 @@ export default function PublicProfilePage({
                   type="button"
                   onClick={() => !sendingMessage && setShowModal(false)}
                   disabled={sendingMessage}
+                  aria-label="?? ?? ? ??"
                   style={{
                     background: "none",
                     border: "none",

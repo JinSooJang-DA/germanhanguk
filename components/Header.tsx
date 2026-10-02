@@ -498,7 +498,11 @@ export default function Header() {
 
             {/* 본문 서랍 (Right-to-Left 슬라이드 구조) */}
             <div
+              id="mobile-menu-drawer"
               className="mobile-menu-drawer"
+              role="dialog"
+              aria-modal="true"
+              aria-label="?? ??"
               style={{
                 position: "fixed",
                 top: 0,
