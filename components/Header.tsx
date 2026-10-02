@@ -221,50 +221,7 @@ export default function Header() {
             <h1 style={{ fontSize: "20px", fontWeight: "bold", margin: 0 }}>German Hanguk</h1>
           </Link>
 
-          <nav className="desktop-nav portal-nav" aria-label="주요 메뉴">
-            <details className="portal-menu" open={portalMenuOpen === "info"}>
-              <summary
-                onClick={function(e) { e.preventDefault(); setPortalMenuOpen(portalMenuOpen === "info" ? null : "info"); }}
-                className={portalMenuOpen ? (portalMenuOpen === "info" ? "is-active" : "") : ((!isCommunityRoute && pathname === "/") || pathname.startsWith("/articles") || pathname.startsWith("/guide") || pathname.startsWith("/messe") ? "is-active" : "")}
-              >정보</summary>
-              <div className="portal-mega-menu portal-info-menu" onClick={function() { setPortalMenuOpen(null); }}>
-                <div className="portal-menu-column">
-                  <span className="portal-menu-label">뉴스 · 가이드</span>
-                  <Link href="/articles"><strong>독일 소식</strong><small>오늘 알아야 할 독일 주요 변화</small></Link>
-                  <Link href="/guide"><strong>생활 가이드</strong><small>독일 생활 핵심 정보를 한곳에</small></Link>
-                  <Link href="/messe"><strong>독일 메세</strong><small>전시회·박람회 일정과 출장 정보</small></Link>
-                </div>
-                <div className="portal-menu-column portal-topic-grid">
-                  <span className="portal-menu-label">주제별 정보</span>
-                  <Link href="/guide/visa-residence">비자·체류</Link>
-                  <Link href="/guide/taxes">세금</Link>
-                  <Link href="/guide/jobs">노동·취업</Link>
-                  <Link href="/guide/insurance">건강·보험</Link>
-                  <Link href="/guide/housing">주거</Link>
-                  <Link href="/guide/education">가족·교육</Link>
-                  <Link href="/guide/driving">교통·운전</Link>
-                  <Link href="/guide/german-life">독일 생활</Link>
-                </div>
-              </div>
-            </details>
-            <details className="portal-menu" open={portalMenuOpen === "community"}>
-              <summary
-                onClick={function(e) { e.preventDefault(); setPortalMenuOpen(portalMenuOpen === "community" ? null : "community"); }}
-                className={portalMenuOpen ? (portalMenuOpen === "community" ? "is-active" : "") : (isCommunityRoute ? "is-active" : "")}
-              >커뮤니티</summary>
-              <div className="portal-mega-menu portal-community-menu" onClick={function() { setPortalMenuOpen(null); }}>
-                <div className="portal-menu-column">
-                  <span className="portal-menu-label">함께 나누는 이야기</span>
-                  <Link href="/?section=community"><strong>커뮤니티 홈</strong><small>최신 글과 인기 글을 한눈에</small></Link>
-                  <Link href="/?section=community&category=community"><strong>자유 커뮤니티</strong><small>독일 생활 이야기와 질문</small></Link>
-                  <Link href="/?section=community&category=education">유학·교육</Link>
-                  <Link href="/?section=community&category=life">생활정보</Link>
-                  <Link href="/?section=community&category=market">중고장터</Link>
-                  <Link href="/?section=community&category=jobs">구인구직</Link>
-                </div>
-              </div>
-            </details>
-          </nav>
+          <div className="desktop-header-stage" aria-hidden="true" />
           {user ? (
             <div className="desktop-user-actions header-account-zone" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               {/* 레퍼런스처럼 얇은 프레임 안에 아이콘만 두는 알림 컨트롤 */}

@@ -2775,3 +2775,12 @@ html[data-theme="dark"] .brand-mark-dark { display:block !important; }
   .kculture-card:last-child { border-bottom:0; }
   .kculture-card h2 { margin:14px 0 8px; font-size:21px; }
 }
+
+/* Reserved desktop header stage: intentionally empty for future art / motion. */
+@media (min-width: 1180px) {
+  .desktop-header-stage {
+    flex: 1 1 auto;
+    min-width: 40px;
+    align-self: stretch;
+  }
+}
