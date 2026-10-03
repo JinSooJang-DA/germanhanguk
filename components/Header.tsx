@@ -19,6 +19,7 @@ export default function Header() {
   const isKCultureRoute = pathname.startsWith("/k-culture");
   const isInfoRoute = (!isCommunityRoute && pathname === "/") || pathname.startsWith("/articles") || pathname.startsWith("/guide") || pathname.startsWith("/messe") || pathname.startsWith("/exchange");
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [displayName, setDisplayName] = useState<string>("");
   const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [unreadCount, setUnreadCount] = useState<number>(0);
@@ -35,10 +36,11 @@ export default function Header() {
   async function loadUserProfile(userId: string, defaultEmail?: string) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("display_name, avatar_url, ui_language")
+      .select("display_name, avatar_url, ui_language, role")
       .eq("id", userId)
       .single();
 
+    setIsAdmin(profile?.role === "admin");
     setAvatarUrl(profile?.avatar_url || "");
     const preferredLanguage = profile?.ui_language === "de" ? "de" : "ko";
     setUiLanguage(preferredLanguage);
@@ -107,6 +109,7 @@ export default function Header() {
         loadUnreadCount(currentUser.id);
         loadUnreadNotificationsCount(currentUser.id);
       } else {
+        setIsAdmin(false);
         setDisplayName("");
         setAvatarUrl("");
         setUnreadCount(0);
@@ -211,6 +214,7 @@ export default function Header() {
     setUser(null);
     setDisplayName("");
     setAvatarUrl("");
+    setIsAdmin(false);
     setUnreadCount(0);
     setUnreadNotificationsCount(0);
     setProfileMenuOpen(false);
@@ -342,6 +346,7 @@ export default function Header() {
                     >
                       내 프로필
                     </Link>
+                    {isAdmin && <Link href="/admin" role="menuitem" onClick={() => setProfileMenuOpen(false)} style={{ display: "block", padding: "10px 12px", color: "var(--gh-text)", fontWeight: 600 }}>{isGermanUi ? "Betriebszentrale" : "운영센터 / Admin"}</Link>}
                     <div style={{ borderTop: "1px solid var(--gh-border)", padding: "10px 0" }}>
                       <span style={{ display: "block", padding: "0 12px 6px", color: "var(--gh-text-muted)", fontSize: "12px", fontWeight: "600" }}>
                         화면 설정
@@ -585,7 +590,8 @@ export default function Header() {
               <div style={{ marginTop: "auto", paddingTop: "20px", borderTop: "1px solid var(--gh-border)" }}>
                 {user ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                    <Link href="/profile" onClick={function() { setMenuOpen(false); }} style={{ textDecoration: "none", color: "var(--gh-text)", fontWeight: "bold", display: "flex", alignItems: "center", minHeight: "44px", fontSize: "14px" }}>
+                    {isAdmin && <Link href="/admin" onClick={() => { setProfileMenuOpen(false); setMenuOpen(false); }}>{isGermanUi ? "Betriebszentrale" : "운영센터 / Admin"}</Link>}
+                  <Link href="/profile" onClick={function() { setMenuOpen(false); }} style={{ textDecoration: "none", color: "var(--gh-text)", fontWeight: "bold", display: "flex", alignItems: "center", minHeight: "44px", fontSize: "14px" }}>
                       👤 {displayName || user.email?.split("@")[0]}님 프로필
                     </Link>
                     <button

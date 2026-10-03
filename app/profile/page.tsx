@@ -577,11 +577,11 @@ export default function ProfilePage() {
             <div style={{ display: "flex", justifyContent: "space-between", gap: "18px", alignItems: "center", flexWrap: "wrap" }}>
               <div>
                 <p style={{ margin: "0 0 5px", fontSize: "12px", fontWeight: 800, color: "#4f9fa2", letterSpacing: "0.04em" }}>ADMIN WORKSPACE</p>
-                <h2 style={{ margin: "0 0 6px", fontSize: "20px" }}>관리자 작업실</h2>
-                <p style={{ margin: 0, fontSize: "13px", color: "var(--gh-text-muted)" }}>Gemini가 준비한 기사 초안을 검토하고 수정·승인·공개할 수 있습니다.</p>
+                <h2 style={{ margin: "0 0 6px", fontSize: "20px" }}>운영센터</h2>
+                <p style={{ margin: 0, fontSize: "13px", color: "var(--gh-text-muted)" }}>회원·커뮤니티·기사·문의 현황을 한곳에서 관리할 수 있습니다.</p>
               </div>
-              <Link href="/admin/articles" style={{ display: "inline-flex", alignItems: "center", gap: "7px", padding: "11px 16px", borderRadius: "7px", background: "var(--gh-accent)", color: "var(--gh-text-white)", textDecoration: "none", fontWeight: 800 }}>
-                기사 검토함 바로가기 →
+              <Link href="/admin" style={{ display: "inline-flex", alignItems: "center", gap: "7px", padding: "11px 16px", borderRadius: "7px", background: "var(--gh-accent)", color: "var(--gh-text-white)", textDecoration: "none", fontWeight: 800 }}>
+                운영센터 / Admin →
               </Link>
             </div>
           </section>
