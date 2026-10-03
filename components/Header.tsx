@@ -533,7 +533,7 @@ export default function Header() {
             >
               {/* 서랍 헤더 */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-                <span style={{ fontWeight: "bold", fontSize: "16px", color: "var(--gh-text)" }}>{isGermanUi ? "GermanHanguk Menü" : "GermanHanguk 메뉴"}</span>
+                <span style={{ fontWeight: "bold", fontSize: "16px", color: "var(--gh-text)" }}>German Hanguk 메뉴 · Menü</span>
                 <button
                   onClick={function() { setMenuOpen(false); }}
                   aria-label="메뉴 닫기"
@@ -558,30 +558,30 @@ export default function Header() {
               {/* 드로어 내비게이션 리스트 (최소 44px 높이 터치 타겟) */}
               <nav className="mobile-portal-nav" style={{ display: "flex", flexDirection: "column", gap: "18px", flex: 1 }}>
                 <section className="mobile-menu-section">
-                  <div className="mobile-menu-heading"><span>{isGermanUi ? "Info" : "정보"}</span><small>{isGermanUi ? "Nachrichten und Leben in Deutschland" : "뉴스와 독일 생활 가이드"}</small></div>
-                  <Link href="/articles" onClick={function() { setMenuOpen(false); }}>📰 {isGermanUi ? "Deutschland-News" : "독일 소식"}</Link>
-                  <Link href="/guide" onClick={function() { setMenuOpen(false); }}>📘 {isGermanUi ? "Alltagsguide" : "생활 가이드"}</Link>
-                  <Link href="/messe" onClick={function() { setMenuOpen(false); }}>🏢 {isGermanUi ? "Messen" : "독일 메세"}</Link>
+                  <div className="mobile-menu-heading"><span>정보 · Info</span><small>뉴스와 독일 생활 가이드 · Nachrichten und Alltag in Deutschland</small></div>
+                  <Link href="/articles" onClick={function() { setMenuOpen(false); }}>📰 독일 소식 · Deutschland-News</Link>
+                  <Link href="/guide" onClick={function() { setMenuOpen(false); }}>📘 생활 가이드 · Alltagsguide</Link>
+                  <Link href="/messe" onClick={function() { setMenuOpen(false); }}>🏢 독일 메세 · Messen</Link>
                   <div className="mobile-topic-links">
-                    <Link href="/guide/visa-residence" onClick={function() { setMenuOpen(false); }}>비자·체류</Link>
-                    <Link href="/guide/taxes" onClick={function() { setMenuOpen(false); }}>세금</Link>
-                    <Link href="/guide/jobs" onClick={function() { setMenuOpen(false); }}>노동·취업</Link>
-                    <Link href="/guide/insurance" onClick={function() { setMenuOpen(false); }}>건강·보험</Link>
-                    <Link href="/guide/housing" onClick={function() { setMenuOpen(false); }}>주거</Link>
-                    <Link href="/guide/education" onClick={function() { setMenuOpen(false); }}>가족·교육</Link>
-                    <Link href="/guide/driving" onClick={function() { setMenuOpen(false); }}>교통·운전</Link>
-                    <Link href="/guide/german-life" onClick={function() { setMenuOpen(false); }}>독일 생활</Link>
+                    <Link href="/guide/visa-residence" onClick={function() { setMenuOpen(false); }}>비자·체류 · Visum</Link>
+                    <Link href="/guide/taxes" onClick={function() { setMenuOpen(false); }}>세금 · Steuern</Link>
+                    <Link href="/guide/jobs" onClick={function() { setMenuOpen(false); }}>노동·취업 · Arbeit</Link>
+                    <Link href="/guide/insurance" onClick={function() { setMenuOpen(false); }}>건강·보험 · Gesundheit</Link>
+                    <Link href="/guide/housing" onClick={function() { setMenuOpen(false); }}>주거 · Wohnen</Link>
+                    <Link href="/guide/education" onClick={function() { setMenuOpen(false); }}>가족·교육 · Familie & Bildung</Link>
+                    <Link href="/guide/driving" onClick={function() { setMenuOpen(false); }}>교통·운전 · Verkehr</Link>
+                    <Link href="/guide/german-life" onClick={function() { setMenuOpen(false); }}>독일 생활 · Alltag</Link>
                   </div>
                 </section>
                 <section className="mobile-menu-section">
-                  <div className="mobile-menu-heading"><span>{isGermanUi ? "Community" : "커뮤니티"}</span><small>{isGermanUi ? "Fragen, Erfahrungen und Austausch" : "교민들의 질문과 경험"}</small></div>
-                  <Link href="/?section=community" onClick={function() { setMenuOpen(false); }}>{isGermanUi ? "Community-Start" : "커뮤니티 홈"}</Link>
-                  <Link href="/?section=community&category=community" onClick={function() { setMenuOpen(false); }}>{isGermanUi ? "Freie Community" : "자유 커뮤니티"}</Link>
-                  <Link href="/?section=community&category=education" onClick={function() { setMenuOpen(false); }}>{isGermanUi ? "Studium & Bildung" : "유학·교육"}</Link>
-                  <Link href="/?section=community&category=life" onClick={function() { setMenuOpen(false); }}>{isGermanUi ? "Alltag" : "생활정보"}</Link>
-                  <Link href="/?section=community&category=market" onClick={function() { setMenuOpen(false); }}>{isGermanUi ? "Marktplatz" : "중고장터"}</Link>
-                  <Link href="/?section=community&category=jobs" onClick={function() { setMenuOpen(false); }}>{isGermanUi ? "Jobs" : "구인구직"}</Link>
-                  <Link href="/?section=community&category=tandem" onClick={function() { setMenuOpen(false); }}>🇰🇷↔🇩🇪 {isGermanUi ? "Tandem" : "탄뎀 · Tandem"}</Link>
+                  <div className="mobile-menu-heading"><span>커뮤니티 · Community</span><small>교민들의 질문과 경험 · Fragen, Erfahrungen und Austausch</small></div>
+                  <Link href="/?section=community" onClick={function() { setMenuOpen(false); }}>커뮤니티 홈 · Community-Start</Link>
+                  <Link href="/?section=community&category=community" onClick={function() { setMenuOpen(false); }}>자유게시판 · Freie Community</Link>
+                  <Link href="/?section=community&category=education" onClick={function() { setMenuOpen(false); }}>유학·교육 · Studium & Bildung</Link>
+                  <Link href="/?section=community&category=life" onClick={function() { setMenuOpen(false); }}>생활정보 · Alltag</Link>
+                  <Link href="/?section=community&category=market" onClick={function() { setMenuOpen(false); }}>중고장터 · Marktplatz</Link>
+                  <Link href="/?section=community&category=jobs" onClick={function() { setMenuOpen(false); }}>구인구직 · Jobs</Link>
+                  <Link href="/?section=community&category=tandem" onClick={function() { setMenuOpen(false); }}>🇰🇷↔🇩🇪 탄뎀 · Tandem</Link>
                 </section>
               </nav>
 
@@ -644,8 +644,8 @@ export default function Header() {
 
     <nav className="service-switcher" aria-label="German Hanguk 서비스">
       <div className="service-switcher-inner">
-        <Link href="/" className={isInfoRoute ? "is-active" : ""}>{isGermanUi ? "Info" : "정보"}</Link>
-        <Link href="/?section=community" className={isCommunityRoute ? "is-active" : ""}>{isGermanUi ? "Community" : "커뮤니티"}</Link>
+        <Link href="/" className={isInfoRoute ? "is-active" : ""}>정보 · Info</Link>
+        <Link href="/?section=community" className={isCommunityRoute ? "is-active" : ""}>커뮤니티 · Community</Link>
         <Link href="/k-culture" className={isKCultureRoute ? "is-active service-kculture" : "service-kculture"}>
           <span>K-Culture</span><small>Korea entdecken</small>
         </Link>

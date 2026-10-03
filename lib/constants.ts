@@ -13,7 +13,7 @@ export const CATEGORIES: readonly Category[] = [
   { value: "education", label: { ko: "유학·교육", de: "Studium & Ausbildung", en: "Study & Education" } },
   { value: "market", label: { ko: "중고장터", de: "Flohmarkt", en: "Marketplace" } },
   { value: "jobs", label: { ko: "구인구직", de: "Jobs & Karriere", en: "Jobs" } },
-  { value: "tandem", label: { ko: "탄뎀 · Tandem", de: "Tandem", en: "Tandem" } },
+  { value: "tandem", label: { ko: "탄뎀", de: "Tandem", en: "Tandem" } },
   { value: "culture-events", label: { ko: "문화·행사", de: "Kultur & Events", en: "Culture & Events" } },
 ] as const;
 
