@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import AuthLanguageSelector from "@/components/AuthLanguageSelector";
 import { useAuthLocale, authCopy, authErrorKey, formError, AuthMessage } from "@/lib/auth-locale";
-import { GERMAN_REGIONS } from "@/lib/germanRegions";
+import { hasCommunityIdentity } from "@/lib/communityProfile";
 
 
 export default function AuthPage() {
@@ -14,8 +14,6 @@ export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [region, setRegion] = useState("");
   const [isSignup, setIsSignup] = useState(false);
   const [uiLanguage, chooseLanguage] = useAuthLocale();
   const t = authCopy[uiLanguage];
@@ -33,8 +31,6 @@ export default function AuthPage() {
     setEmail("");
     setPassword("");
     setPasswordConfirm("");
-    setDisplayName("");
-    setRegion("");
     setMessage("");
     setIsEmailConfirmationPending(false);
     setRegisteredEmail("");
@@ -70,24 +66,6 @@ export default function AuthPage() {
         return;
       }
 
-      // 2. 닉네임 유효성 검증
-      const trimmedDisplayName = displayName.trim();
-      if (!trimmedDisplayName) {
-        setMessage("nameRequired");
-        return;
-      }
-      if (trimmedDisplayName.length < 2) {
-        setMessage("nameShort");
-        return;
-      }
-
-      // 3. 거주지역 선택 검증
-      const trimmedRegion = region.trim();
-      if (!trimmedRegion) {
-        setMessage("regionRequired");
-        return;
-      }
-
       setLoading(true);
 
       const signupEmail = email.trim();
@@ -95,9 +73,9 @@ export default function AuthPage() {
         email: signupEmail,
         password,
         options: {
+          emailRedirectTo: `${window.location.origin}/auth/social-callback`,
           data: {
-            display_name: trimmedDisplayName,
-            region: trimmedRegion,
+            community_profile_completed: false,
             ui_language: uiLanguage,
           },
         },
@@ -113,7 +91,7 @@ export default function AuthPage() {
       // 4. 회원가입 성공 분기 처리
       if (data?.session) {
         // 이메일 인증 없이 즉시 세션이 발급된 경우 -> 마이페이지로 즉시 이동
-        router.push("/profile");
+        router.replace("/auth/complete-profile");
         router.refresh();
       } else {
         // 이메일 인증이 필요한 경우 (data.session === null) -> 폼을 닫고 가입 완료 안내 화면 표시
@@ -123,7 +101,7 @@ export default function AuthPage() {
     } else {
       setLoading(true);
 
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
@@ -135,8 +113,11 @@ export default function AuthPage() {
         return;
       }
 
-      // 로그인 성공 시 세션 갱신 후 메인으로 이동
-      router.push("/");
+      // Route unfinished accounts back to the required community-name step.
+      const { data: profile, error: profileError } = await supabase.from("profiles")
+        .select("display_name, region").eq("id", data.user.id).maybeSingle();
+      if (profileError) { setMessage("authError"); return; }
+      router.replace(hasCommunityIdentity(data.user, profile) ? "/" : "/auth/complete-profile");
       router.refresh();
     }
   }
@@ -225,43 +206,6 @@ export default function AuthPage() {
             />
           </label>
 
-          {isSignup && (
-            <>
-              <label>
-                {t.name}
-                <input
-                  type="text"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder={t.nameHint}
-                  required
-                  minLength={2}
-                  maxLength={30}
-                />
-              </label>
-
-              <label>
-                {t.region}
-                <select
-                  value={region}
-                  onChange={(e) => setRegion(e.target.value)}
-                  required
-                  style={{
-                    padding: "13px 14px",
-                    border: "1px solid var(--gh-border)",
-                    borderRadius: "6px",
-                    fontSize: "15px",
-                    background: "var(--gh-surface)",
-                  }}
-                >
-                  <option value="">{t.regionHint}</option>
-                  {GERMAN_REGIONS.map((city, index) => (
-                    <option key={city} value={city}>{t.regionLabels[index]}</option>
-                  ))}
-                </select>
-              </label>
-            </>
-          )}
 
           <label>
             {t.password}

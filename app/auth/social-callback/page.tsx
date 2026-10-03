@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AuthLanguageSelector from "@/components/AuthLanguageSelector";
 import { useAuthLocale, authCopy } from "@/lib/auth-locale";
+import { hasCommunityIdentity } from "@/lib/communityProfile";
 import { supabase } from "@/lib/supabase";
 
 export default function SocialCallbackPage() {
@@ -24,14 +25,15 @@ export default function SocialCallbackPage() {
         return;
       }
 
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("display_name, region")
         .eq("id", data.session.user.id)
         .maybeSingle();
 
       if (cancelled) return;
-      const needsProfile = !profile?.display_name?.trim() || !profile?.region?.trim();
+      if (profileError) { setFailed(true); return; }
+      const needsProfile = !hasCommunityIdentity(data.session.user, profile);
       router.replace(needsProfile ? "/auth/complete-profile" : "/");
       router.refresh();
     }
