@@ -141,6 +141,7 @@ export function shouldDisplayPostRegion(
 export function getCategoryLabel(value: string, locale: "ko" | "de" | "en" = "ko"): string {
   const cat = CATEGORIES.find((c) => c.value === value);
   if (!cat) {
+    if (value === "k-culture") return "K-Culture";
     if (value === "events") return locale === "ko" ? "행사" : "Events";
     return value;
   }

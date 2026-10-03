@@ -187,7 +187,6 @@ export default function AdminArticlesPage() {
     : automation?.worker.state === "running" ? "실행 중"
     : automation?.worker.state === "skipped" ? "중복 실행 건너뜀" : "실행 전";
   const lastRunAt = automation?.worker.finishedAt || automation?.worker.startedAt;
-  const missingAutomationConfig = automation ? Object.entries(automation.config).filter(([, ready]) => !ready).map(([name]) => name) : [];
   const workerDetail = automation?.lastResultReason === "no_new_relevant_candidate"
     ? "마지막 실행은 정상 완료됐지만 새 관련 기사 후보가 없었습니다."
     : lastRunAt ? `마지막 실행 ${new Date(lastRunAt).toLocaleString()}` : "아직 예약 실행 전입니다.";
@@ -205,11 +204,6 @@ export default function AdminArticlesPage() {
       {message && <p style={{ padding: 12, border: "1px solid var(--gh-border)", borderRadius: 8 }}>{message}</p>}
 
       <section style={{ marginBottom: 22 }}>
-        {missingAutomationConfig.length > 0 && (
-          <p style={{ padding: 12, border: "1px solid var(--gh-alert, #a86f68)", borderRadius: 8, color: "var(--gh-text)" }}>
-            자동기사 서버 설정 필요: {missingAutomationConfig.join(" · ")}
-          </p>
-        )}
         {automation?.lastError && <p style={{ color: "var(--gh-alert, #a86f68)", fontSize: 13 }}>최근 자동 실행 오류: {automation.lastError}</p>}
         <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "end", marginBottom: 10, flexWrap: "wrap" }}>
           <div>

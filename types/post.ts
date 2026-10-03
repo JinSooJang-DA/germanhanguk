@@ -12,6 +12,8 @@ export interface Post {
   sub_category?: string | null;
   target_field?: string | null;
   city?: string | null;
+  media_url?: string | null;
+  media_platform?: "youtube" | "instagram" | "tiktok" | null;
 
   // Phase 3 fields:
   likes_count?: number;
