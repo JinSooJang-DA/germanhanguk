@@ -645,10 +645,10 @@ export default function Header() {
     <nav className="service-switcher" aria-label="German Hanguk 서비스">
       <div className="service-switcher-inner">
         <Link href="/" className={isInfoRoute ? "is-active" : ""}>정보 · Info</Link>
-        <Link href="/?section=community" className={isCommunityRoute ? "is-active" : ""}>커뮤니티 · Community</Link>
         <Link href="/k-culture" className={isKCultureRoute ? "is-active service-kculture" : "service-kculture"}>
           <span>K-Culture</span><small>Korea entdecken</small>
         </Link>
+        <Link href="/?section=community" className={isCommunityRoute ? "is-active" : ""}>커뮤니티 · Community</Link>
       </div>
     </nav>
 
