@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
 import { getServerUiLanguage, readHeaderUiLanguage, subscribeUiLanguage } from "@/lib/auth-locale";
 import ThemeSelector from "@/components/ThemeSelector";
+import BilingualButtonText from "@/components/BilingualButtonText";
 
 export default function Header() {
   const router = useRouter();
@@ -305,7 +306,7 @@ export default function Header() {
                   aria-haspopup="menu"
                   aria-expanded={profileMenuOpen}
                 >
-                  <span className="header-profile-name">{displayName || user.email?.split("@")[0]}님</span>
+                  <span className="header-profile-name">{displayName || user.email?.split("@")[0]}{isGermanUi ? "" : "님"}</span>
                   <span className="header-avatar" aria-hidden="true">
                     {avatarUrl ? (
                       <img src={avatarUrl} alt="" />
@@ -344,12 +345,12 @@ export default function Header() {
                         fontSize: "14px",
                       }}
                     >
-                      내 프로필
+                      {isGermanUi ? "Mein Profil" : "내 프로필"}
                     </Link>
                     {isAdmin && <Link href="/admin" role="menuitem" onClick={() => setProfileMenuOpen(false)} style={{ display: "block", padding: "10px 12px", color: "var(--gh-text)", fontWeight: 600 }}>{isGermanUi ? "Betriebszentrale" : "운영센터 / Admin"}</Link>}
                     <div style={{ borderTop: "1px solid var(--gh-border)", padding: "10px 0" }}>
                       <span style={{ display: "block", padding: "0 12px 6px", color: "var(--gh-text-muted)", fontSize: "12px", fontWeight: "600" }}>
-                        화면 설정
+                        {isGermanUi ? "Darstellung" : "화면 설정"}
                       </span>
                       <ThemeSelector />
                     </div>
@@ -369,7 +370,7 @@ export default function Header() {
                         textAlign: "left",
                       }}
                     >
-                      로그아웃
+                      <BilingualButtonText ko="로그아웃" de="Abmelden" />
                     </button>
                   </div>
                 )}
@@ -379,7 +380,7 @@ export default function Header() {
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <Link className="desktop-login" href="/auth">
                 <button style={{ padding: "7px 15px", fontSize: "14px", fontWeight: 700, cursor: "pointer", background: "var(--gh-control-active)", color: "var(--gh-control-active-text)", border: "none", borderRadius: "4px" }}>
-                  로그인 (LOGIN)
+                  <BilingualButtonText ko="로그인" de="Anmelden" />
                 </button>
               </Link>
               <ThemeSelector />
@@ -609,7 +610,7 @@ export default function Header() {
                         fontSize: "13px"
                       }}
                     >
-                      로그아웃
+                      <BilingualButtonText ko="로그아웃" de="Abmelden" />
                     </button>
                   </div>
                 ) : (
@@ -628,7 +629,7 @@ export default function Header() {
                         fontSize: "14px"
                       }}
                     >
-                      로그인 (LOGIN)
+                      <BilingualButtonText ko="로그인" de="Anmelden" />
                     </button>
                   </Link>
                 )}

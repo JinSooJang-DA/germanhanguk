@@ -23,6 +23,8 @@ import AuthorActionMenu from "@/components/AuthorActionMenu";
 import CommunityIdentity from "@/components/CommunityIdentity";
 import PostEngagementStats from "@/components/PostEngagementStats";
 import { fetchPublicCommunityIdentities, type PublicCommunityIdentityMap } from "@/lib/publicCommunityIdentity";
+import { useAuthLocale } from "@/lib/auth-locale";
+import BilingualButtonText from "@/components/BilingualButtonText";
 
 const POSTS_PER_PAGE = 20;
 
@@ -51,6 +53,8 @@ type Post = BasePost & {
 
 function HomeContent() {
   const searchParams = useSearchParams();
+  const [uiLanguage] = useAuthLocale();
+  const isGermanUi = uiLanguage === "de";
   const categoryParam = searchParams.get("category");
   const isCommunityView = searchParams.get("section") === "community" || categoryParam !== null;
 
@@ -628,7 +632,7 @@ function HomeContent() {
                 display: "inline-block",
               }}
             >
-              전체
+              {isGermanUi ? "Alle" : "전체"}
             </Link>
 
             {CATEGORIES.map(function(cat) {
@@ -649,7 +653,7 @@ function HomeContent() {
                     display: "inline-block",
                   }}
                 >
-                  {cat.label.ko}
+                  {isGermanUi ? cat.label.de : `${cat.label.ko} · ${cat.label.de}`}
                 </Link>
               );
             })}
@@ -659,7 +663,7 @@ function HomeContent() {
             href={selectedCategory !== "all" ? `/posts/new?category=${encodeURIComponent(selectedCategory)}` : "/posts/new"}
             style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, padding: "8px 18px", minHeight: "36px", boxSizing: "border-box", background: "var(--gh-control-active)", color: "var(--gh-control-active-text)", borderRadius: "6px", fontSize: "14px", fontWeight: "bold", textDecoration: "none" }}
           >
-            글쓰기
+            <BilingualButtonText ko="글쓰기" de="Beitrag schreiben" />
           </Link>
         </div>
 

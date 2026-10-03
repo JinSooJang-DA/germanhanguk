@@ -21,6 +21,8 @@ import {
 import type { Post } from "@/types/post";
 import PostImagePicker from "@/components/PostImagePicker";
 import PostExpressionPicker from "@/components/PostExpressionPicker";
+import BilingualButtonText from "@/components/BilingualButtonText";
+import { useAuthLocale } from "@/lib/auth-locale";
 import {
   deletePostImagesByUrl,
   getStoredImageUrls,
@@ -40,6 +42,9 @@ type PostInsertPayload = Pick<
 function NewPostContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [uiLanguage] = useAuthLocale();
+  const de = uiLanguage === "de";
+  const t = (ko: string, german: string) => de ? german : ko;
   const categoryParam = searchParams.get("category");
   const isValidCategory = categoryParam && CATEGORIES.some((cat) => cat.value === categoryParam);
   const initialCategory = isValidCategory ? categoryParam : "community";
@@ -221,11 +226,11 @@ function NewPostContent() {
   return (
     <main className="new-post-page">
       <div className="post-form-container">
-        <h1>글쓰기</h1>
+        <h1>{t("글쓰기", "Beitrag schreiben")}</h1>
 
         <form className="post-form" onSubmit={handleSubmit} noValidate>
           <div className="form-group">
-            <label htmlFor="category">카테고리</label>
+            <label htmlFor="category">{t("카테고리", "Kategorie")}</label>
             <select
               id="category"
               value={category}
@@ -233,7 +238,7 @@ function NewPostContent() {
             >
               {CATEGORIES.map((cat) => (
                 <option key={cat.value} value={cat.value}>
-                  {cat.label.ko}
+                  {de ? cat.label.de : `${cat.label.ko} · ${cat.label.de}`}
                 </option>
               ))}
             </select>
@@ -243,11 +248,11 @@ function NewPostContent() {
           {category === "education" && (
             <div style={{ background: "#f8fafc", padding: "16px", borderRadius: "8px", marginBottom: "16px", display: "grid", gap: "12px", border: "1px solid #e2e8f0" }}>
               <p style={{ fontSize: "13px", color: "#64748b", margin: 0, fontWeight: "500" }}>
-                💡 유학·교육 관련 상세 정보를 선택해 주세요. 교민 전체가 정확한 조언을 줄 수 있습니다.
+                💡 {t("유학·교육 관련 상세 정보를 선택해 주세요.", "Wähle passende Details zu Studium und Bildung aus.")}
               </p>
 
               <div className="form-group" style={{ marginBottom: 0 }}>
-                <label htmlFor="subCategory">주요 주제</label>
+                <label htmlFor="subCategory">{t("주요 주제", "Hauptthema")}</label>
                 <select
                   id="subCategory"
                   value={subCategory}
@@ -262,7 +267,7 @@ function NewPostContent() {
               </div>
 
               <div className="form-group" style={{ marginBottom: 0 }}>
-                <label htmlFor="targetField">전공 계열</label>
+                <label htmlFor="targetField">{t("전공 계열", "Fachrichtung")}</label>
                 <select
                   id="targetField"
                   value={targetField}
@@ -280,30 +285,30 @@ function NewPostContent() {
 
           {regionPolicy.usesRegion && (
             <div className="form-group">
-              <label htmlFor="region">{regionPolicy.label}</label>
+              <label htmlFor="region">{de ? (regionPolicy.required ? "Ort" : "Ort (optional)") : regionPolicy.label}</label>
               <input
                 id="region"
                 type="text"
                 value={region}
                 onChange={(e) => setRegion(e.target.value)}
-                placeholder="예: Berlin, München, Münster"
+                placeholder={t("예: Berlin, München, Münster", "z. B. Berlin, München, Münster")}
                 required={regionPolicy.required}
               />
             </div>
           )}
 
-          {authoringCopy.helperText && (
+          {authoringCopy.helperText && !de && (
             <p className="post-authoring-helper">{authoringCopy.helperText}</p>
           )}
 
           <div className="form-group">
-            <label htmlFor="title">제목</label>
+            <label htmlFor="title">{t("제목", "Titel")}</label>
             <input
               id="title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder={authoringCopy.titlePlaceholder}
+              placeholder={de ? "Titel eingeben" : authoringCopy.titlePlaceholder}
               aria-describedby="title-character-count"
               required
             />
@@ -314,12 +319,12 @@ function NewPostContent() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="content">내용</label>
+            <label htmlFor="content">{t("내용", "Inhalt")}</label>
             <textarea
               id="content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder={authoringCopy.contentPlaceholder}
+              placeholder={de ? "Schreibe deinen Beitrag hier..." : authoringCopy.contentPlaceholder}
               rows={8}
               aria-describedby="content-character-count"
               required
@@ -341,7 +346,7 @@ function NewPostContent() {
           {message && <p className="form-message">{message}</p>}
 
           <button type="submit" className="submit-btn" disabled={submitting}>
-            {submitting ? "등록 중..." : "게시글 등록"}
+            {submitting ? t("등록 중...", "Wird veröffentlicht...") : <BilingualButtonText ko="게시글 등록" de="Beitrag veröffentlichen" />}
           </button>
         </form>
       </div>
