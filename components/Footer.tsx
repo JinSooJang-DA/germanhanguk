@@ -27,11 +27,11 @@ export default function Footer() {
           </p>
         </div>
 
-        <nav className="footer-legal-links" aria-label="법률 및 문의 / Rechtliches und Kontakt">
-          <Link href="/impressum">운영자 정보 · Impressum</Link>
-          <Link href="/datenschutz">개인정보 · Datenschutz</Link>
-          <Link href="/kontakt">문의 · Kontakt</Link>
-          <Link href="/nutzungsbedingungen">이용 안내 · Nutzungsbedingungen</Link>
+        <nav className="footer-legal-links" aria-label="운영 안내 및 문의">
+          <Link href="/impressum">운영자 정보</Link>
+          <Link href="/datenschutz">개인정보 처리 안내</Link>
+          <Link href="/kontakt">문의</Link>
+          <Link href="/nutzungsbedingungen">이용 안내</Link>
         </nav>
 
         <div className="footer-copy">© {new Date().getFullYear()} German Hanguk. All rights reserved.</div>
