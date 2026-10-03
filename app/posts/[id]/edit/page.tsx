@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useAuthLocale } from "@/lib/auth-locale";
 import PostImagePicker from "@/components/PostImagePicker";
 import PostExpressionPicker from "@/components/PostExpressionPicker";
 import {
@@ -38,6 +39,9 @@ export default function EditPostPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const [uiLanguage] = useAuthLocale();
+  const de = uiLanguage === "de";
+  const t = (ko: string, german: string) => de ? german : ko;
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -227,11 +231,11 @@ export default function EditPostPage({
   return (
     <main className="new-post-page">
       <div className="post-form-container">
-        <h1>게시글 수정</h1>
+        <h1>{t("게시글 수정", "Beitrag bearbeiten")}</h1>
 
         <form className="post-form" onSubmit={handleSubmit} noValidate>
           <div className="form-group">
-            <label htmlFor="category">카테고리</label>
+            <label htmlFor="category">{t("카테고리", "Kategorie")}</label>
             <select
               id="category"
               value={category}
@@ -239,7 +243,7 @@ export default function EditPostPage({
             >
               {CATEGORIES.map((cat) => (
                 <option key={cat.value} value={cat.value}>
-                  {cat.label.ko}
+                  {de ? cat.label.de : `${cat.label.ko} · ${cat.label.de}`}
                 </option>
               ))}
             </select>
@@ -285,30 +289,30 @@ export default function EditPostPage({
 
           {regionPolicy.usesRegion && (
             <div className="form-group">
-              <label htmlFor="region">{regionPolicy.label}</label>
+              <label htmlFor="region">{de ? (regionPolicy.required ? "Ort" : "Ort (optional)") : regionPolicy.label}</label>
               <input
                 id="region"
                 type="text"
                 value={region}
                 onChange={(e) => setRegion(e.target.value)}
-                placeholder="예: Berlin, München, Münster"
+                placeholder={t("예: Berlin, München, Münster", "z. B. Berlin, München, Münster")}
                 required={regionPolicy.required}
               />
             </div>
           )}
 
-          {authoringCopy.helperText && (
+          {authoringCopy.helperText && !de && (
             <p className="post-authoring-helper">{authoringCopy.helperText}</p>
           )}
 
           <div className="form-group">
-            <label htmlFor="title">제목</label>
+            <label htmlFor="title">{t("제목", "Titel")}</label>
             <input
               id="title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder={authoringCopy.titlePlaceholder}
+              placeholder={de ? "Titel eingeben" : authoringCopy.titlePlaceholder}
               aria-describedby="title-character-count"
               required
             />
@@ -319,13 +323,13 @@ export default function EditPostPage({
           </div>
 
           <div className="form-group">
-            <label htmlFor="content">내용</label>
+            <label htmlFor="content">{t("내용", "Inhalt")}</label>
             <textarea
               id="content"
               rows={10}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder={authoringCopy.contentPlaceholder}
+              placeholder={de ? "Schreibe deinen Beitrag hier..." : authoringCopy.contentPlaceholder}
               aria-describedby="content-character-count"
               required
             />
@@ -344,13 +348,13 @@ export default function EditPostPage({
           />
 
           <button type="submit" className="submit-btn" disabled={saving}>
-            {saving ? "수정 중..." : "수정 완료"}
+            {saving ? t("수정 중...", "Wird gespeichert...") : t("수정 완료", "Änderungen speichern")}
           </button>
         </form>
 
         <div style={{ marginTop: "20px", textAlign: "center" }}>
           <Link href={`/posts/${id}`} style={{ color: "#666", fontSize: "14px" }}>
-            ← 취소하고 돌아가기
+            ← {t("취소하고 돌아가기", "Abbrechen und zurück")}
           </Link>
         </div>
       </div>
