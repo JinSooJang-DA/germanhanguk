@@ -372,8 +372,8 @@ export default function Header() {
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <Link className="desktop-login" href="/auth">
-                <button style={{ padding: "6px 14px", cursor: "pointer", background: "var(--gh-control-active)", color: "var(--gh-control-active-text)", border: "none", borderRadius: "4px" }}>
-                  로그인
+                <button style={{ padding: "7px 15px", fontSize: "14px", fontWeight: 700, cursor: "pointer", background: "var(--gh-control-active)", color: "var(--gh-control-active-text)", border: "none", borderRadius: "4px" }}>
+                  로그인 (LOGIN)
                 </button>
               </Link>
               <ThemeSelector />
@@ -621,7 +621,7 @@ export default function Header() {
                         fontSize: "14px"
                       }}
                     >
-                      로그인
+                      로그인 (LOGIN)
                     </button>
                   </Link>
                 )}

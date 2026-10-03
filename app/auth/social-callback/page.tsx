@@ -2,11 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import AuthLanguageSelector from "@/components/AuthLanguageSelector";
+import { useAuthLocale, authCopy } from "@/lib/auth-locale";
 import { supabase } from "@/lib/supabase";
 
 export default function SocialCallbackPage() {
   const router = useRouter();
-  const [message, setMessage] = useState("로그인 정보를 확인하고 있어요...");
+  const [uiLanguage, chooseLanguage] = useAuthLocale();
+  const t = authCopy[uiLanguage];
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -16,7 +20,7 @@ export default function SocialCallbackPage() {
       if (cancelled) return;
 
       if (error || !data.session?.user) {
-        setMessage("로그인 정보를 확인하지 못했습니다. 다시 시도해 주세요.");
+        setFailed(true);
         return;
       }
 
@@ -32,16 +36,17 @@ export default function SocialCallbackPage() {
       router.refresh();
     }
 
-    finishSocialLogin();
+    finishSocialLogin().catch(() => { if (!cancelled) setFailed(true); });
     return () => { cancelled = true; };
   }, [router]);
 
   return (
-    <main className="auth-page">
+    <main className="auth-page" lang={uiLanguage}>
       <div className="auth-box auth-status-box" role="status">
         <h1>German Hanguk</h1>
-        <div className="auth-status-spinner" aria-hidden="true" />
-        <p>{message}</p>
+        <AuthLanguageSelector language={uiLanguage} onChange={chooseLanguage} />
+        {!failed && <div className="auth-status-spinner" aria-hidden="true" />}
+        <p>{failed ? t.callbackError : t.callbackLoading}</p>
       </div>
     </main>
   );

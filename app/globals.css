@@ -2818,3 +2818,15 @@ html[data-theme="dark"] .brand-mark-dark { display:block !important; }
 .public-tandem-identity { display: flex; flex-wrap: wrap; gap: 7px; margin: 0 0 14px; }
 .public-tandem-identity > span { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 9px; border: 1px solid var(--gh-border); border-radius: 999px; background: var(--gh-surface-muted); color: var(--gh-text-muted); font-size: 12px; font-weight: 650; }
 .public-tandem-identity .public-tandem-badge { background: color-mix(in srgb, var(--gh-accent) 12%, var(--gh-surface)); color: var(--gh-text); border-color: color-mix(in srgb, var(--gh-accent) 35%, var(--gh-border)); }
+/* Compact pre-auth locale control, shared by all auth states. */
+.auth-box:has(.auth-language-selector) h1 { margin-bottom: 12px; }
+.auth-language-selector { display: flex; justify-content: center; gap: 4px; width: fit-content; max-width: 100%; margin: 0 auto 24px; padding: 3px; border: 1px solid var(--gh-border); border-radius: 7px; background: var(--gh-surface-muted); }
+.auth-language-selector button { padding: 6px 12px; border: 0; border-radius: 4px; background: transparent; color: var(--gh-text-muted); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.auth-language-selector button[aria-pressed="true"] { background: var(--gh-control-active); color: var(--gh-control-active-text); }
+.auth-language-selector button:focus-visible { outline: 2px solid var(--gh-accent); outline-offset: 2px; }
+@media (max-width: 520px) {
+  .auth-language-selector { margin-bottom: 18px; }
+  .auth-language-selector button { min-height: 36px; padding: 6px 10px; }
+}
+
+@media (max-width:520px) { .auth-language-selector { flex-wrap:wrap; margin-bottom:18px; } .auth-language-selector button { min-height:40px; padding:6px 12px; } }
