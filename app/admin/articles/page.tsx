@@ -28,6 +28,9 @@ type AutomationStatus = {
   schedule: string[];
   timezone: string;
   maxArticlesPerRun: number;
+  config: Record<string, boolean>;
+  lastResultReason: string | null;
+  lastError: string | null;
 };
 
 export default function AdminArticlesPage() {
@@ -184,6 +187,10 @@ export default function AdminArticlesPage() {
     : automation?.worker.state === "running" ? "실행 중"
     : automation?.worker.state === "skipped" ? "중복 실행 건너뜀" : "실행 전";
   const lastRunAt = automation?.worker.finishedAt || automation?.worker.startedAt;
+  const missingAutomationConfig = automation ? Object.entries(automation.config).filter(([, ready]) => !ready).map(([name]) => name) : [];
+  const workerDetail = automation?.lastResultReason === "no_new_relevant_candidate"
+    ? "마지막 실행은 정상 완료됐지만 새 관련 기사 후보가 없었습니다."
+    : lastRunAt ? `마지막 실행 ${new Date(lastRunAt).toLocaleString()}` : "아직 예약 실행 전입니다.";
 
   if (loading) return <main style={{ padding: 40 }}>기사 검토함을 불러오는 중...</main>;
 
@@ -198,6 +205,12 @@ export default function AdminArticlesPage() {
       {message && <p style={{ padding: 12, border: "1px solid var(--gh-border)", borderRadius: 8 }}>{message}</p>}
 
       <section style={{ marginBottom: 22 }}>
+        {missingAutomationConfig.length > 0 && (
+          <p style={{ padding: 12, border: "1px solid var(--gh-alert, #a86f68)", borderRadius: 8, color: "var(--gh-text)" }}>
+            자동기사 서버 설정 필요: {missingAutomationConfig.join(" · ")}
+          </p>
+        )}
+        {automation?.lastError && <p style={{ color: "var(--gh-alert, #a86f68)", fontSize: 13 }}>최근 자동 실행 오류: {automation.lastError}</p>}
         <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "end", marginBottom: 10, flexWrap: "wrap" }}>
           <div>
             <p style={{ margin: 0, fontSize: 12, color: "var(--gh-text-muted)", fontWeight: 700 }}>AUTOMATION STATUS</p>
@@ -206,7 +219,7 @@ export default function AdminArticlesPage() {
           <span style={{ fontSize: 13, color: "var(--gh-text-muted)" }}>자동 실행 {automation?.schedule.join(" · ") || "08:00 · 19:00"} · 실행당 최대 1건</span>
         </div>
         <div className={styles.metrics}>
-          <StatusCard label="작업기 상태" value={workerStateLabel} detail={lastRunAt ? `마지막 실행 ${new Date(lastRunAt).toLocaleString()}` : "아직 예약 실행 전입니다."} />
+          <StatusCard label="작업기 상태" value={workerStateLabel} detail={workerDetail} />
           <StatusCard label="오늘 생성" value={`${todayGenerated}건`} detail={`현재 검토 대기 ${pendingArticles.length}건`} />
           <StatusCard label="공개 / 반려" value={`${publishedArticles.length} / ${rejectedArticles.length}`} detail="전체 기사 기준" />
           <StatusCard label="최근 생성 기사" value={latestArticle ? latestArticle.category : "없음"} detail={latestArticle?.title || "아직 생성된 기사가 없습니다."} />

@@ -77,6 +77,7 @@ export default function PostDetailClient({
   );
   const [newComment, setNewComment] = useState("");
   const [currentUserId, setCurrentUserId] = useState<string | null>(initialUserId);
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   // 댓글 수정 관련 상태
@@ -204,6 +205,16 @@ export default function PostDetailClient({
 
       const userId = session?.user?.id || null;
       setCurrentUserId(userId);
+      setCurrentUserRole(null);
+      if (userId) {
+        const { data: currentProfile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", userId)
+          .maybeSingle();
+        if (!isCurrent) return;
+        setCurrentUserRole(currentProfile?.role || null);
+      }
 
       // 좋아요 개수 및 로그인 사용자 클릭 여부 조회
       let initialLikesCount = 0;
@@ -384,6 +395,35 @@ export default function PostDetailClient({
 
 
 
+
+  async function handleAdminCleanupWithdrawnPost() {
+    if (!confirm("탈퇴 회원의 글과 댓글을 정리합니다. 다른 회원의 댓글이 있으면 삭제되지 않습니다.")) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      alert("로그인 세션이 만료되었습니다.");
+      return;
+    }
+    const postId = Number(id);
+    const { error } = await supabase.rpc("admin_cleanup_withdrawn_post", { p_post_id: postId });
+    if (error) {
+      if (error.message.includes("Other member comments exist")) {
+        alert("다른 회원이 남긴 댓글 또는 답글이 있어 이 게시물은 정리할 수 없습니다.");
+      } else if (error.message.includes("Post author is still active")) {
+        alert("탈퇴한 회원의 게시물이 아니므로 게시판 정리 기능으로 삭제할 수 없습니다.");
+      } else if (error.message.includes("Admin access required")) {
+        alert("관리자만 게시판 정리를 할 수 있습니다.");
+      } else {
+        alert("게시판 정리에 실패했습니다: " + error.message);
+      }
+      return;
+    }
+    await deletePostImagesByUrl(getStoredImageUrls(initialPost.content), session.access_token).catch((cleanupError) => {
+      console.error("Admin cleaned post image cleanup error:", cleanupError);
+    });
+    alert("탈퇴 회원의 게시물과 댓글을 정리했습니다.");
+    router.push(communityListHref);
+    router.refresh();
+  }
 
   async function handleDeletePost() {
     if (!confirm("정말로 이 게시글을 삭제하시겠습니까?")) return;
@@ -622,14 +662,15 @@ export default function PostDetailClient({
           <span>좋아요 {likesCount}</span>
         </button>
 
-        {isAuthor && (
+        {(isAuthor || (currentUserRole === "admin" && post.author_id === null)) && (
           <div className="post-owner-actions">
-            <Link href={"/posts/" + id + "/edit"} className="post-action-button">
-              수정
-            </Link>
-            <button type="button" onClick={handleDeletePost} className="post-action-button">
-              삭제
-            </button>
+            {isAuthor && <>
+              <Link href={"/posts/" + id + "/edit"} className="post-action-button">수정</Link>
+              <button type="button" onClick={handleDeletePost} className="post-action-button">삭제</button>
+            </>}
+            {currentUserRole === "admin" && post.author_id === null && (
+              <button type="button" onClick={handleAdminCleanupWithdrawnPost} className="post-action-button">게시판 정리</button>
+            )}
           </div>
         )}
       </div>

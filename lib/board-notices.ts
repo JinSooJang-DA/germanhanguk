@@ -1,6 +1,6 @@
 export interface BoardNotice {
   key: string;
-  category: "all" | "community" | "life" | "education" | "market" | "jobs" | "tandem";
+  category: "all" | "community" | "life" | "education" | "market" | "jobs" | "tandem" | "culture-events";
   title: string;
   intro: string;
   points: string[];
@@ -52,6 +52,14 @@ export const BOARD_NOTICES: readonly BoardNotice[] = [
     intro: "한국어와 독일어를 배우고, 서로의 문화를 실제 사람들과 나누는 공간입니다. Deutsch und Koreanisch sind beide willkommen.",
     points: ["사용 언어와 배우고 싶은 언어, 관심사를 적어주세요.", "온라인 대화인지 오프라인 만남인지, 선호하는 지역과 방식을 알려주세요.", "서로의 언어 수준과 문화적 차이를 존중하고 부담 없는 교류를 만들어주세요."],
     caution: "첫 만남은 공개된 장소를 권장하며, 주소·전화번호 등 민감한 개인정보는 공개 게시물에 남기지 마세요.",
+  },
+  {
+    key: "culture-events",
+    category: "culture-events",
+    title: "문화·행사 게시판 · Kultur & Events",
+    intro: "독일과 한국의 공연, 전시, 축제, 영화, 모임과 지역 행사를 함께 발견하고 경험을 나누는 공간입니다.",
+    points: ["행사명·날짜·장소와 참가 방법을 가능한 정확히 적어주세요.", "공식 홈페이지나 예매 링크가 있다면 출처와 함께 공유해주세요.", "직접 다녀온 후기와 사진, 지역별 문화 팁도 환영합니다. / Erfahrungsberichte sind willkommen."],
+    caution: "일정·입장료·예매 조건은 변경될 수 있으므로 방문 전 주최 측의 최신 안내를 다시 확인해주세요.",
   },
   {
     key: "all",

@@ -1,8 +1,9 @@
 {
   "crons": [
-    {
-      "path": "/api/cron/messe-duesseldorf",
-      "schedule": "15 4 * * *"
-    }
+    { "path": "/api/cron/messe-duesseldorf", "schedule": "15 4 * * *" },
+    { "path": "/api/cron/article-draft/06", "schedule": "0 6 * * *" },
+    { "path": "/api/cron/article-draft/07", "schedule": "0 7 * * *" },
+    { "path": "/api/cron/article-draft/17", "schedule": "0 17 * * *" },
+    { "path": "/api/cron/article-draft/18", "schedule": "0 18 * * *" }
   ]
 }

@@ -24,6 +24,7 @@ const CATEGORIES: Record<string, string> = {
   market: "중고장터",
   jobs: "구인구직",
   tandem: "탄뎀 · Tandem",
+  "culture-events": "문화·행사",
   events: "행사",
 };
 

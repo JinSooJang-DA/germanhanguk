@@ -14,6 +14,7 @@ export const CATEGORIES: readonly Category[] = [
   { value: "market", label: { ko: "중고장터", de: "Flohmarkt", en: "Marketplace" } },
   { value: "jobs", label: { ko: "구인구직", de: "Jobs & Karriere", en: "Jobs" } },
   { value: "tandem", label: { ko: "탄뎀 · Tandem", de: "Tandem", en: "Tandem" } },
+  { value: "culture-events", label: { ko: "문화·행사", de: "Kultur & Events", en: "Culture & Events" } },
 ] as const;
 
 export type CategoryValue = typeof CATEGORIES[number]["value"];
@@ -72,6 +73,7 @@ const POST_REGION_POLICIES: Record<CategoryValue, PostRegionPolicy> = {
   market: { usesRegion: true, required: true, label: "거래 지역" },
   jobs: { usesRegion: true, required: true, label: "근무 지역" },
   tandem: { usesRegion: true, required: false, label: "만나고 싶은 지역 / Ort (선택)" },
+  "culture-events": { usesRegion: true, required: false, label: "행사 지역 / Ort (선택)" },
 };
 
 const DEFAULT_POST_AUTHORING_COPY: PostAuthoringCopy = {
@@ -101,6 +103,11 @@ const POST_AUTHORING_COPIES: Record<CategoryValue, PostAuthoringCopy> = {
     titlePlaceholder: "채용 또는 구직 내용을 간단히 적어주세요",
     contentPlaceholder: "업무 내용, 조건, 근무 형태 등 필요한 정보를 구체적으로 적어주세요.",
     helperText: "지원자와 구직자가 판단할 수 있도록 실제 근무하거나 구하는 지역을 입력해 주세요.",
+  },
+  "culture-events": {
+    titlePlaceholder: "공연, 전시, 축제, 모임 등 문화·행사 정보를 적어주세요",
+    contentPlaceholder: "행사 날짜, 장소, 참가 방법과 직접 다녀온 경험 등을 자유롭게 공유해 주세요.",
+    helperText: "공식 행사 정보는 일정과 장소가 바뀔 수 있으니 출처나 확인 링크를 함께 남기면 좋아요.",
   },
   tandem: {
     titlePlaceholder: "탄뎀 파트너를 찾는 제목을 적어주세요 / Titel",
@@ -191,7 +198,7 @@ export const GUIDE_CATEGORY_MAPPINGS: readonly GuideCategoryMapping[] = [
   { dbCategory: "german-life", hubSlug: "german-life", label: { ko: "독일생활", de: "Leben in DE", en: "German Life" }, communityCategory: "life" },
   { dbCategory: "korean-life", hubSlug: "korean-life", label: { ko: "한국생활", de: "Leben in KR", en: "Korean Life" }, communityCategory: "community" },
   { dbCategory: "language", hubSlug: "language", label: { ko: "언어", de: "Sprache", en: "Language" }, communityCategory: "community" },
-  { dbCategory: "culture-travel", hubSlug: "culture-travel", label: { ko: "문화·여행", de: "Kultur & Reisen", en: "Culture & Travel" }, communityCategory: "community" },
+  { dbCategory: "culture-travel", hubSlug: "culture-travel", label: { ko: "문화·여행", de: "Kultur & Reisen", en: "Culture & Travel" }, communityCategory: "culture-events" },
 ] as const;
 
 function getGuideCategoryMapping(value: string): GuideCategoryMapping | undefined {
