@@ -3,7 +3,7 @@ export const legalConfig: Record<string, string | null> = {
   operatorName: null,
   legalFormAndRepresentative: null,
   serviceAddress: null,
-  contactEmail: null,
+  contactEmail: "germanhanguk@gmail.com",
   additionalContactMethod: null,
   registerAndNumber: null,
   vatOrBusinessIdentification: null,
