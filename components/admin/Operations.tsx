@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { CATEGORIES } from "@/lib/constants";
 import styles from "./admin.module.css";
 
-type Member = { id: string; display_name: string | null; created_at: string; role: string; tandem_enabled: boolean; profile_complete: boolean; posts: number; comments: number };
+type Member = { id: string; display_name: string | null; created_at: string; role: string; tandem_enabled: boolean; profile_complete: boolean; posts: number; comments: number; moderation_status?: "active" | "suspended" | "banned"; moderation_expires_at?: string | null };
 type Contact = { id: string; category: string; status: string; created_at: string };
 type Detail = Contact & { subject: string; name: string | null; email: string; message: string };
 type Dashboard = { tracked_since: string; active_members: number; tandem_enabled: number; lifecycle: { days: number; signups: number; withdrawals: number }[]; activity: { days: number; posts: number; comments: number }[]; articles: { pending: number; published: number; rejected: number }; contacts: { new: number; open: number }; recent_signups: Pick<Member,"id" | "display_name" | "created_at">[] };
@@ -28,6 +28,8 @@ export default function Operations({ section }: { section: "dashboard" | "member
   const [status, setStatus] = useState("");
   const [detail, setDetail] = useState<Detail | null>(null);
   const [busy, setBusy] = useState(false);
+  const [moderatingId, setModeratingId] = useState<string | null>(null);
+  const [moderationReason, setModerationReason] = useState("");
   const generation = useRef(0);
   const detailGeneration = useRef(0);
   const load = useCallback(async () => {
@@ -59,6 +61,16 @@ export default function Operations({ section }: { section: "dashboard" | "member
     else { setDetail({ ...detail, status: next }); await load(); }
     setBusy(false);
   }
+  async function moderateMember(userId: string, action: "suspend_7d" | "suspend_30d" | "ban_permanent" | "restore") {
+    if (action !== "restore" && moderationReason.trim().length < 3) { setError("정지·밴 사유를 3자 이상 입력하세요. / Bitte einen Grund mit mindestens 3 Zeichen eingeben."); return; }
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { setError("로그인이 필요합니다. / Bitte anmelden."); return; }
+    setBusy(true); setError("");
+    const response = await fetch("/api/admin/members/moderation", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ userId, action, reason: action === "restore" ? "관리자 해제 / Administrative restore" : moderationReason.trim() }) });
+    if (!response.ok) setError("회원 조치에 실패했습니다. 권한과 서버 설정을 확인하세요. / Maßnahme fehlgeschlagen. Bitte Rechte und Serverkonfiguration prüfen.");
+    else { setModeratingId(null); setModerationReason(""); await load(); }
+    setBusy(false);
+  }
   const dashboard = section === "dashboard" ? data as Dashboard | null : null;
   const community = section === "community" ? data as Community | null : null;
   const listing = section === "members" || section === "contact" ? data as { total: number; rows: Member[] | Contact[] } | null : null;
@@ -75,7 +87,7 @@ export default function Operations({ section }: { section: "dashboard" | "member
       <section className={styles.panel}><h2>기사 / Artikel</h2><div className={styles.grid}><Metric label="검토 대기 / Ausstehend" value={dashboard.articles.pending} /><Metric label="공개 / Veröffentlicht" value={dashboard.articles.published} /><Metric label="반려 / Abgelehnt" value={dashboard.articles.rejected} /></div><Link href="/admin/articles">기사 검토·자동화 상태 / Prüfung und Automatisierung →</Link></section>
       <section className={styles.panel}><h2>최근 가입 회원 / Neueste Mitglieder</h2>{dashboard.recent_signups.length ? <Table headings={["닉네임 / Name", "가입 / Beitritt"]}>{dashboard.recent_signups.map(row => <tr key={row.id}><td><Link href={`/profile/${row.id}`}>{row.display_name || "미설정 / Offen"}</Link></td><td><time dateTime={row.created_at}>{date(row.created_at)}</time></td></tr>)}</Table> : <Empty />}</section>
     </>}
-    {section === "members" && listing && <section className={styles.panel}><p className={styles.muted}>총 {listing.total}명 / Mitglieder · 이메일과 비공개 개인정보는 표시하지 않습니다. / Keine E-Mail oder privaten Profildaten.</p>{listing.rows.length ? <Table headings={["닉네임 / Name", "가입 / Beitritt", "프로필 / Profil", "권한 / Rolle", "글 / Beiträge", "댓글 / Kommentare", "Tandem"]}>{(listing.rows as Member[]).map(row => <tr key={row.id}><td><Link href={`/profile/${row.id}`}>{row.display_name || "미설정 / Offen"}</Link></td><td>{date(row.created_at)}</td><td>{row.profile_complete ? "완료 / Vollständig" : "미설정 / Offen"}</td><td>{row.role === "admin" ? "관리자 / Admin" : "회원 / Mitglied"}</td><td>{row.posts}</td><td>{row.comments}</td><td>{row.tandem_enabled ? "활성 / Ja" : "비활성 / Nein"}</td></tr>)}</Table> : <Empty />}</section>}
+    {section === "members" && listing && <section className={styles.panel}><p className={styles.muted}>총 {listing.total}명 / Mitglieder · 이메일과 비공개 개인정보는 표시하지 않습니다. 정지·밴 사유는 감사 기록으로만 보관됩니다. / Keine E-Mail oder privaten Profildaten. Gründe werden nur im Prüfprotokoll gespeichert.</p>{listing.rows.length ? <Table headings={["닉네임 / Name", "가입 / Beitritt", "프로필 / Profil", "권한 / Rolle", "글 / Beiträge", "댓글 / Kommentare", "Tandem", "조치 / Maßnahme"]}>{(listing.rows as Member[]).map(row => <tr key={row.id}><td><Link href={`/profile/${row.id}`}>{row.display_name || "미설정 / Offen"}</Link></td><td>{date(row.created_at)}</td><td>{row.profile_complete ? "완료 / Vollständig" : "미설정 / Offen"}</td><td>{row.role === "admin" ? "관리자 / Admin" : "회원 / Mitglied"}</td><td>{row.posts}</td><td>{row.comments}</td><td>{row.tandem_enabled ? "활성 / Ja" : "비활성 / Nein"}</td><td>{row.role === "admin" ? "관리자 보호 / Geschützt" : moderatingId === row.id ? <div className={styles.actions}><label className={styles.srOnly} htmlFor={`moderation-reason-${row.id}`}>조치 사유</label><input id={`moderation-reason-${row.id}`} value={moderationReason} maxLength={500} placeholder="사유 / Grund" onChange={e => setModerationReason(e.target.value)} disabled={busy} /><button disabled={busy} onClick={() => void moderateMember(row.id,"suspend_7d")}>7일 정지</button><button disabled={busy} onClick={() => void moderateMember(row.id,"suspend_30d")}>30일 정지</button><button disabled={busy} onClick={() => void moderateMember(row.id,"ban_permanent")}>영구 밴</button><button disabled={busy} onClick={() => { setModeratingId(null); setModerationReason(""); }}>취소</button></div> : <div className={styles.actions}><span>{row.moderation_status === "banned" ? "영구 밴" : row.moderation_status === "suspended" ? `정지 ~ ${row.moderation_expires_at ? date(row.moderation_expires_at) : "미정"}` : "정상"}</span>{row.moderation_status && row.moderation_status !== "active" ? <button disabled={busy} onClick={() => void moderateMember(row.id,"restore")}>해제</button> : <button disabled={busy} onClick={() => { setModeratingId(row.id); setModerationReason(""); }}>조치</button>}</div>}</td></tr>)}</Table> : <Empty />}</section>}
     {community && <>
       <section className={styles.panel}><h2>카테고리 현황 / Kategorien</h2>{community.categories.length ? <Table headings={["카테고리 / Kategorie", "글 / Beiträge", "댓글 / Kommentare", "탈퇴 회원 글 / Ehemalige"]}>{community.categories.map(row => <tr key={row.category}><td>{category(row.category)}</td><td>{row.posts}</td><td>{row.comments}</td><td>{row.withdrawn_posts}</td></tr>)}</Table> : <Empty />}</section>
       <section className={styles.panel}><h2>최근 게시글 / Neueste Beiträge</h2>{community.recent_posts.length ? <Table headings={["제목 / Titel", "카테고리 / Kategorie", "작성일 / Datum"]}>{community.recent_posts.map(row => <tr key={row.id}><td><Link href={`/posts/${row.id}`}>{row.title}</Link>{row.withdrawn && " · 탈퇴 / Ehemalig"}</td><td>{category(row.category)}</td><td>{date(row.created_at)}</td></tr>)}</Table> : <Empty />}</section>
