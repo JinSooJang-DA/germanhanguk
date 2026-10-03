@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer"; // 1. Footer 임포트 추가
 import ThemeProvider from "@/components/ThemeProvider";
+import ProfileCompletionGate from "@/components/ProfileCompletionGate";
 import Script from "next/script";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
@@ -31,9 +32,12 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <Script id="theme-init" strategy="beforeInteractive">{themeInitScript}</Script>
         <ThemeProvider>
-          <Suspense fallback={null}><Header /></Suspense>
-          <div style={{ flex: 1 }}>{children}</div> {/* 본문 영역 */}
-          <Footer /> {/* 2. body 맨 아래에 Footer 추가 */}
+          <ProfileCompletionGate
+            header={<Suspense fallback={null}><Header /></Suspense>}
+            footer={<Footer />}
+          >
+            {children}
+          </ProfileCompletionGate>
         </ThemeProvider>
       </body>
     </html>
