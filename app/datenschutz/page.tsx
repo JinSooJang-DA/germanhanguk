@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import LegalPage, { LegalSection, OperatorFields } from "@/components/LegalPage";
 export const metadata: Metadata = { title: "Datenschutz · 개인정보 | German Hanguk", robots: { index: false } };
 export default function Page() {
@@ -11,4 +11,3 @@ export default function Page() {
     <p><a href="https://eur-lex.europa.eu/eli/reg/2016/679/oj/deu">DSGVO / GDPR</a></p>
   </LegalPage>;
 }
-
