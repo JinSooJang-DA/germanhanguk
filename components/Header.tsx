@@ -306,7 +306,7 @@ export default function Header() {
                     {avatarUrl ? (
                       <img src={avatarUrl} alt="" />
                     ) : (
-                      <span>{(displayName || user.email?.split("@")[0] || "U").slice(0, 1).toUpperCase()}</span>
+                      <svg className="header-avatar-placeholder" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 22v-3a8 8 0 0 1 16 0v3" /></svg>
                     )}
                   </span>
                 </button>

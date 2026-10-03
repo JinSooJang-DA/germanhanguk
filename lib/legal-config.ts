@@ -1,0 +1,46 @@
+﻿/** Public legal-notice configuration. Only verified facts belong here. */
+export const legalConfig: Record<string, string | null> = {
+  operatorName: null,
+  legalFormAndRepresentative: null,
+  serviceAddress: null,
+  contactEmail: null,
+  additionalContactMethod: null,
+  registerAndNumber: null,
+  vatOrBusinessIdentification: null,
+  licensingAuthority: null,
+  regulatedProfessionDetails: null,
+  capitalAndLiquidationDetails: null,
+  editorialResponsiblePerson: null,
+  privacyContactAndDpo: null,
+  competentPrivacyAuthority: null,
+  hostingProviderAndLocation: null,
+  supabaseContractRegionAndTransfers: null,
+  otherRecipientsAndTransfers: null,
+  contactLegalBasisAndInterests: null,
+  retentionAndDeletionSchedule: null,
+  otherSiteProcessingAndCookies: null,
+};
+
+export const legalFields: Record<string, [string, string]> = {
+  operatorName: ["Anbieter / Verantwortlicher", "운영자 / 개인정보 처리 책임자"],
+  legalFormAndRepresentative: ["Rechtsform und Vertretung (falls erforderlich)", "법적 형태 및 대표자 (해당 시)"],
+  serviceAddress: ["Ladungsfähige Anschrift", "법적 송달 가능한 주소"],
+  contactEmail: ["E-Mail", "이메일"],
+  additionalContactMethod: ["Unmittelbare Kontaktmöglichkeit", "직접 연락 수단"],
+  registerAndNumber: ["Register und Registernummer (falls vorhanden)", "등록부 및 등록 번호 (해당 시)"],
+  vatOrBusinessIdentification: ["USt-IdNr. / Wirtschafts-IdNr. (falls vorhanden)", "세금 / 사업 식별 번호 (해당 시)"],
+  licensingAuthority: ["Aufsichtsbehörde (bei erlaubnispflichtiger Tätigkeit)", "허가 사업 감독 기관 (해당 시)"],
+  regulatedProfessionDetails: ["Kammer, Berufsbezeichnung und Berufsrecht (falls erforderlich)", "전문직 단체, 자격 및 규정 (해당 시)"],
+  capitalAndLiquidationDetails: ["Kapital- / Liquidationsangaben (falls erforderlich)", "자본 / 청산 정보 (해당 시)"],
+  editorialResponsiblePerson: ["Redaktionell Verantwortlicher (Anwendbarkeit prüfen)", "편집 책임자 (적용 여부 확인)"],
+  privacyContactAndDpo: ["Datenschutzkontakt / Datenschutzbeauftragter (falls erforderlich)", "개인정보 문의 / 보호 담당자 (해당 시)"],
+  competentPrivacyAuthority: ["Zuständige Datenschutzaufsicht", "관할 개인정보 감독 기관"],
+  hostingProviderAndLocation: ["Hosting: Anbieter, Standort und Protokolldaten", "호스팅 제공자, 위치 및 로그 데이터"],
+  supabaseContractRegionAndTransfers: ["Supabase: Vertragspartner, Region, Auftragsverarbeitung und Drittlandgarantien", "Supabase 계약자, 지역, 처리 위탁 및 국외 이전 보호 조치"],
+  otherRecipientsAndTransfers: ["Weitere Empfänger / Drittlandübermittlungen", "추가 수신자 / 국외 이전"],
+  contactLegalBasisAndInterests: ["Kontakt: Rechtsgrundlage und berechtigte Interessen", "문의 처리 법적 근거 및 정당한 이익"],
+  retentionAndDeletionSchedule: ["Aufbewahrungsfristen, Löschlauf und Ausnahmen", "보관 기간, 삭제 일정 및 예외"],
+  otherSiteProcessingAndCookies: ["Weitere Verarbeitung: Konten, Community, Cookies und externe Inhalte", "계정, 커뮤니티, 쿠키 및 외부 콘텐츠 처리"],
+};
+
+export const legalPaths = ["/impressum", "/datenschutz", "/kontakt", "/nutzungsbedingungen"];

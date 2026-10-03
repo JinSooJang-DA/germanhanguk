@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Footer() {
   return (
@@ -31,6 +32,12 @@ export default function Footer() {
         <p style={{ margin: 0, lineHeight: "1.5" }}>
           본 사이트는 독일 거주 한인들을 위한 정보 공유 및 소통 공간입니다. 게시된 내용에 대한 책임은 작성자 본인에게 있습니다.
         </p>
+        <nav className="footer-legal-links" aria-label="법률 및 문의 / Rechtliches und Kontakt">
+          <Link href="/impressum">운영자 정보 · Impressum</Link>
+          <Link href="/datenschutz">개인정보 · Datenschutz</Link>
+          <Link href="/kontakt">문의 · Kontakt</Link>
+          <Link href="/nutzungsbedingungen">이용 안내 · Nutzungsbedingungen</Link>
+        </nav>
         <div style={{ marginTop: "12px", color: "var(--gh-footer-copy)" }}>
           © {new Date().getFullYear()} German Hanguk. All rights reserved.
         </div>

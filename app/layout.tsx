@@ -7,6 +7,7 @@ import ProfileCompletionGate from "@/components/ProfileCompletionGate";
 import Script from "next/script";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
+import "./legal.css";
 import "./styles/responsive-information.css";
 import "./styles/responsive-community.css";
 

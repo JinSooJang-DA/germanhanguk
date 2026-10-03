@@ -23,6 +23,7 @@ export default function ProfileCompletionGate({
   const router = useRouter();
   const [gateState, setGateState] = useState<GateState>("checking");
   const isProfileSetup = pathname === PROFILE_SETUP_PATH;
+  const isPublicLegal = ["/impressum", "/datenschutz", "/kontakt", "/nutzungsbedingungen"].includes(pathname);
 
   useEffect(() => {
     let cancelled = false;
@@ -45,7 +46,7 @@ export default function ProfileCompletionGate({
       const incomplete = Boolean(error) || !hasCommunityIdentity(session.user, profile);
       if (incomplete) {
         setGateState("locked");
-        if (!isProfileSetup) router.replace(PROFILE_SETUP_PATH);
+        if (!isProfileSetup && !isPublicLegal) router.replace(PROFILE_SETUP_PATH);
         return;
       }
       setGateState("open");
@@ -62,13 +63,13 @@ export default function ProfileCompletionGate({
       if (authTimer) clearTimeout(authTimer);
       authListener.subscription.unsubscribe();
     };
-  }, [isProfileSetup, pathname, router]);
+  }, [isProfileSetup, isPublicLegal, pathname, router]);
 
   // The profile step is intentionally isolated: no site navigation, footer, or
   // other clickable app surface exists until a deliberate nickname is saved.
   if (isProfileSetup) return <>{children}</>;
 
-  if (gateState !== "open") {
+  if (gateState !== "open" && !isPublicLegal) {
     return (
       <main className="auth-page" aria-busy="true">
         <div className="auth-box auth-status-box">
