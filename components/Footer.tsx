@@ -28,7 +28,6 @@ export default function Footer() {
         </div>
 
         <nav className="footer-legal-links" aria-label="법률 및 문의 / Rechtliches und Kontakt">
-          <span className="footer-link-heading">안내 · Rechtliches</span>
           <Link href="/impressum">운영자 정보 · Impressum</Link>
           <Link href="/datenschutz">개인정보 · Datenschutz</Link>
           <Link href="/kontakt">문의 · Kontakt</Link>
