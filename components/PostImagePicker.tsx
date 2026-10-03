@@ -1,6 +1,7 @@
 "use client";
 
 import { ChangeEvent, Dispatch, SetStateAction, useRef } from "react";
+import { useAuthLocale } from "@/lib/auth-locale";
 import {
   countPostImages,
   createPendingImage,
@@ -28,6 +29,9 @@ export default function PostImagePicker({
   disabled = false,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [uiLanguage] = useAuthLocale();
+  const de = uiLanguage === "de";
+  const t = (ko: string, german: string) => de ? german : ko;
 
   function insertAtCursor(token: string) {
     const textarea = document.getElementById("content") as HTMLTextAreaElement | null;
@@ -84,8 +88,8 @@ export default function PostImagePicker({
     <div className="post-image-picker">
       <div className="post-image-picker-header">
         <div>
-          <strong>사진</strong>
-          <p>최대 5장 · 원본 10MB 이하 · JPG/PNG/WebP · 자동 압축</p>
+          <strong>{t("사진", "Fotos")}</strong>
+          <p>{t("최대 5장 · 원본 10MB 이하 · JPG/PNG/WebP · 자동 압축", "Max. 5 Bilder · bis 10 MB pro Original · JPG/PNG/WebP · automatische Komprimierung")}</p>
         </div>
         <button
           type="button"
@@ -93,7 +97,7 @@ export default function PostImagePicker({
           onClick={() => inputRef.current?.click()}
           disabled={disabled || countPostImages(content) >= MAX_POST_IMAGES}
         >
-          📷 사진 추가
+          📷 {t("사진 추가", "Fotos hinzufügen")}
         </button>
       </div>
 
@@ -112,7 +116,7 @@ export default function PostImagePicker({
             <div className="post-image-preview" key={image.id}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={image.previewUrl} alt={`첨부 예정 이미지 ${index + 1}`} />
-              <button type="button" onClick={() => removeImage(image)} aria-label="이미지 제거">
+              <button type="button" onClick={() => removeImage(image)} aria-label={t("이미지 제거", "Bild entfernen")}>
                 ×
               </button>
             </div>
@@ -122,3 +126,5 @@ export default function PostImagePicker({
     </div>
   );
 }
+
+
