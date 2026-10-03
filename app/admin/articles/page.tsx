@@ -245,7 +245,7 @@ export default function AdminArticlesPage() {
           ))}
         </section>
 
-        <section style={{ border: "1px solid var(--gh-border)", borderRadius: 12, padding: 22, minHeight: 360 }}>
+        <section className={styles.editorPane} style={{ border: "1px solid var(--gh-border)", borderRadius: 12, padding: 22, minHeight: 360 }}>
           {!editor || !selected ? (
             <p style={{ color: "var(--gh-text-muted)" }}>왼쪽 목록에서 기사를 선택하세요.</p>
           ) : (
