@@ -99,8 +99,8 @@ export default function MessagesPage() {
 
       const combined: MessageWithProfile[] = messagesData.map((m) => ({
         ...m,
-        sender: tab === "inbox" ? profileMap[m.sender_id] || null : null,
-        receiver: tab === "sent" ? profileMap[m.receiver_id] || null : null,
+        sender: tab === "inbox" && m.sender_id ? profileMap[m.sender_id] || null : null,
+        receiver: tab === "sent" && m.receiver_id ? profileMap[m.receiver_id] || null : null,
       }));
 
       setMessages(combined);
@@ -235,7 +235,8 @@ export default function MessagesPage() {
             <div style={{ display: "flex", flexDirection: "column" }}>
               {messages.map((msg) => {
                 const partner = activeTab === "inbox" ? msg.sender : msg.receiver;
-                const partnerName = partner?.display_name || "회원";
+                const partnerId = activeTab === "inbox" ? msg.sender_id : msg.receiver_id;
+                const partnerName = partnerId ? partner?.display_name || "회원" : "탈퇴한 회원 / Ehemaliges Mitglied";
                 const isUnread = activeTab === "inbox" && msg.read_at === null;
 
                 return (

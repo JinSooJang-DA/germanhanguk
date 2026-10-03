@@ -82,7 +82,7 @@ export default function MessageDetailPage({
         setMessage(msgData);
 
         // 4. 발신자 및 수신자 프로필 조회
-        const profileIds = Array.from(new Set([msgData.sender_id, msgData.receiver_id]));
+        const profileIds = Array.from(new Set([msgData.sender_id, msgData.receiver_id].filter((value): value is string => Boolean(value))));
         const { data: profiles } = await supabase
           .from("profiles")
           .select("id, display_name, avatar_url")
@@ -128,7 +128,7 @@ export default function MessageDetailPage({
   async function handleSendReply(e: React.FormEvent) {
     e.preventDefault();
     if (sendingReply) return;
-    if (!user || !message || !senderProfile) return;
+    if (!user || !message || !senderProfile || !message.sender_id || user.id !== message.receiver_id) return;
 
     const trimmed = replyBody.trim();
     if (!trimmed) {
@@ -211,7 +211,9 @@ export default function MessageDetailPage({
   const isReceiver = user?.id === message.receiver_id;
   const partnerProfile = isReceiver ? senderProfile : receiverProfile;
   const partnerLabel = isReceiver ? "보낸사람" : "받는사람";
-  const partnerName = partnerProfile?.display_name || "회원";
+  const partnerId = isReceiver ? message.sender_id : message.receiver_id;
+  const partnerName = partnerId ? partnerProfile?.display_name || "회원" : "탈퇴한 회원 / Ehemaliges Mitglied";
+  const ParticipantLink = partnerId ? Link : "span";
 
   return (
     <main style={{ minHeight: "75vh", padding: "40px 0 80px", background: "var(--gh-page-bg)" }}>
@@ -258,8 +260,8 @@ export default function MessageDetailPage({
           >
             <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
               {/* 상대방 프로필 아바타 (공개 프로필 링크) */}
-              <Link
-                href={`/profile/${partnerProfile?.id || (isReceiver ? message.sender_id : message.receiver_id)}`}
+              <ParticipantLink
+                href={partnerId ? `/profile/${partnerId}` : ""}
                 style={{
                   width: "48px",
                   height: "48px",
@@ -282,13 +284,13 @@ export default function MessageDetailPage({
                 ) : (
                   <span style={{ fontSize: "22px" }}>👤</span>
                 )}
-              </Link>
+              </ParticipantLink>
 
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
                   <span style={{ fontSize: "13px", color: "var(--gh-text-muted)" }}>{partnerLabel}:</span>
-                  <Link
-                    href={`/profile/${partnerProfile?.id || (isReceiver ? message.sender_id : message.receiver_id)}`}
+                  <ParticipantLink
+                    href={partnerId ? `/profile/${partnerId}` : ""}
                     style={{
                       fontSize: "16px",
                       fontWeight: "bold",
@@ -297,7 +299,7 @@ export default function MessageDetailPage({
                     }}
                   >
                     {partnerName}
-                  </Link>
+                  </ParticipantLink>
                 </div>
                 <div style={{ fontSize: "12px", color: "var(--gh-text-subtle)", display: "flex", gap: "12px" }}>
                   <span>전송: {formatDateTime(message.created_at)}</span>
@@ -313,7 +315,7 @@ export default function MessageDetailPage({
             </div>
 
             {/* 수신자인 경우: 답장하기 버튼 */}
-            {isReceiver && (
+            {isReceiver && partnerId && senderProfile && (
               <button
                 type="button"
                 onClick={() => {
@@ -340,6 +342,7 @@ export default function MessageDetailPage({
             )}
           </div>
 
+          {!partnerId && <p style={{ padding: "0 28px" }}>탈퇴한 회원에게 답장할 수 없습니다. / Antworten an ehemalige Mitglieder sind nicht möglich.</p>}
           {/* 본문 내용 */}
           <div style={{ padding: "32px 28px", minHeight: "200px" }}>
             <div

@@ -1,7 +1,7 @@
 export interface Message {
   id: string;
-  sender_id: string;
-  receiver_id: string;
+  sender_id: string | null;
+  receiver_id: string | null;
   body: string;
   created_at: string;
   read_at: string | null;
