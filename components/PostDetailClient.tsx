@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { resolveAuthorName } from "@/lib/authorName";
 import { supabase } from "@/lib/supabase";
+import { useAuthLocale } from "@/lib/auth-locale";
 import { Post, Comment } from "@/types/post";
 import { getCategoryLabel, getPostRegionPolicy, shouldDisplayPostRegion } from "@/lib/constants";
 import { formatDate, formatDateTime } from "@/lib/date";
@@ -65,6 +66,9 @@ export default function PostDetailClient({
   initialUserId,
 }: PostDetailClientProps) {
   const router = useRouter();
+  const [uiLanguage] = useAuthLocale();
+  const de = uiLanguage === "de";
+  const t = (ko: string, german: string) => de ? german : ko;
   const searchParams = useSearchParams();
   const initialPage = parseInt(searchParams.get("page") || "1", 10);
 
@@ -648,7 +652,7 @@ export default function PostDetailClient({
   }
 
   const isAuthor = currentUserId === post.author_id;
-  const currentCategoryLabel = getCategoryLabel(post.category, "ko");
+  const currentCategoryLabel = getCategoryLabel(post.category, de ? "de" : "ko");
   const relatedUsesRegion = getPostRegionPolicy(post.category).usesRegion;
 
   return (
@@ -659,14 +663,14 @@ export default function PostDetailClient({
           onClick={handleLikeToggle}
         >
           <HeartIcon className="gh-like-icon" />
-          <span>좋아요 {likesCount}</span>
+          <span>{t("좋아요", "Gefällt mir")} {likesCount}</span>
         </button>
 
         {(isAuthor || (currentUserRole === "admin" && post.author_id === null)) && (
           <div className="post-owner-actions">
             {isAuthor && <>
-              <Link href={"/posts/" + id + "/edit"} className="post-action-button">수정</Link>
-              <button type="button" onClick={handleDeletePost} className="post-action-button">삭제</button>
+              <Link href={"/posts/" + id + "/edit"} className="post-action-button">{t("수정", "Bearbeiten")}</Link>
+              <button type="button" onClick={handleDeletePost} className="post-action-button">{t("삭제", "Löschen")}</button>
             </>}
             {currentUserRole === "admin" && post.author_id === null && (
               <button type="button" onClick={handleAdminCleanupWithdrawnPost} className="post-action-button">게시판 정리</button>
@@ -677,13 +681,13 @@ export default function PostDetailClient({
 
       {/* 댓글 섹션 */}
       <div className="post-comments-section">
-        <h3>댓글 ({comments.reduce(function(acc, c) { return acc + 1 + (c.replies?.length || 0); }, 0)})</h3>
+        <h3>{t("댓글", "Kommentare")} ({comments.reduce(function(acc, c) { return acc + 1 + (c.replies?.length || 0); }, 0)})</h3>
 
         <form onSubmit={handleCommentSubmit} style={{ marginTop: "20px", marginBottom: "30px" }} noValidate>
           <textarea
             value={newComment}
             onChange={function(e) { setNewComment(e.target.value); }}
-            placeholder={currentUserId ? "댓글을 남겨보세요..." : "로그인 후 댓글을 남길 수 있습니다."}
+            placeholder={currentUserId ? t("댓글을 남겨보세요...", "Schreibe einen Kommentar...") : t("로그인 후 댓글을 남길 수 있습니다.", "Melde dich an, um zu kommentieren.")}
             disabled={!currentUserId || submitting}
             rows={3}
             style={{
@@ -714,14 +718,14 @@ export default function PostDetailClient({
                 cursor: currentUserId ? "pointer" : "not-allowed",
               }}
             >
-              {submitting ? "등록 중..." : "댓글 등록"}
+              {submitting ? t("등록 중...", "Wird gesendet...") : t("댓글 등록", "Kommentieren")}
             </button>
           </div>
         </form>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           {commentsLoading ? (
-            <p style={{ color: "var(--gh-text-muted)", fontSize: "14px" }}>댓글을 불러오는 중입니다...</p>
+            <p style={{ color: "var(--gh-text-muted)", fontSize: "14px" }}>{t("댓글을 불러오는 중입니다...", "Kommentare werden geladen...")}</p>
           ) : commentsError ? (
             <div style={{ color: "var(--gh-text-muted)", fontSize: "14px" }}>
               <p style={{ margin: "0 0 10px" }}>{commentsError}</p>
@@ -737,11 +741,11 @@ export default function PostDetailClient({
                   cursor: "pointer",
                 }}
               >
-                다시 시도
+                {t("다시 시도", "Erneut versuchen")}
               </button>
             </div>
           ) : comments.length === 0 ? (
-            <p style={{ color: "#888", fontSize: "14px" }}>첫 번째 댓글을 달아보세요!</p>
+            <p style={{ color: "#888", fontSize: "14px" }}>{t("첫 번째 댓글을 달아보세요!", "Schreibe den ersten Kommentar!")}</p>
           ) : (
             comments.map(function(comment) {
               const isCommentAuthor = currentUserId === comment.author_id;
@@ -831,7 +835,7 @@ export default function PostDetailClient({
                                   padding: 0,
                                 }}
                               >
-                                수정
+                                {t("수정", "Bearbeiten")}
                               </button>
                               <button
                                 onClick={handleDeleteComment.bind(null, comment.id)}
@@ -844,7 +848,7 @@ export default function PostDetailClient({
                                   padding: 0,
                                 }}
                               >
-                                삭제
+                                {t("삭제", "Löschen")}
                               </button>
                             </div>
                           )}
@@ -885,7 +889,7 @@ export default function PostDetailClient({
                                 fontSize: "12px",
                               }}
                             >
-                              취소
+                              {t("취소", "Abbrechen")}
                             </button>
                             <button
                               onClick={handleSaveEditComment.bind(null, comment.id)}
@@ -900,7 +904,7 @@ export default function PostDetailClient({
                                 fontSize: "12px",
                               }}
                             >
-                              {updatingComment ? "저장 중..." : "저장"}
+                              {updatingComment ? t("저장 중...", "Wird gespeichert...") : t("저장", "Speichern")}
                             </button>
                           </div>
                         </div>
@@ -930,7 +934,7 @@ export default function PostDetailClient({
                           fontWeight: "500",
                         }}
                       >
-                        💬 {replyingToId === comment.id ? "답글 취소" : "답글 달기"}
+                        💬 {replyingToId === comment.id ? t("답글 취소", "Antwort abbrechen") : t("답글 달기", "Antworten")}
                       </button>
 
                       {replyingToId === comment.id && (
@@ -940,7 +944,7 @@ export default function PostDetailClient({
                               type="text"
                               value={replyContent}
                               onChange={function(e) { setReplyContent(e.target.value); }}
-                              placeholder="답글을 입력하세요..."
+                              placeholder={t("답글을 입력하세요...", "Antwort schreiben...")}
                               style={{
                                 flex: 1,
                                 padding: "8px 12px",
@@ -966,7 +970,7 @@ export default function PostDetailClient({
                                 fontWeight: "500",
                               }}
                             >
-                              {submitting ? "등록 중..." : "등록"}
+                              {submitting ? t("등록 중...", "Wird gesendet...") : t("등록", "Senden")}
                             </button>
                           </div>
                           <p style={{ margin: "4px 0 0", color: "var(--gh-text-subtle)", fontSize: "12px", textAlign: "right" }}>
@@ -1035,13 +1039,13 @@ export default function PostDetailClient({
                                         onClick={handleStartEditComment.bind(null, reply)}
                                         style={{ background: "none", border: "none", color: "var(--gh-accent)", fontSize: "11px", cursor: "pointer", padding: 0 }}
                                       >
-                                        수정
+                                        {t("수정", "Bearbeiten")}
                                       </button>
                                       <button
                                         onClick={handleDeleteComment.bind(null, reply.id)}
                                         style={{ background: "none", border: "none", color: "var(--gh-alert, #a86f68)", fontSize: "11px", cursor: "pointer", padding: 0 }}
                                       >
-                                        삭제
+                                        {t("삭제", "Löschen")}
                                       </button>
                                     </div>
                                   )}
@@ -1071,13 +1075,13 @@ export default function PostDetailClient({
                                       onClick={handleCancelEditComment}
                                       style={{ padding: "2px 8px", background: "var(--gh-surface-muted)", color: "var(--gh-text)", border: "none", borderRadius: "4px", fontSize: "11px", cursor: "pointer" }}
                                     >
-                                      취소
+                                      {t("취소", "Abbrechen")}
                                     </button>
                                     <button
                                       onClick={handleSaveEditComment.bind(null, reply.id)}
                                       style={{ padding: "2px 8px", background: "var(--gh-accent)", color: "#fff", border: "none", borderRadius: "4px", fontSize: "11px", cursor: "pointer" }}
                                     >
-                                      저장
+                                      {t("저장", "Speichern")}
                                     </button>
                                   </div>
                                 </div>
@@ -1106,22 +1110,22 @@ export default function PostDetailClient({
         </h3>
 
         {relatedPostsLoading ? (
-          <p style={{ color: "var(--gh-text-muted)", fontSize: "14px" }}>관련 게시글을 불러오는 중입니다...</p>
+          <p style={{ color: "var(--gh-text-muted)", fontSize: "14px" }}>{t("관련 게시글을 불러오는 중입니다...", "Weitere Beiträge werden geladen...")}</p>
         ) : relatedPostsError ? (
           <p style={{ color: "var(--gh-text-muted)", fontSize: "14px" }}>{relatedPostsError}</p>
         ) : bottomPosts.length === 0 ? (
-          <p style={{ color: "var(--gh-text-muted)", fontSize: "14px" }}>관련 게시글이 없습니다.</p>
+          <p style={{ color: "var(--gh-text-muted)", fontSize: "14px" }}>{t("관련 게시글이 없습니다.", "Keine weiteren Beiträge vorhanden.")}</p>
         ) : (
           <>
             <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
               <thead>
                 <tr style={{ borderBottom: "2px solid var(--gh-border)", background: "var(--gh-surface-muted)", color: "var(--gh-text)", textAlign: "left" }}>
-                  <th scope="col" className="related-post-category" style={{ padding: "14px" }}>카테고리</th>
-                  <th scope="col" style={{ padding: "14px" }}>제목</th>
-                  {relatedUsesRegion && <th scope="col" style={{ padding: "14px" }}>지역</th>}
-                  <th scope="col" style={{ padding: "14px" }}>작성자</th>
-                  <th scope="col" style={{ padding: "14px" }}>작성일</th>
-                  <th scope="col" style={{ padding: "14px", textAlign: "center" }}>반응</th>
+                  <th scope="col" className="related-post-category" style={{ padding: "14px" }}>{t("카테고리", "Kategorie")}</th>
+                  <th scope="col" style={{ padding: "14px" }}>{t("제목", "Titel")}</th>
+                  {relatedUsesRegion && <th scope="col" style={{ padding: "14px" }}>{t("지역", "Ort")}</th>}
+                  <th scope="col" style={{ padding: "14px" }}>{t("작성자", "Autor")}</th>
+                  <th scope="col" style={{ padding: "14px" }}>{t("작성일", "Datum")}</th>
+                  <th scope="col" style={{ padding: "14px", textAlign: "center" }}>{t("반응", "Reaktionen")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1137,7 +1141,7 @@ export default function PostDetailClient({
                       }}
                     >
                       <td className="related-post-category" style={{ padding: "18px 14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
-                        {getCategoryLabel(p.category, "ko")}
+                        {getCategoryLabel(p.category, de ? "de" : "ko")}
                       </td>
                       <td className="related-post-title" style={{ padding: "18px 14px" }}>
                         <Link
@@ -1148,7 +1152,7 @@ export default function PostDetailClient({
                             fontWeight: isCurrent ? "bold" : "600",
                           }}
                         >
-                          {p.title} {isCurrent && "◀ (현재글)"}
+                          {p.title} {isCurrent && t("◀ (현재글)", "◀ (aktuell)")}
                         </Link>
                       </td>
                       {relatedUsesRegion && (
@@ -1193,7 +1197,7 @@ export default function PostDetailClient({
 
             {totalPages > 1 && (
               <nav
-                aria-label="관련 게시글 페이지"
+                aria-label={t("관련 게시글 페이지", "Seiten der weiteren Beiträge")}
                 style={{
                   display: "flex",
                   justifyContent: "center",
@@ -1207,7 +1211,7 @@ export default function PostDetailClient({
                   type="button"
                   onClick={function() { setCurrentPage(Math.max(1, currentPage - 1)); }}
                   disabled={currentPage === 1}
-                  aria-label="이전 페이지"
+                  aria-label={t("이전 페이지", "Vorherige Seite")}
                   style={{ minWidth: "44px", height: "44px", border: "1px solid #cbd5e1", borderRadius: "4px", background: "#fff", color: "#334155", cursor: currentPage === 1 ? "default" : "pointer", opacity: currentPage === 1 ? 0.45 : 1 }}
                 >
                   ‹
@@ -1220,7 +1224,7 @@ export default function PostDetailClient({
                       key={item}
                       onClick={setCurrentPage.bind(null, item)}
                       aria-current={currentPage === item ? "page" : undefined}
-                      aria-label={`${item}페이지`}
+                      aria-label={de ? `Seite ${item}` : `${item}페이지`}
                       style={{
                         minWidth: "44px",
                         height: "44px",
@@ -1242,7 +1246,7 @@ export default function PostDetailClient({
                   type="button"
                   onClick={function() { setCurrentPage(Math.min(totalPages, currentPage + 1)); }}
                   disabled={currentPage === totalPages}
-                  aria-label="다음 페이지"
+                  aria-label={t("다음 페이지", "Nächste Seite")}
                   style={{ minWidth: "44px", height: "44px", border: "1px solid #cbd5e1", borderRadius: "4px", background: "#fff", color: "#334155", cursor: currentPage === totalPages ? "default" : "pointer", opacity: currentPage === totalPages ? 0.45 : 1 }}
                 >
                   ›
