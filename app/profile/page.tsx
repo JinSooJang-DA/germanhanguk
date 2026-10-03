@@ -4,7 +4,6 @@ import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import MemberWithdrawal from "@/components/MemberWithdrawal";
 import { formatDate } from "@/lib/date";
 import { COMMUNITY_REPUTATION_ENABLED, getCommunityLevelProgress } from "@/lib/communityReputation";
 
@@ -834,7 +833,11 @@ export default function ProfilePage() {
             로그아웃
           </button>
         </div>
-        <MemberWithdrawal />
+        <div style={{ marginTop: 28 }}>
+          <Link href="/profile/withdraw" style={{ color: "var(--gh-text-muted)", fontSize: 13, textUnderlineOffset: 3 }}>
+            회원 탈퇴 / Mitgliedschaft beenden
+          </Link>
+        </div>
       </div>
     </main>
   );

@@ -65,7 +65,7 @@
 /* Author actions */
 @media (max-width: 768px) {
   .author-action-popover {
-    min-width: 150px;
+    min-width: 0;
   }
   .author-action-popover a {
     padding: 10px;

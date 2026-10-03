@@ -1728,6 +1728,9 @@ html[data-theme="dark"] .community-home {
   position: relative;
   display: inline-flex;
   z-index: auto;
+  min-width: 0;
+  max-width: 100%;
+  flex-shrink: 0;
 }
 
 .author-action-menu.is-open {
@@ -1745,7 +1748,12 @@ html[data-theme="dark"] .community-home {
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+  min-width: 0;
+  max-width: 100%;
 }
+
+.author-action-trigger--avatar { padding: 0; }
+.author-action-name { overflow-wrap: anywhere; text-align: left; }
 
 .author-action-trigger:hover .author-action-name,
 .author-action-trigger:focus-visible .author-action-name {
@@ -1780,17 +1788,20 @@ html[data-theme="dark"] .community-home {
 }
 
 .author-action-popover {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  min-width: 158px;
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  width: min(176px, calc(100vw - 16px));
+  min-width: 0;
+  max-height: calc(100dvh - 16px);
+  overflow-y: auto;
   padding: 5px;
   border: 1px solid var(--gh-border);
   border-radius: 8px;
   background: #ffffff;
   opacity: 1;
   box-shadow: 0 12px 32px rgba(0, 0, 0, .24);
-  z-index: 1000;
+  z-index: 1200;
 }
 
 .author-action-popover a {
@@ -1804,7 +1815,9 @@ html[data-theme="dark"] .community-home {
   font-size: 13px;
   font-weight: 550;
   line-height: 1.25;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  min-width: 0;
   text-decoration: none;
 }
 
@@ -1829,7 +1842,9 @@ html[data-theme="dark"] .community-home {
   font-size: 13px;
   font-weight: 550;
   line-height: 1.25;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  min-width: 0;
   text-align: left;
   cursor: pointer;
 }
@@ -2828,5 +2843,17 @@ html[data-theme="dark"] .brand-mark-dark { display:block !important; }
   .auth-language-selector { margin-bottom: 18px; }
   .auth-language-selector button { min-height: 36px; padding: 6px 10px; }
 }
+
+.author-action-popover a > span:last-child,
+.author-action-popover button > span:last-child { min-width: 0; }
+
+.withdrawal-page { width: min(680px, 100%); margin: 40px auto; padding: 0 20px; }
+.member-withdrawal { margin-top: 24px; }
+.member-withdrawal h1 { font-size: clamp(22px, 4vw, 28px); line-height: 1.4; }
+.member-withdrawal p { margin: 14px 0; line-height: 1.65; }
+.member-withdrawal fieldset { min-width: 0; margin: 12px 0; padding: 18px; border: 1px solid var(--gh-border); border-radius: 8px; }
+.member-withdrawal label { line-height: 1.6; overflow-wrap: anywhere; }
+.member-withdrawal input[type="text"], .member-withdrawal input:not([type]) { width: 100%; min-width: 0; padding: 10px; border: 1px solid var(--gh-border); border-radius: 6px; background: var(--gh-surface); color: var(--gh-text); font-size: 16px; }
+.member-withdrawal .submit-btn { white-space: normal; }
 
 @media (max-width:520px) { .auth-language-selector { flex-wrap:wrap; margin-bottom:18px; } .auth-language-selector button { min-height:40px; padding:6px 12px; } }

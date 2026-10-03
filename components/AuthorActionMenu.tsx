@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
@@ -10,9 +11,11 @@ interface AuthorActionMenuProps {
   authorName: string;
   avatarUrl?: string | null;
   showAvatar?: boolean;
+  showName?: boolean;
+  avatarSize?: 24 | 32;
 }
 
-export default function AuthorActionMenu({ authorId, authorName, avatarUrl, showAvatar = true }: AuthorActionMenuProps) {
+export default function AuthorActionMenu({ authorId, authorName, avatarUrl, showAvatar = true, showName = true, avatarSize = 24 }: AuthorActionMenuProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -21,6 +24,8 @@ export default function AuthorActionMenu({ authorId, authorName, avatarUrl, show
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
   const rootRef = useRef<HTMLDivElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
 
   async function ensureCurrentUser() {
     const { data } = await supabase.auth.getSession();
@@ -76,7 +81,7 @@ export default function AuthorActionMenu({ authorId, authorName, avatarUrl, show
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
-      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setOpen(false);
+      if (!rootRef.current?.contains(event.target as Node) && !popoverRef.current?.contains(event.target as Node)) setOpen(false);
     }
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -92,6 +97,35 @@ export default function AuthorActionMenu({ authorId, authorName, avatarUrl, show
     };
   }, [sending]);
 
+  useLayoutEffect(() => {
+    if (!open) return;
+    function positionMenu() {
+      if (!rootRef.current || !popoverRef.current) return;
+      const anchor = rootRef.current.getBoundingClientRect();
+      const panel = popoverRef.current.getBoundingClientRect();
+      const viewport = window.visualViewport;
+      const leftEdge = (viewport?.offsetLeft ?? 0) + 8;
+      const topEdge = (viewport?.offsetTop ?? 0) + 8;
+      const rightEdge = leftEdge + (viewport?.width ?? window.innerWidth) - 16;
+      const bottomEdge = topEdge + (viewport?.height ?? window.innerHeight) - 16;
+      const top = anchor.bottom + 8 + panel.height <= bottomEdge
+        ? anchor.bottom + 8 : anchor.top - panel.height - 8;
+      setPosition({
+        left: Math.max(leftEdge, Math.min(anchor.left, rightEdge - panel.width)),
+        top: Math.max(topEdge, Math.min(top, bottomEdge - panel.height)),
+      });
+    }
+    positionMenu();
+    window.addEventListener("resize", positionMenu);
+    window.addEventListener("scroll", positionMenu, true);
+    window.visualViewport?.addEventListener("resize", positionMenu);
+    return () => {
+      window.removeEventListener("resize", positionMenu);
+      window.removeEventListener("scroll", positionMenu, true);
+      window.visualViewport?.removeEventListener("resize", positionMenu);
+    };
+  }, [open]);
+
   useEffect(() => {
     if (!composeOpen) return;
     const previousOverflow = document.body.style.overflow;
@@ -106,17 +140,16 @@ export default function AuthorActionMenu({ authorId, authorName, avatarUrl, show
   return (
     <>
       <div className={"author-action-menu" + (open ? " is-open" : "")} ref={rootRef}>
-        <button type="button" className="author-action-trigger" onClick={toggleMenu} aria-expanded={open} aria-haspopup="menu" aria-label={`${authorName} 사용자 메뉴`}>
-          {showAvatar && <span className="author-action-avatar" aria-hidden="true">{avatarUrl ? <img src={avatarUrl} alt="" /> : <span>👤</span>}</span>}
-          <span className="author-action-name">{authorName}</span>
-          <span className="author-action-chevron" aria-hidden="true">⌄</span>
+        <button type="button" className={"author-action-trigger" + (!showName ? " author-action-trigger--avatar" : "")} onClick={toggleMenu} aria-expanded={open} aria-haspopup="menu" aria-label={`${authorName} 사용자 메뉴`}>
+          {showAvatar && <span className="author-action-avatar" style={{ width: avatarSize, height: avatarSize }} aria-hidden="true">{avatarUrl ? <img src={avatarUrl} alt="" /> : <span>👤</span>}</span>}
+          {showName && <><span className="author-action-name">{authorName}</span><span className="author-action-chevron" aria-hidden="true">⌄</span></>}
         </button>
-        {open && (
-          <div className="author-action-popover" role="menu">
+        {open && createPortal(
+          <div className="author-action-popover" role="menu" aria-label={`${authorName} 사용자 메뉴`} ref={popoverRef} style={position}>
             {!isOwnProfile && <button type="button" role="menuitem" onClick={startMessage}><span aria-hidden="true">✉</span><span>쪽지 보내기</span></button>}
             <Link href={`/profile/${authorId}`} role="menuitem" onClick={() => setOpen(false)}><span aria-hidden="true">👤</span><span>{isOwnProfile ? "내 프로필" : "프로필 보기"}</span></Link>
             <Link href={`/profile/${authorId}#user-posts`} role="menuitem" onClick={() => setOpen(false)}><span aria-hidden="true">▤</span><span>작성글 보기</span></Link>
-          </div>
+          </div>, document.body
         )}
       </div>
 

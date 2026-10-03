@@ -3,7 +3,27 @@ BEGIN;
 DO $$
 DECLARE a uuid := gen_random_uuid(); b uuid := gen_random_uuid(); p bigint; c uuid := gen_random_uuid(); r uuid := gen_random_uuid(); m uuid := gen_random_uuid(); mode text;
 BEGIN
-  IF has_function_privilege('authenticated','public.withdraw_member(uuid,text)','EXECUTE') OR has_function_privilege('anon','public.withdraw_member(uuid,text)','EXECUTE') THEN RAISE EXCEPTION 'RPC exposed'; END IF;
+  IF to_regprocedure('public.withdraw_member(uuid,text)') IS NOT NULL THEN RAISE EXCEPTION 'Targeted RPC still exists'; END IF;
+  IF NOT has_function_privilege('authenticated','public.withdraw_member(text)','EXECUTE')
+    OR has_function_privilege('anon','public.withdraw_member(text)','EXECUTE')
+    OR has_function_privilege('service_role','public.withdraw_member(text)','EXECUTE')
+    THEN RAISE EXCEPTION 'Incorrect RPC grants'; END IF;
+  SET LOCAL ROLE anon;
+  BEGIN
+    PERFORM public.withdraw_member('remove');
+    RAISE EXCEPTION 'Anonymous withdrawal allowed';
+  EXCEPTION WHEN insufficient_privilege THEN NULL;
+  END;
+  RESET ROLE;
+  PERFORM set_config('request.jwt.claims', '{"role":"authenticated"}', true);
+  SET LOCAL ROLE authenticated;
+  BEGIN
+    PERFORM public.withdraw_member('preserve');
+    RAISE EXCEPTION 'Missing identity accepted';
+  EXCEPTION WHEN raise_exception THEN
+    IF SQLERRM <> 'Invalid withdrawal request' THEN RAISE; END IF;
+  END;
+  RESET ROLE;
   FOREACH mode IN ARRAY ARRAY['preserve','remove'] LOOP
     a := gen_random_uuid(); b := gen_random_uuid(); c := gen_random_uuid(); r := gen_random_uuid(); m := gen_random_uuid();
     INSERT INTO auth.users(id) VALUES(a),(b);
@@ -15,7 +35,36 @@ BEGIN
     INSERT INTO public.messages(sender_id,receiver_id,body) VALUES(b,a,'outgoing message');
     INSERT INTO public.post_likes(post_id,user_id) VALUES(p,a),(p,b);
     INSERT INTO public.profile_private_details(user_id) VALUES(a) ON CONFLICT DO NOTHING;
-    PERFORM public.withdraw_member(a,mode);
+    PERFORM set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+    SET LOCAL ROLE authenticated;
+    BEGIN
+      PERFORM public.withdraw_member('invalid');
+      RAISE EXCEPTION 'Invalid mode accepted';
+    EXCEPTION WHEN raise_exception THEN
+      IF SQLERRM <> 'Invalid withdrawal request' THEN RAISE; END IF;
+    END;
+    BEGIN
+      PERFORM public.withdraw_member(NULL);
+      RAISE EXCEPTION 'Null mode accepted';
+    EXCEPTION WHEN raise_exception THEN
+      IF SQLERRM <> 'Invalid withdrawal request' THEN RAISE; END IF;
+    END;
+    -- A rolled-back withdrawal must restore every relational change.
+    BEGIN
+      PERFORM public.withdraw_member(mode);
+      RAISE EXCEPTION 'Rollback fixture';
+    EXCEPTION WHEN raise_exception THEN
+      IF SQLERRM <> 'Rollback fixture' THEN RAISE; END IF;
+    END;
+    RESET ROLE;
+    IF NOT EXISTS(SELECT 1 FROM auth.users WHERE id=a)
+      OR NOT EXISTS(SELECT 1 FROM public.posts WHERE id=p AND author_id=a AND content='original body')
+      OR NOT EXISTS(SELECT 1 FROM public.comments WHERE id=c AND author_id=a AND content='original comment')
+      OR NOT EXISTS(SELECT 1 FROM public.messages WHERE id=m AND sender_id=a) THEN RAISE EXCEPTION 'Rollback failed'; END IF;
+    SET LOCAL ROLE authenticated;
+    PERFORM public.withdraw_member(mode);
+    RESET ROLE;
+    IF NOT EXISTS(SELECT 1 FROM auth.users WHERE id=b) THEN RAISE EXCEPTION 'Other account deleted'; END IF;
     IF EXISTS(SELECT 1 FROM auth.users WHERE id=a) OR EXISTS(SELECT 1 FROM public.profiles WHERE id=a) THEN RAISE EXCEPTION 'Identity retained'; END IF;
     IF EXISTS(SELECT 1 FROM public.profile_private_details WHERE user_id=a)
       OR EXISTS(SELECT 1 FROM public.community_reputation WHERE user_id=a)
@@ -34,11 +83,6 @@ BEGIN
     PERFORM set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
     SET LOCAL ROLE authenticated;
     IF NOT EXISTS(SELECT 1 FROM public.messages WHERE id=m) THEN RAISE EXCEPTION 'Survivor cannot read history'; END IF;
-    BEGIN
-      PERFORM public.withdraw_member(b,mode);
-      RAISE EXCEPTION 'Client can invoke withdrawal RPC';
-    EXCEPTION WHEN insufficient_privilege THEN NULL;
-    END;
     PERFORM set_config('germanhanguk.withdrawal','on',true);
     BEGIN
       UPDATE public.messages SET receiver_id=NULL WHERE id=m;
@@ -59,5 +103,38 @@ BEGIN
       IF SQLERRM='Message protection failed' THEN RAISE; END IF;
     END;
   END LOOP;
+  -- Evaluate the actual Storage policy predicates without editing storage metadata.
+  PERFORM set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
+END $$;
+
+DO $$
+DECLARE policy record; candidate record; allowed boolean; own_id text := auth.uid()::text; other_id text := gen_random_uuid()::text; policies integer := 0;
+BEGIN
+  FOR policy IN SELECT * FROM pg_policies WHERE schemaname='storage' AND tablename='objects'
+    AND policyname IN ('Member image cleanup select', 'Member image cleanup delete') LOOP
+    policies := policies + 1;
+    IF policy.roles <> ARRAY['authenticated']::name[] OR policy.cmd NOT IN ('SELECT','DELETE')
+      THEN RAISE EXCEPTION 'Incorrect storage policy role or command'; END IF;
+    FOR candidate IN SELECT * FROM (VALUES
+      ('avatars', own_id || '-avatar.webp', true),
+      ('post-images', own_id || '/image.webp', true),
+      ('post-images', own_id || '/nested/image.webp', true),
+      ('avatars', other_id || '-avatar.webp', false),
+      ('post-images', other_id || '/image.webp', false),
+      ('avatars', own_id || 'suffix-avatar.webp', false),
+      ('post-images', own_id || 'suffix/image.webp', false),
+      ('other-bucket', own_id || '/image.webp', false)
+    ) AS v(bucket_id, name, expected) LOOP
+      EXECUTE 'SELECT ' || policy.qual || ' FROM (SELECT $1::text AS bucket_id, $2::text AS name, NULL::text AS owner_id) objects'
+        INTO allowed USING candidate.bucket_id, candidate.name;
+      IF allowed IS DISTINCT FROM candidate.expected THEN RAISE EXCEPTION 'Storage prefix isolation failed: %', candidate.name; END IF;
+    END LOOP;
+    PERFORM set_config('request.jwt.claims', '{"role":"authenticated"}', true);
+    EXECUTE 'SELECT ' || policy.qual || ' FROM (SELECT ''avatars''::text AS bucket_id, $1::text AS name) objects'
+      INTO allowed USING own_id || '-avatar.webp';
+    IF allowed IS TRUE THEN RAISE EXCEPTION 'Storage accepts missing identity'; END IF;
+    PERFORM set_config('request.jwt.claims', json_build_object('sub', own_id, 'role', 'authenticated')::text, true);
+  END LOOP;
+  IF policies <> 2 THEN RAISE EXCEPTION 'Missing storage cleanup policies'; END IF;
 END $$;
 ROLLBACK;

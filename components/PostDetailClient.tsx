@@ -722,31 +722,13 @@ export default function PostDetailClient({
                 >
                   <div style={{ display: "flex", gap: "12px" }}>
                     {comment.author_id ? (
-                      <Link
-                        href={"/profile/" + comment.author_id}
-                        style={{
-                          width: "32px",
-                          height: "32px",
-                          borderRadius: "50%",
-                          background: "#e2e8f0",
-                          overflow: "hidden",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
-                          textDecoration: "none",
-                        }}
-                      >
-                        {comment.author_avatar ? (
-                          <img
-                            src={comment.author_avatar}
-                            alt={comment.author_name}
-                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                          />
-                        ) : (
-                          <span style={{ fontSize: "14px" }}>👤</span>
-                        )}
-                      </Link>
+                      <AuthorActionMenu
+                        authorId={comment.author_id}
+                        authorName={comment.author_name}
+                        avatarUrl={comment.author_avatar}
+                        showName={false}
+                        avatarSize={32}
+                      />
                     ) : (
                       <div
                         style={{
@@ -785,12 +767,7 @@ export default function PostDetailClient({
                       >
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "2px" }}>
                           {comment.author_id ? (
-                            <Link
-                              href={"/profile/" + comment.author_id}
-                              style={{ fontWeight: "bold", color: "var(--gh-text)", textDecoration: "none" }}
-                            >
-                              {comment.author_name}
-                            </Link>
+                            <AuthorActionMenu authorId={comment.author_id} authorName={comment.author_name} showAvatar={false} />
                           ) : (
                             <span style={{ fontWeight: "bold", color: "var(--gh-text)" }}>{comment.author_name}</span>
                           )}
@@ -976,6 +953,9 @@ export default function PostDetailClient({
 
                         return (
                           <div key={reply.id} id={"comment-" + reply.id} style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
+                            {reply.author_id ? (
+                              <AuthorActionMenu authorId={reply.author_id} authorName={reply.author_name} avatarUrl={reply.author_avatar} showName={false} />
+                            ) : (
                             <div style={{
                               width: "24px",
                               height: "24px",
@@ -993,10 +973,15 @@ export default function PostDetailClient({
                                 <span style={{ fontSize: "11px" }}>👤</span>
                               )}
                             </div>
+                            )}
                             <div style={{ flex: 1 }}>
                                 <div style={{ display: "flex", fontSize: "12px", color: "var(--gh-text-muted)", marginBottom: "4px", justifyContent: "space-between" }}>
                                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "2px" }}>
-                                  <span style={{ fontWeight: "bold", color: "var(--gh-text)" }}>{reply.author_name}</span>
+                                  {reply.author_id ? (
+                                    <AuthorActionMenu authorId={reply.author_id} authorName={reply.author_name} showAvatar={false} />
+                                  ) : (
+                                    <span style={{ fontWeight: "bold", color: "var(--gh-text)" }}>{reply.author_name}</span>
+                                  )}
                                   {reply.author_id && communityIdentities[reply.author_id] && (
                                     <CommunityIdentity xp={communityIdentities[reply.author_id].reputation_xp} tenureValue={communityIdentities[reply.author_id].tenure_value} tenureUnit={communityIdentities[reply.author_id].tenure_unit} showLevel={communityIdentities[reply.author_id].show_community_level} showTenure={communityIdentities[reply.author_id].show_germany_tenure} compact />
                                   )}
