@@ -40,6 +40,7 @@ export default function PublicProfilePage({
   const [notFound, setNotFound] = useState(false);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [tandemIdentity, setTandemIdentity] = useState<{ tandem_enabled?: boolean; nationality?: string | null; native_language?: string | null; learning_language?: string | null } | null>(null);
 
   // Independent loading and error states
   const [profileError, setProfileError] = useState<string | null>(null);
@@ -144,6 +145,9 @@ export default function PublicProfilePage({
             if (identityError) console.warn("Community identity load error:", identityError);
             const publicIdentity = Array.isArray(identity) ? identity[0] : identity;
             setProfile({ ...profileData, ...(publicIdentity || {}) });
+            const { data: tandemData } = await supabase.rpc("get_public_tandem_identity", { p_user_id: id });
+            const publicTandem = Array.isArray(tandemData) ? tandemData[0] : tandemData;
+            setTandemIdentity(publicTandem || null);
           } else {
             setProfile(profileData);
           }
@@ -464,6 +468,15 @@ export default function PublicProfilePage({
                 )}
                 <span>📅 가입일: {joinDate}</span>
               </div>
+
+              {tandemIdentity && (tandemIdentity.tandem_enabled || tandemIdentity.nationality) && (
+                <div className="public-tandem-identity">
+                  {tandemIdentity.tandem_enabled && <span className="public-tandem-badge">🇰🇷 ↔ 🇩🇪 Tandem</span>}
+                  {tandemIdentity.nationality && <span>🌍 {tandemIdentity.nationality === "KR" ? "한국 / Korea" : tandemIdentity.nationality === "DE" ? "독일 / Deutschland" : "International"}</span>}
+                  {tandemIdentity.native_language && <span>💬 {tandemIdentity.native_language}</span>}
+                  {tandemIdentity.learning_language && <span>📖 {tandemIdentity.learning_language}</span>}
+                </div>
+              )}
 
               {/* 자기소개 */}
               <div

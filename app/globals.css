@@ -2797,3 +2797,24 @@ html[data-theme="dark"] .brand-mark-dark { display:block !important; }
 }
 .kculture-status-link { text-decoration: none; cursor: pointer; }
 .kculture-status-link:hover { text-decoration: underline; }
+
+/* Bilingual profile onboarding */
+.profile-onboarding-box { max-width: 620px; }
+.profile-language-first { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 4px 0 24px; padding: 5px; border: 1px solid var(--gh-border); border-radius: 10px; background: var(--gh-surface-muted); }
+.profile-language-first button { min-height: 46px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: var(--gh-text-muted); font: inherit; font-weight: 750; cursor: pointer; }
+.profile-language-first button.is-active { background: var(--gh-control-active); color: var(--gh-control-active-text); box-shadow: 0 3px 12px rgba(0,0,0,.08); }
+.profile-language-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.auth-check-row, .tandem-optin-row { display: flex !important; flex-direction: row !important; align-items: flex-start; gap: 10px; }
+.auth-check-row input, .tandem-optin-row input { width: 18px !important; height: 18px; margin-top: 2px; flex: 0 0 auto; }
+.tandem-optin-row { padding: 14px; border: 1px solid var(--gh-border); border-radius: 8px; background: var(--gh-surface-muted); }
+.tandem-optin-row span { display: grid; gap: 4px; }
+.tandem-optin-row small { color: var(--gh-text-muted); font-weight: 500; line-height: 1.45; }
+@media (max-width: 560px) { .profile-language-pair { grid-template-columns: 1fr; gap: 0; } }
+.profile-tandem-settings { display: grid; gap: 14px; margin: 26px 0; padding: 20px; border: 1px solid var(--gh-border); border-radius: 10px; background: color-mix(in srgb, var(--gh-surface-muted) 70%, transparent); }
+.profile-tandem-settings__head span { color: var(--gh-accent); font-size: 11px; font-weight: 850; letter-spacing: .1em; }
+.profile-tandem-settings__head h3 { margin: 5px 0; font-size: 19px; }
+.profile-tandem-settings__head p { margin: 0; color: var(--gh-text-muted); font-size: 13px; line-height: 1.5; }
+.profile-tandem-settings select { width: 100%; margin-top: 7px; padding: 10px; border: 1px solid var(--gh-border); border-radius: 5px; background: var(--gh-surface); color: var(--gh-text); }
+.public-tandem-identity { display: flex; flex-wrap: wrap; gap: 7px; margin: 0 0 14px; }
+.public-tandem-identity > span { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 9px; border: 1px solid var(--gh-border); border-radius: 999px; background: var(--gh-surface-muted); color: var(--gh-text-muted); font-size: 12px; font-weight: 650; }
+.public-tandem-identity .public-tandem-badge { background: color-mix(in srgb, var(--gh-accent) 12%, var(--gh-surface)); color: var(--gh-text); border-color: color-mix(in srgb, var(--gh-accent) 35%, var(--gh-border)); }

@@ -122,6 +122,12 @@ export default function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [region, setRegion] = useState("");
   const [bio, setBio] = useState("");
+  const [uiLanguage, setUiLanguage] = useState<"ko" | "de">("ko");
+  const [nationality, setNationality] = useState("");
+  const [showNationality, setShowNationality] = useState(false);
+  const [nativeLanguage, setNativeLanguage] = useState("");
+  const [learningLanguage, setLearningLanguage] = useState("");
+  const [tandemEnabled, setTandemEnabled] = useState(false);
   const [germanySince, setGermanySince] = useState("");
   const [showCommunityLevel, setShowCommunityLevel] = useState(true);
   const [showGermanyTenure, setShowGermanyTenure] = useState(false);
@@ -210,7 +216,7 @@ export default function ProfilePage() {
         // 1. profiles 테이블에서 정보 가져오기
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
-          .select("display_name, avatar_url, region, bio, role")
+          .select("display_name, avatar_url, region, bio, role, ui_language, tandem_enabled, show_nationality")
           .eq("id", user.id)
           .single();
 
@@ -230,14 +236,20 @@ export default function ProfilePage() {
             setRegion(profile.region || "");
             setBio(profile.bio || "");
             setIsAdmin(profile.role === "admin");
+            setUiLanguage(profile.ui_language === "de" ? "de" : "ko");
+            setTandemEnabled(profile.tandem_enabled === true);
+            setShowNationality(profile.show_nationality === true);
             if (COMMUNITY_REPUTATION_ENABLED) {
               const [{ data: settings }, { data: privateDetails }, { data: reputation }, { data: recentEvents }] = await Promise.all([
                 supabase.from("profiles").select("show_community_level, show_germany_tenure, show_reputation_stats").eq("id", user.id).single(),
-                supabase.from("profile_private_details").select("germany_since").eq("user_id", user.id).maybeSingle(),
+                supabase.from("profile_private_details").select("germany_since, nationality, native_language, learning_language").eq("user_id", user.id).maybeSingle(),
                 supabase.from("community_reputation").select("reputation_xp, activity_score, knowledge_score, communication_score, helpful_score").eq("user_id", user.id).maybeSingle(),
                 supabase.from("reputation_events").select("id, event_type, xp_delta, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5),
               ]);
               setGermanySince(privateDetails?.germany_since || "");
+              setNationality(privateDetails?.nationality || "");
+              setNativeLanguage(privateDetails?.native_language || "");
+              setLearningLanguage(privateDetails?.learning_language || "");
               setReputationXp(reputation?.reputation_xp || 0);
               setReputationScores({
                 activity: reputation?.activity_score || 0,
@@ -299,6 +311,9 @@ export default function ProfilePage() {
         display_name: displayName.trim(),
         region: region.trim(),
         bio: bio.trim(),
+        ui_language: uiLanguage,
+        tandem_enabled: tandemEnabled,
+        show_nationality: showNationality && Boolean(nationality) && nationality !== "PRIVATE",
         updated_at: new Date().toISOString(),
       };
       if (COMMUNITY_REPUTATION_ENABLED) {
@@ -318,10 +333,15 @@ export default function ProfilePage() {
       }
 
       setMessage("프로필이 성공적으로 변경되었습니다.");
+      window.localStorage.setItem("gh-ui-language", uiLanguage);
+      window.dispatchEvent(new CustomEvent("gh-language-changed", { detail: uiLanguage }));
       if (COMMUNITY_REPUTATION_ENABLED) {
         const { error: privateError } = await supabase.from("profile_private_details").upsert({
           user_id: user.id,
           germany_since: germanySince || null,
+          nationality: nationality || null,
+          native_language: nativeLanguage || null,
+          learning_language: learningLanguage || null,
           updated_at: new Date().toISOString(),
         });
         if (privateError) {
@@ -628,6 +648,15 @@ export default function ProfilePage() {
               }}
             />
           </div>
+
+          <section className="profile-tandem-settings">
+            <div className="profile-tandem-settings__head"><span>GERMANY ↔ KOREA</span><h3>언어 · Tandem 프로필</h3><p>화면 언어와 다른 사람에게 보여줄 언어 정보를 직접 선택할 수 있어요.</p></div>
+            <div className="profile-language-first"><button type="button" className={uiLanguage === "ko" ? "is-active" : ""} onClick={() => setUiLanguage("ko")}>🇰🇷 한국어</button><button type="button" className={uiLanguage === "de" ? "is-active" : ""} onClick={() => setUiLanguage("de")}>🇩🇪 Deutsch</button></div>
+            <div className="profile-language-pair"><label>국적 / Nationalität<select value={nationality} onChange={(e) => setNationality(e.target.value)}><option value="">선택 안 함 / Keine Angabe</option><option value="KR">대한민국 / Südkorea</option><option value="DE">독일 / Deutschland</option><option value="OTHER">기타 / Andere</option><option value="PRIVATE">표시하지 않음 / Privat</option></select></label><label>주로 사용하는 언어 / Meine Sprache<select value={nativeLanguage} onChange={(e) => setNativeLanguage(e.target.value)}><option value="">선택 안 함</option><option>한국어 / Koreanisch</option><option>Deutsch</option><option>English</option><option>기타 / Andere</option></select></label></div>
+            <label>배우고 싶은 언어 / Ich lerne<select value={learningLanguage} onChange={(e) => setLearningLanguage(e.target.value)}><option value="">선택 안 함 / Keine Auswahl</option><option>한국어 / Koreanisch</option><option>Deutsch</option><option>English</option><option>기타 / Andere</option></select></label>
+            {nationality && nationality !== "PRIVATE" && <label className="auth-check-row"><input type="checkbox" checked={showNationality} onChange={(e) => setShowNationality(e.target.checked)} /><span>국적을 공개합니다 / Nationalität anzeigen</span></label>}
+            <label className="tandem-optin-row"><input type="checkbox" checked={tandemEnabled} onChange={(e) => setTandemEnabled(e.target.checked)} /><span><strong>🇰🇷 ↔ 🇩🇪 탄뎀 찾는 중 / Tandem gesucht</strong><small>켜면 언어 정보가 공개 프로필에 표시됩니다.</small></span></label>
+          </section>
 
           {COMMUNITY_REPUTATION_ENABLED && (
             <section className="profile-growth-card" aria-label="community growth">

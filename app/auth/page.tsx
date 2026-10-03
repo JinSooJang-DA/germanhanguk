@@ -15,6 +15,8 @@ export default function AuthPage() {
   const [displayName, setDisplayName] = useState("");
   const [region, setRegion] = useState("");
   const [isSignup, setIsSignup] = useState(false);
+  const [uiLanguage, setUiLanguage] = useState<"ko" | "de">("ko");
+  const de = uiLanguage === "de";
   const [isEmailConfirmationPending, setIsEmailConfirmationPending] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -60,25 +62,25 @@ export default function AuthPage() {
     if (isSignup) {
       // 1. 비밀번호 확인 검증
       if (password !== passwordConfirm) {
-        setMessage("비밀번호가 일치하지 않습니다.");
+        setMessage(de ? "Die Passwörter stimmen nicht überein." : "비밀번호가 일치하지 않습니다.");
         return;
       }
 
       // 2. 닉네임 유효성 검증
       const trimmedDisplayName = displayName.trim();
       if (!trimmedDisplayName) {
-        setMessage("닉네임을 입력해 주세요.");
+        setMessage(de ? "Bitte gib einen Anzeigenamen ein." : "닉네임을 입력해 주세요.");
         return;
       }
       if (trimmedDisplayName.length < 2) {
-        setMessage("닉네임은 2자 이상이어야 합니다.");
+        setMessage(de ? "Der Anzeigename muss mindestens 2 Zeichen lang sein." : "닉네임은 2자 이상이어야 합니다.");
         return;
       }
 
       // 3. 거주지역 선택 검증
       const trimmedRegion = region.trim();
       if (!trimmedRegion) {
-        setMessage("거주지역을 선택하거나 입력해 주세요.");
+        setMessage(de ? "Bitte wähle deinen Wohnort." : "거주지역을 선택하거나 입력해 주세요.");
         return;
       }
 
@@ -92,6 +94,7 @@ export default function AuthPage() {
           data: {
             display_name: trimmedDisplayName,
             region: trimmedRegion,
+            ui_language: uiLanguage,
           },
         },
       });
@@ -182,7 +185,8 @@ export default function AuthPage() {
       <div className="auth-box">
         <h1>German Hanguk</h1>
 
-        <h2>{isSignup ? "회원가입" : "로그인"}</h2>
+        {isSignup && <div className="profile-language-first" aria-label="Language / Sprache"><button type="button" className={!de ? "is-active" : ""} onClick={() => { setUiLanguage("ko"); localStorage.setItem("gh-ui-language", "ko"); }}>🇰🇷 한국어</button><button type="button" className={de ? "is-active" : ""} onClick={() => { setUiLanguage("de"); localStorage.setItem("gh-ui-language", "de"); }}>🇩🇪 Deutsch</button></div>}
+        <h2>{isSignup ? (de ? "Registrieren" : "회원가입") : "로그인"}</h2>
 
         {socialAuthEnabled && (
           <>
@@ -190,7 +194,7 @@ export default function AuthPage() {
               {googleAuthEnabled && (
                 <button type="button" className="auth-social-button auth-social-button--google" onClick={() => handleSocialLogin("google")} disabled={socialLoading !== null || loading}>
                   <span className="auth-social-icon" aria-hidden="true">G</span>
-                  {socialLoading === "google" ? "Google 연결 중..." : "Google로 계속하기"}
+                  {socialLoading === "google" ? (de ? "Google wird verbunden..." : "Google 연결 중...") : (de ? "Mit Google fortfahren" : "Google로 계속하기")}
                 </button>
               )}
               {kakaoAuthEnabled && (
@@ -200,13 +204,13 @@ export default function AuthPage() {
                 </button>
               )}
             </div>
-            <div className="auth-divider"><span>또는 이메일로</span></div>
+            <div className="auth-divider"><span>{de && isSignup ? "oder mit E-Mail" : "또는 이메일로"}</span></div>
           </>
         )}
 
         <form onSubmit={handleSubmit}>
           <label>
-            이메일
+            {de && isSignup ? "E-Mail" : "이메일"}
             <input
               type="email"
               value={email}
@@ -219,12 +223,12 @@ export default function AuthPage() {
           {isSignup && (
             <>
               <label>
-                닉네임 (별명)
+                {de ? "Anzeigename" : "닉네임 (별명)"}
                 <input
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="커뮤니티에서 사용할 닉네임 (2자 이상)"
+                  placeholder={de ? "Name in der Community (mind. 2 Zeichen)" : "커뮤니티에서 사용할 닉네임 (2자 이상)"}
                   required
                   minLength={2}
                   maxLength={30}
@@ -232,7 +236,7 @@ export default function AuthPage() {
               </label>
 
               <label>
-                거주지역
+                {de ? "Wohnort" : "거주지역"}
                 <select
                   value={region}
                   onChange={(e) => setRegion(e.target.value)}
@@ -245,7 +249,7 @@ export default function AuthPage() {
                     background: "#fff",
                   }}
                 >
-                  <option value="">거주지역을 선택하세요</option>
+                  <option value="">{de ? "Wohnort auswählen" : "거주지역을 선택하세요"}</option>
                   {GERMAN_REGIONS.map((city) => (
                     <option key={city} value={city}>
                       {city}
@@ -257,12 +261,12 @@ export default function AuthPage() {
           )}
 
           <label>
-            비밀번호
+            {de && isSignup ? "Passwort" : "비밀번호"}
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="비밀번호 (6자 이상)"
+              placeholder={de && isSignup ? "Passwort (mind. 6 Zeichen)" : "비밀번호 (6자 이상)"}
               required
               minLength={6}
             />
@@ -270,12 +274,12 @@ export default function AuthPage() {
 
           {isSignup && (
             <label>
-              비밀번호 확인
+              {de ? "Passwort bestätigen" : "비밀번호 확인"}
               <input
                 type="password"
                 value={passwordConfirm}
                 onChange={(e) => setPasswordConfirm(e.target.value)}
-                placeholder="비밀번호 다시 입력"
+                placeholder={de ? "Passwort erneut eingeben" : "비밀번호 다시 입력"}
                 required
                 minLength={6}
               />
@@ -283,7 +287,7 @@ export default function AuthPage() {
           )}
 
           <button className="auth-primary-action" type="submit" disabled={loading}>
-            {loading ? "처리 중..." : isSignup ? "회원가입" : "로그인"}
+            {loading ? (de && isSignup ? "Bitte warten..." : "처리 중...") : isSignup ? (de ? "Registrieren" : "회원가입") : "로그인"}
           </button>
         </form>
 
@@ -308,7 +312,7 @@ export default function AuthPage() {
           }}
         >
           {isSignup
-            ? "이미 계정이 있습니다 → 로그인"
+            ? (de ? "Schon registriert? → Login" : "이미 계정이 있습니다 → 로그인")
             : "계정이 없으신가요? → 회원가입"}
         </button>
       </div>

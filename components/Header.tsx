@@ -22,6 +22,8 @@ export default function Header() {
   const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState<number>(0);
+  const [uiLanguage, setUiLanguage] = useState<"ko" | "de">("ko");
+  const isGermanUi = uiLanguage === "de";
 
   // 모바일 메뉴 서랍 열림 상태
   const [menuOpen, setMenuOpen] = useState(false);
@@ -30,11 +32,14 @@ export default function Header() {
   async function loadUserProfile(userId: string, defaultEmail?: string) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("display_name, avatar_url")
+      .select("display_name, avatar_url, ui_language")
       .eq("id", userId)
       .single();
 
     setAvatarUrl(profile?.avatar_url || "");
+    const preferredLanguage = profile?.ui_language === "de" ? "de" : "ko";
+    setUiLanguage(preferredLanguage);
+    window.localStorage.setItem("gh-ui-language", preferredLanguage);
     if (profile?.display_name) {
       setDisplayName(profile.display_name);
     } else if (defaultEmail) {
@@ -75,6 +80,13 @@ export default function Header() {
   }
 
   useEffect(function() {
+    const storedLanguage = window.localStorage.getItem("gh-ui-language");
+    if (storedLanguage === "de") setUiLanguage("de");
+    const handleLanguageChange = (event: Event) => {
+      const language = (event as CustomEvent<string>).detail;
+      if (language === "ko" || language === "de") setUiLanguage(language);
+    };
+    window.addEventListener("gh-language-changed", handleLanguageChange);
     supabase.auth.getSession().then(function(res) {
       const session = res.data.session;
       const currentUser = session?.user ?? null;
@@ -123,6 +135,7 @@ export default function Header() {
 
     return function() {
       subscription.unsubscribe();
+      window.removeEventListener("gh-language-changed", handleLanguageChange);
       window.removeEventListener("messages-updated", handleUpdateCount);
       window.removeEventListener("notifications-updated", handleUpdateNotifCount);
     };
@@ -513,7 +526,7 @@ export default function Header() {
             >
               {/* 서랍 헤더 */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-                <span style={{ fontWeight: "bold", fontSize: "16px", color: "var(--gh-text)" }}>GermanHanguk 메뉴</span>
+                <span style={{ fontWeight: "bold", fontSize: "16px", color: "var(--gh-text)" }}>{isGermanUi ? "GermanHanguk Menü" : "GermanHanguk 메뉴"}</span>
                 <button
                   onClick={function() { setMenuOpen(false); }}
                   aria-label="메뉴 닫기"
@@ -538,10 +551,10 @@ export default function Header() {
               {/* 드로어 내비게이션 리스트 (최소 44px 높이 터치 타겟) */}
               <nav className="mobile-portal-nav" style={{ display: "flex", flexDirection: "column", gap: "18px", flex: 1 }}>
                 <section className="mobile-menu-section">
-                  <div className="mobile-menu-heading"><span>정보</span><small>뉴스와 독일 생활 가이드</small></div>
-                  <Link href="/articles" onClick={function() { setMenuOpen(false); }}>📰 독일 소식</Link>
-                  <Link href="/guide" onClick={function() { setMenuOpen(false); }}>📘 생활 가이드</Link>
-                  <Link href="/messe" onClick={function() { setMenuOpen(false); }}>🏢 독일 메세</Link>
+                  <div className="mobile-menu-heading"><span>{isGermanUi ? "Info" : "정보"}</span><small>{isGermanUi ? "Nachrichten und Leben in Deutschland" : "뉴스와 독일 생활 가이드"}</small></div>
+                  <Link href="/articles" onClick={function() { setMenuOpen(false); }}>📰 {isGermanUi ? "Deutschland-News" : "독일 소식"}</Link>
+                  <Link href="/guide" onClick={function() { setMenuOpen(false); }}>📘 {isGermanUi ? "Alltagsguide" : "생활 가이드"}</Link>
+                  <Link href="/messe" onClick={function() { setMenuOpen(false); }}>🏢 {isGermanUi ? "Messen" : "독일 메세"}</Link>
                   <div className="mobile-topic-links">
                     <Link href="/guide/visa-residence" onClick={function() { setMenuOpen(false); }}>비자·체류</Link>
                     <Link href="/guide/taxes" onClick={function() { setMenuOpen(false); }}>세금</Link>
@@ -554,14 +567,14 @@ export default function Header() {
                   </div>
                 </section>
                 <section className="mobile-menu-section">
-                  <div className="mobile-menu-heading"><span>커뮤니티</span><small>교민들의 질문과 경험</small></div>
-                  <Link href="/?section=community" onClick={function() { setMenuOpen(false); }}>커뮤니티 홈</Link>
-                  <Link href="/?section=community&category=community" onClick={function() { setMenuOpen(false); }}>자유 커뮤니티</Link>
-                  <Link href="/?section=community&category=education" onClick={function() { setMenuOpen(false); }}>유학·교육</Link>
-                  <Link href="/?section=community&category=life" onClick={function() { setMenuOpen(false); }}>생활정보</Link>
-                  <Link href="/?section=community&category=market" onClick={function() { setMenuOpen(false); }}>중고장터</Link>
-                  <Link href="/?section=community&category=jobs" onClick={function() { setMenuOpen(false); }}>구인구직</Link>
-                  <Link href="/?section=community&category=tandem" onClick={function() { setMenuOpen(false); }}>🇰🇷↔🇩🇪 탄뎀 · Tandem</Link>
+                  <div className="mobile-menu-heading"><span>{isGermanUi ? "Community" : "커뮤니티"}</span><small>{isGermanUi ? "Fragen, Erfahrungen und Austausch" : "교민들의 질문과 경험"}</small></div>
+                  <Link href="/?section=community" onClick={function() { setMenuOpen(false); }}>{isGermanUi ? "Community-Start" : "커뮤니티 홈"}</Link>
+                  <Link href="/?section=community&category=community" onClick={function() { setMenuOpen(false); }}>{isGermanUi ? "Freie Community" : "자유 커뮤니티"}</Link>
+                  <Link href="/?section=community&category=education" onClick={function() { setMenuOpen(false); }}>{isGermanUi ? "Studium & Bildung" : "유학·교육"}</Link>
+                  <Link href="/?section=community&category=life" onClick={function() { setMenuOpen(false); }}>{isGermanUi ? "Alltag" : "생활정보"}</Link>
+                  <Link href="/?section=community&category=market" onClick={function() { setMenuOpen(false); }}>{isGermanUi ? "Marktplatz" : "중고장터"}</Link>
+                  <Link href="/?section=community&category=jobs" onClick={function() { setMenuOpen(false); }}>{isGermanUi ? "Jobs" : "구인구직"}</Link>
+                  <Link href="/?section=community&category=tandem" onClick={function() { setMenuOpen(false); }}>🇰🇷↔🇩🇪 {isGermanUi ? "Tandem" : "탄뎀 · Tandem"}</Link>
                 </section>
               </nav>
 
@@ -623,8 +636,8 @@ export default function Header() {
 
     <nav className="service-switcher" aria-label="German Hanguk 서비스">
       <div className="service-switcher-inner">
-        <Link href="/" className={isInfoRoute ? "is-active" : ""}>정보</Link>
-        <Link href="/?section=community" className={isCommunityRoute ? "is-active" : ""}>커뮤니티</Link>
+        <Link href="/" className={isInfoRoute ? "is-active" : ""}>{isGermanUi ? "Info" : "정보"}</Link>
+        <Link href="/?section=community" className={isCommunityRoute ? "is-active" : ""}>{isGermanUi ? "Community" : "커뮤니티"}</Link>
         <Link href="/k-culture" className={isKCultureRoute ? "is-active service-kculture" : "service-kculture"}>
           <span>K-Culture</span><small>Korea entdecken</small>
         </Link>
@@ -634,19 +647,19 @@ export default function Header() {
       <nav className="mobile-bottom-nav" aria-label="모바일 빠른 메뉴">
         <Link href="/" className="mobile-bottom-nav-item" aria-label="홈으로 이동">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V21h-6v-6H9v6H3z" /></svg>
-          <span>홈</span>
+          <span>{isGermanUi ? "Home" : "홈"}</span>
         </Link>
         <button type="button" className="mobile-bottom-nav-item" onClick={function() { window.scrollTo({ top: 0, behavior: "smooth" }); }} aria-label="페이지 최상단으로 이동">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10l7-7 7 7M12 3v18" /></svg>
-          <span>맨위</span>
+          <span>{isGermanUi ? "Nach oben" : "맨위"}</span>
         </button>
         <button type="button" className="mobile-bottom-nav-item" onClick={function() { setMenuOpen(function(open) { return !open; }); }} aria-label="전체 메뉴 열기" aria-expanded={menuOpen}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
-          <span>메뉴</span>
+          <span>{isGermanUi ? "Menü" : "메뉴"}</span>
         </button>
         <Link href={user ? "/profile" : "/auth"} className="mobile-bottom-nav-item" aria-label={user ? "프로필로 이동" : "로그인으로 이동"}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 9a7 7 0 0 1 14 0" /></svg>
-          <span>{user ? "프로필" : "로그인"}</span>
+          <span>{user ? (isGermanUi ? "Profil" : "프로필") : (isGermanUi ? "Login" : "로그인")}</span>
         </Link>
       </nav>
     </>
