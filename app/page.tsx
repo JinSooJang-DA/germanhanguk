@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { resolveAuthorName } from "@/lib/authorName";
 import { supabase } from "@/lib/supabase";
 import {
   CATEGORIES,
@@ -202,16 +203,18 @@ function HomeContent() {
       const postsData = data || [];
       const authorIds = Array.from(new Set(postsData.map(function(p) { return p.author_id; }).filter(Boolean)));
       const avatarMap: Record<string, string> = {};
+      const nameMap: Record<string, string> = {};
 
       if (authorIds.length > 0) {
         const { data: profiles } = await supabase
           .from("profiles")
-          .select("id, avatar_url")
+          .select("id, avatar_url, display_name")
           .in("id", authorIds);
 
         if (profiles) {
           profiles.forEach(function(p) {
             if (p.avatar_url) avatarMap[p.id] = p.avatar_url;
+            if (p.display_name?.trim()) nameMap[p.id] = p.display_name;
           });
         }
       }
@@ -221,6 +224,7 @@ function HomeContent() {
       const postsWithAvatar: Post[] = postsData.map(function(p) {
         return {
           ...p,
+          author_name: resolveAuthorName(p.author_id, p.author_name, nameMap),
           author_avatar: p.author_id ? avatarMap[p.author_id] || "" : "",
         };
       });
@@ -718,7 +722,7 @@ function HomeContent() {
             <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px", minWidth: "600px" }}>
               <thead>
                 <tr style={{ borderBottom: "2px solid var(--gh-border)", background: "var(--gh-surface-muted)", color: "var(--gh-text)", textAlign: "left" }}>
-                  <th scope="col" style={{ padding: "14px" }}>카테고리</th>
+                  <th scope="col" className="main-post-category" style={{ padding: "14px" }}>카테고리</th>
                   <th scope="col" style={{ padding: "14px" }}>제목</th>
                   {boardUsesRegion && <th scope="col" style={{ padding: "14px" }}>지역</th>}
                   <th scope="col" style={{ padding: "14px" }}>작성자</th>

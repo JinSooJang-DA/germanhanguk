@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getCommunityListHref } from "@/lib/communityNavigation";
+import { resolveAuthorName } from "@/lib/authorName";
 import { supabase } from "@/lib/supabase";
 import PostDetailClient from "@/components/PostDetailClient";
 import { getCategoryLabel, getEducationSubCategoryLabel, shouldDisplayPostRegion } from "@/lib/constants";
@@ -79,16 +80,18 @@ export default async function Page({ params, searchParams }: {
   // 서버사이드에서 댓글 작성자 아바타 매핑 가져오기 (첫 로드 시 아바타 미출력 버그 방지)
   const authorIds = Array.from(new Set(commentsRaw.map(function(c) { return c.author_id; }).filter(Boolean)));
   const avatarMap: Record<string, string> = {};
+  const nameMap: Record<string, string> = {};
 
   if (authorIds.length > 0) {
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("id, avatar_url")
+      .select("id, avatar_url, display_name")
       .in("id", authorIds);
 
     if (profiles) {
       profiles.forEach(function(p) {
         if (p.avatar_url) avatarMap[p.id] = p.avatar_url;
+        if (p.display_name?.trim()) nameMap[p.id] = p.display_name;
       });
     }
   }
@@ -100,6 +103,7 @@ export default async function Page({ params, searchParams }: {
   commentsRaw.forEach(function(c) {
     const commentWithAvatar: Comment = {
       ...c,
+      author_name: resolveAuthorName(c.author_id, c.author_name, nameMap),
       author_avatar: avatarMap[c.author_id] || null,
       replies: []
     };
@@ -127,12 +131,14 @@ export default async function Page({ params, searchParams }: {
   const comments = rootComments;
 
   let authorAvatar = "";
+  let authorName = postData.author_name;
   if (postData.author_id) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("avatar_url")
+      .select("avatar_url, display_name")
       .eq("id", postData.author_id)
       .single();
+    authorName = resolveAuthorName(postData.author_id, postData.author_name, { [postData.author_id]: profile?.display_name });
     if (profile?.avatar_url) {
       authorAvatar = profile.avatar_url;
     }
@@ -140,6 +146,7 @@ export default async function Page({ params, searchParams }: {
 
   const post: Post = {
     ...postData,
+    author_name: authorName,
     author_avatar: authorAvatar,
   };
   const identityMap = await fetchPublicCommunityIdentities([post.author_id]);

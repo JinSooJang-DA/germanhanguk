@@ -3,6 +3,7 @@
 import { useEffect, useState, FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { resolveAuthorName } from "@/lib/authorName";
 import { supabase } from "@/lib/supabase";
 import { Post, Comment } from "@/types/post";
 import { getCategoryLabel, getPostRegionPolicy, shouldDisplayPostRegion } from "@/lib/constants";
@@ -135,16 +136,18 @@ export default function PostDetailClient({
       const commentsData = data || [];
       const authorIds = Array.from(new Set(commentsData.map(function(c) { return c.author_id; }).filter(Boolean)));
       const avatarMap: Record<string, string> = {};
+      const nameMap: Record<string, string> = {};
 
       if (authorIds.length > 0) {
         const { data: profiles } = await supabase
           .from("profiles")
-          .select("id, avatar_url")
+          .select("id, avatar_url, display_name")
           .in("id", authorIds);
 
         if (profiles) {
           profiles.forEach(function(p) {
             if (p.avatar_url) avatarMap[p.id] = p.avatar_url;
+            if (p.display_name?.trim()) nameMap[p.id] = p.display_name;
           });
         }
       }
@@ -156,6 +159,7 @@ export default function PostDetailClient({
       commentsData.forEach(function(c) {
         const commentWithAvatar: Comment = {
           ...c,
+          author_name: resolveAuthorName(c.author_id, c.author_name, nameMap),
           author_avatar: avatarMap[c.author_id] || null,
           replies: []
         };
@@ -283,16 +287,18 @@ export default function PostDetailClient({
         const relatedPosts = data || [];
         const authorIds = Array.from(new Set(relatedPosts.map(function(p) { return p.author_id; }).filter(Boolean))) as string[];
         const avatarMap: Record<string, string> = {};
+        const nameMap: Record<string, string> = {};
 
         if (authorIds.length > 0) {
           const { data: profiles } = await supabase
             .from("profiles")
-            .select("id, avatar_url")
+            .select("id, avatar_url, display_name")
             .in("id", authorIds);
 
           if (profiles) {
             profiles.forEach(function(profile) {
               if (profile.avatar_url) avatarMap[profile.id] = profile.avatar_url;
+              if (profile.display_name?.trim()) nameMap[profile.id] = profile.display_name;
             });
           }
         }
@@ -300,6 +306,7 @@ export default function PostDetailClient({
         const relatedPostsWithAvatar = relatedPosts.map(function(p) {
           return {
             ...p,
+            author_name: resolveAuthorName(p.author_id, p.author_name, nameMap),
             author_avatar: p.author_id ? avatarMap[p.author_id] || "" : "",
           };
         });
@@ -1083,7 +1090,7 @@ export default function PostDetailClient({
             <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
               <thead>
                 <tr style={{ borderBottom: "2px solid var(--gh-border)", background: "var(--gh-surface-muted)", color: "var(--gh-text)", textAlign: "left" }}>
-                  <th scope="col" style={{ padding: "14px" }}>카테고리</th>
+                  <th scope="col" className="related-post-category" style={{ padding: "14px" }}>카테고리</th>
                   <th scope="col" style={{ padding: "14px" }}>제목</th>
                   {relatedUsesRegion && <th scope="col" style={{ padding: "14px" }}>지역</th>}
                   <th scope="col" style={{ padding: "14px" }}>작성자</th>

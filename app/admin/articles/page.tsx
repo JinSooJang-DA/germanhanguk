@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import styles from "./articles.module.css";
 import { supabase } from "@/lib/supabase";
 
 type DraftArticle = {
@@ -187,7 +188,7 @@ export default function AdminArticlesPage() {
   if (loading) return <main style={{ padding: 40 }}>기사 검토함을 불러오는 중...</main>;
 
   return (
-    <main style={{ maxWidth: 1280, margin: "0 auto", padding: "36px 20px 80px" }}>
+    <main className={styles.page}>
       <header style={{ marginBottom: 24 }}>
         <p style={{ margin: 0, color: "var(--gh-text-muted)", fontSize: 13 }}>ADMIN · EDITORIAL</p>
         <h1 style={{ margin: "6px 0" }}>기사 검토함</h1>
@@ -204,7 +205,7 @@ export default function AdminArticlesPage() {
           </div>
           <span style={{ fontSize: 13, color: "var(--gh-text-muted)" }}>자동 실행 {automation?.schedule.join(" · ") || "08:00 · 19:00"} · 실행당 최대 1건</span>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10 }}>
+        <div className={styles.metrics}>
           <StatusCard label="작업기 상태" value={workerStateLabel} detail={lastRunAt ? `마지막 실행 ${new Date(lastRunAt).toLocaleString()}` : "아직 예약 실행 전입니다."} />
           <StatusCard label="오늘 생성" value={`${todayGenerated}건`} detail={`현재 검토 대기 ${pendingArticles.length}건`} />
           <StatusCard label="공개 / 반려" value={`${publishedArticles.length} / ${rejectedArticles.length}`} detail="전체 기사 기준" />
@@ -225,7 +226,7 @@ export default function AdminArticlesPage() {
         ))}
       </nav>
 
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(260px, 360px) 1fr", gap: 24, alignItems: "start" }}>
+      <div className={styles.workspace}>
         <section style={{ border: "1px solid var(--gh-border)", borderRadius: 12, overflow: "hidden" }}>
           <div style={{ padding: 14, fontWeight: 700, borderBottom: "1px solid var(--gh-border)" }}>
             {tab === "pending" ? "검토 대기" : tab === "published" ? "공개된 기사" : "반려된 기사"} {visibleArticles.length}건

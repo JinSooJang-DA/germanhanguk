@@ -392,3 +392,22 @@
     overflow-wrap:break-word;
   }
 }
+/* Reserve a readable category column in both community tables. Mobile rows
+   retain their existing card layout, with the category supplied by the heading. */
+.main-post-list .main-post-category,
+.related-posts .related-post-category {
+  min-width: 8rem;
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+
+@media (min-width:769px) {
+  .related-posts { overflow-x:auto; }
+  .related-posts table { min-width:640px; }
+}
+
+@media (max-width:768px) {
+  .main-post-list .main-post-category,
+  .related-posts .related-post-category { min-width:0; }
+}
