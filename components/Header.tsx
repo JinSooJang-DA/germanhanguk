@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
+import { getServerUiLanguage, readHeaderUiLanguage, subscribeUiLanguage } from "@/lib/auth-locale";
 import ThemeSelector from "@/components/ThemeSelector";
 
 export default function Header() {
@@ -22,7 +23,9 @@ export default function Header() {
   const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState<number>(0);
-  const [uiLanguage, setUiLanguage] = useState<"ko" | "de">("ko");
+  const storedUiLanguage = useSyncExternalStore(subscribeUiLanguage, readHeaderUiLanguage, getServerUiLanguage);
+  const [preferredUiLanguage, setUiLanguage] = useState<"ko" | "de" | null>(null);
+  const uiLanguage = preferredUiLanguage ?? storedUiLanguage;
   const isGermanUi = uiLanguage === "de";
 
   // 모바일 메뉴 서랍 열림 상태
@@ -80,8 +83,6 @@ export default function Header() {
   }
 
   useEffect(function() {
-    const storedLanguage = window.localStorage.getItem("gh-ui-language");
-    if (storedLanguage === "de") setUiLanguage("de");
     const handleLanguageChange = (event: Event) => {
       const language = (event as CustomEvent<string>).detail;
       if (language === "ko" || language === "de") setUiLanguage(language);

@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { getKSpots } from "@/lib/kspots";
 import KSpotMapWrapper from "@/components/KSpotMapWrapper";
 
@@ -7,6 +8,9 @@ export const metadata = {
 };
 
 export default async function MapPage() {
+  // Keep the implementation for a future launch; the map is deferred.
+  notFound();
+
   const spots = await getKSpots();
 
   return (

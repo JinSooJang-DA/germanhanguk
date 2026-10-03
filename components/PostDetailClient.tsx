@@ -47,6 +47,7 @@ type RelatedPost = Post & {
 };
 
 interface PostDetailClientProps {
+  communityListHref: string;
   id: string;
   initialPost: Post;
   initialComments: Comment[];
@@ -55,6 +56,7 @@ interface PostDetailClientProps {
 }
 
 export default function PostDetailClient({
+  communityListHref,
   id,
   initialPost,
   initialComments,
@@ -401,7 +403,7 @@ export default function PostDetailClient({
     });
 
     alert("삭제되었습니다.");
-    router.push("/");
+    router.push(communityListHref);
     router.refresh();
   }
 
@@ -1081,12 +1083,12 @@ export default function PostDetailClient({
             <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
               <thead>
                 <tr style={{ borderBottom: "2px solid var(--gh-border)", background: "var(--gh-surface-muted)", color: "var(--gh-text)", textAlign: "left" }}>
-                  <th style={{ padding: "14px" }}>카테고리</th>
-                  <th style={{ padding: "14px" }}>제목</th>
-                  {relatedUsesRegion && <th style={{ padding: "14px" }}>지역</th>}
-                  <th style={{ padding: "14px" }}>작성자</th>
-                  <th style={{ padding: "14px" }}>작성일</th>
-                  <th style={{ padding: "14px", textAlign: "center" }}>반응</th>
+                  <th scope="col" style={{ padding: "14px" }}>카테고리</th>
+                  <th scope="col" style={{ padding: "14px" }}>제목</th>
+                  {relatedUsesRegion && <th scope="col" style={{ padding: "14px" }}>지역</th>}
+                  <th scope="col" style={{ padding: "14px" }}>작성자</th>
+                  <th scope="col" style={{ padding: "14px" }}>작성일</th>
+                  <th scope="col" style={{ padding: "14px", textAlign: "center" }}>반응</th>
                 </tr>
               </thead>
               <tbody>
@@ -1106,7 +1108,7 @@ export default function PostDetailClient({
                       </td>
                       <td className="related-post-title" style={{ padding: "18px 14px" }}>
                         <Link
-                          href={"/posts/" + p.id + "?page=" + currentPage}
+                          href={"/posts/" + p.id + "?page=" + currentPage + "&returnTo=" + encodeURIComponent(communityListHref)}
                           style={{
                             textDecoration: "none",
                             color: isCurrent ? "var(--gh-accent)" : "var(--gh-text)",

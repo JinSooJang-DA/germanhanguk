@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getCommunityListHref } from "@/lib/communityNavigation";
 import { supabase } from "@/lib/supabase";
 import PostDetailClient from "@/components/PostDetailClient";
 import { getCategoryLabel, getEducationSubCategoryLabel, shouldDisplayPostRegion } from "@/lib/constants";
@@ -36,8 +37,13 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   };
 }
 
-export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+export default async function Page({ params, searchParams }: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ returnTo?: string | string[] }>
+}) {
   const { id } = await params;
+  const { returnTo } = await searchParams;
+  const originList = typeof returnTo === "string" ? returnTo : undefined;
 
   // 1. Fetch post on Server (statically pre-rendered for search indexability)
   const { data: postData } = await supabase
@@ -51,7 +57,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       <main className="post-detail">
         <div className="wrapper">
           <p>게시글을 찾을 수 없습니다.</p>
-          <Link href="/" className="back-link">← 목록으로 돌아가기</Link>
+          <Link href={getCommunityListHref(originList)} className="back-link">← 목록으로 돌아가기</Link>
         </div>
       </main>
     );
@@ -145,7 +151,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const currentCategoryLabel = post.category === "education"
     ? getEducationSubCategoryLabel(post.sub_category)
     : getCategoryLabel(post.category, "ko");
-  const communityListHref = `/?section=community&category=${encodeURIComponent(post.category)}`;
+  const communityListHref = getCommunityListHref(originList, post.category);
 
   return (
     <main className="post-detail">
@@ -185,6 +191,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
         {/* Client-side interactive layer (Optimistic likes, Replies list, submission forms, list navigation) */}
         <PostDetailClient
+          communityListHref={communityListHref}
           id={id}
           initialPost={post}
           initialComments={comments}

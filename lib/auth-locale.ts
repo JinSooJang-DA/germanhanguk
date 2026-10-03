@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { GERMAN_REGIONS } from "@/lib/germanRegions";
 
 export type UiLanguage = "ko" | "de";
@@ -18,12 +18,23 @@ export function persistUiLanguage(language: UiLanguage) {
   try { window.localStorage.setItem("gh-ui-language", language); } catch { /* Storage may be unavailable. */ }
   window.dispatchEvent(new CustomEvent("gh-language-changed", { detail: language }));
 }
+// A stable server snapshot keeps the initial client render consistent with SSR.
+export function getServerUiLanguage(): UiLanguage { return "ko"; }
+export function readHeaderUiLanguage(): UiLanguage {
+  try { return window.localStorage.getItem("gh-ui-language") === "de" ? "de" : "ko"; }
+  catch { return "ko"; }
+}
+export function subscribeUiLanguage(onChange: () => void) {
+  window.addEventListener("gh-language-changed", onChange);
+  return () => window.removeEventListener("gh-language-changed", onChange);
+}
 export function useAuthLocale() {
-  const [language, setLanguage] = useState<UiLanguage>("ko");
+  const storedLanguage = useSyncExternalStore(subscribeUiLanguage, readUiLanguage, getServerUiLanguage);
+  const [chosenLanguage, setLanguage] = useState<UiLanguage | null>(null);
+  const language = chosenLanguage ?? storedLanguage;
   useEffect(() => {
-    const storedLanguage = readUiLanguage();
-    setLanguage(storedLanguage);
-    persistUiLanguage(storedLanguage);
+    persistUiLanguage(readUiLanguage());
+    // Keep explicit choices working even when browser storage is unavailable.
     const sync = (event: Event) => {
       const value = (event as CustomEvent).detail;
       if (value === "ko" || value === "de") setLanguage(value);

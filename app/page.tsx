@@ -8,9 +8,11 @@ import {
   CATEGORIES,
   EDUCATION_SUB_CATEGORY_OPTIONS,
   getCategoryLabel,
+  getPostRegionPolicy,
   getEducationSubCategoryLabel,
   shouldDisplayPostRegion,
 } from "@/lib/constants";
+import { getCommunityListHref } from "@/lib/communityNavigation";
 import { formatDate } from "@/lib/date";
 import { getBoardNotice } from "@/lib/board-notices";
 import type { Post as BasePost } from "@/types/post";
@@ -65,11 +67,13 @@ function HomeContent() {
   const [isMobileLivePaused, setIsMobileLivePaused] = useState(false);
 
   const selectedCategory = categoryParam || "all";
+  const boardUsesRegion = selectedCategory === "all" || getPostRegionPolicy(selectedCategory).usesRegion;
   const boardNotice = getBoardNotice(selectedCategory);
   const educationSubCategoryParam = searchParams.get("sub_category");
   const selectedEducationSubCategory = selectedCategory === "education" && EDUCATION_SUB_CATEGORY_OPTIONS.some((option) => option.value === educationSubCategoryParam)
     ? educationSubCategoryParam
     : null;
+  const communityListHref = getCommunityListHref(`/?${searchParams.toString()}`);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [debouncedSearchKeyword, setDebouncedSearchKeyword] = useState("");
   const staticFeedLoadedRef = useRef(false);
@@ -564,7 +568,7 @@ function HomeContent() {
                   <Link
                     className="community-trending-card"
                     key={tp.id}
-                    href={"/posts/" + tp.id}
+                    href={"/posts/" + tp.id + "?returnTo=" + encodeURIComponent(communityListHref)}
                     style={{
                       background: "var(--gh-surface)",
                       borderRadius: "8px",
@@ -648,22 +652,10 @@ function HomeContent() {
           </div>
 
           <Link
-            href={selectedCategory && selectedCategory !== "all" ? `/posts/new?category=${selectedCategory}` : "/posts/new"}
-            style={{ display: "inline-block" }}
+            href={selectedCategory !== "all" ? `/posts/new?category=${encodeURIComponent(selectedCategory)}` : "/posts/new"}
+            style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, padding: "8px 18px", minHeight: "36px", boxSizing: "border-box", background: "var(--gh-control-active)", color: "var(--gh-control-active-text)", borderRadius: "6px", fontSize: "14px", fontWeight: "bold", textDecoration: "none" }}
           >
-            <button
-              style={{
-                padding: "10px 20px",
-                background: "var(--gh-control-active)",
-                color: "var(--gh-control-active-text)",
-                border: "none",
-                borderRadius: "6px",
-                fontWeight: "bold",
-                cursor: "pointer",
-              }}
-            >
-              글쓰기
-            </button>
+            글쓰기
           </Link>
         </div>
 
@@ -726,12 +718,12 @@ function HomeContent() {
             <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px", minWidth: "600px" }}>
               <thead>
                 <tr style={{ borderBottom: "2px solid var(--gh-border)", background: "var(--gh-surface-muted)", color: "var(--gh-text)", textAlign: "left" }}>
-                  <th style={{ padding: "14px" }}>카테고리</th>
-                  <th style={{ padding: "14px" }}>제목</th>
-                  {selectedCategory !== "community" && <th style={{ padding: "14px" }}>지역</th>}
-                  <th style={{ padding: "14px" }}>작성자</th>
-                  <th style={{ padding: "14px" }}>작성일</th>
-                  <th style={{ padding: "14px", textAlign: "center" }}>반응</th>
+                  <th scope="col" style={{ padding: "14px" }}>카테고리</th>
+                  <th scope="col" style={{ padding: "14px" }}>제목</th>
+                  {boardUsesRegion && <th scope="col" style={{ padding: "14px" }}>지역</th>}
+                  <th scope="col" style={{ padding: "14px" }}>작성자</th>
+                  <th scope="col" style={{ padding: "14px" }}>작성일</th>
+                  <th scope="col" style={{ padding: "14px", textAlign: "center" }}>반응</th>
                 </tr>
               </thead>
               <tbody>
@@ -743,7 +735,7 @@ function HomeContent() {
                         {boardNotice.title}
                       </Link>
                     </td>
-                    {selectedCategory !== "community" && <td className="main-post-region" style={{ padding: "14px" }} />}
+                    {boardUsesRegion && <td className="main-post-region" style={{ padding: "14px" }} />}
                     <td className="main-post-author" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)", fontWeight: 700 }}>관리자</td>
                     <td className="main-post-date" style={{ padding: "14px", fontSize: "13px", color: "var(--gh-text-subtle)" }}>2026. 10. 2.</td>
                     <td className="main-post-views" style={{ padding: "14px", fontSize: "13px", color: "var(--gh-text-subtle)", textAlign: "center" }}>—</td>
@@ -758,7 +750,7 @@ function HomeContent() {
                         {post.category === "education" ? getEducationSubCategoryLabel(post.sub_category) : getCategoryLabel(post.category, "ko")}
                       </td>
                       <td className="main-post-title" style={{ padding: "14px" }}>
-                        <Link href={"/posts/" + post.id} style={{ textDecoration: "none", color: "var(--gh-text)", fontWeight: "600" }}>
+                        <Link href={"/posts/" + post.id + (isCommunityView ? "?returnTo=" + encodeURIComponent(communityListHref) : "")} style={{ textDecoration: "none", color: "var(--gh-text)", fontWeight: "600" }}>
                           {post.title}
                         </Link>
                         {commentsCount > 0 && (
@@ -767,7 +759,7 @@ function HomeContent() {
                           </span>
                         )}
                       </td>
-                      {selectedCategory !== "community" && (
+                      {boardUsesRegion && (
                         <td className="main-post-region" style={{ padding: "14px", fontSize: "14px", color: "var(--gh-text-muted)" }}>
                           {shouldDisplayPostRegion(post.category, post.region) ? post.region : ""}
                         </td>
